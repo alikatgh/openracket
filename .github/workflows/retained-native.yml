@@ -86,12 +86,12 @@ jobs:
       - name: Verify native Stop, input, WXME and Check Syntax preservation
         timeout-minutes: 8
         run: bash retained-host/scripts/ci/run-phase.sh followon
-      - name: Measure matched pristine and retained native editors
-        # Collect bounded measurements after passing core gates even when a
-        # later preservation test fails. That earlier failure still fails CI.
-        if: ${{ !cancelled() && steps.core_stock.outcome == 'success' && steps.core_overlay.outcome == 'success' && steps.core_modern.outcome == 'success' }}
-        timeout-minutes: 15
-        run: bash retained-host/scripts/ci/run-phase.sh performance
+      - name: Diagnose pristine Linux editor settling with unchanged features
+        # One instrumented trial, separate from the existing paired baseline.
+        # A preservation failure still fails CI; core failures skip profiling.
+        if: ${{ !cancelled() && runner.os == 'Linux' && steps.core_stock.outcome == 'success' && steps.core_overlay.outcome == 'success' && steps.core_modern.outcome == 'success' }}
+        timeout-minutes: 3
+        run: bash retained-host/scripts/ci/run-phase.sh profile
       - name: Report actual test results
         if: always()
         run: |

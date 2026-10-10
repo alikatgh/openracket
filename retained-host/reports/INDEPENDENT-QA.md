@@ -223,3 +223,26 @@ harness's monitor-custodian cleanup error is being repaired independently.
 Debugger, Macro Stepper, teaching-language dialog/Step, forced second Kill, physical
 EOF hit-testing, IME, clipboard/drag-and-drop, OS accessibility and broad DPI/font
 coverage are not certified by these scoped passes.
+
+## Fifth native CI: Linux workflows pass; macOS Stop remains unresolved
+
+Run 38050824369, checked-out source commit
+fcf24f95dd0196b3be4945d1eede50e91ea43846: all four core host modes and modern
+light/dark round trips pass on both Linux and macOS. Linux again passes all eight
+scoped preservation processes. The performance owner reports twelve completed
+Linux trials, six completed macOS 100k trials, and six macOS 1 MiB readiness
+timeouts; the performance report owns the numeric comparisons and caveats.
+
+On pristine macOS stock, Stop finds a live registered evaluator target and changes
+the genuine label from Stop to Kill, but the strict20-second wait for evaluation
+completion times out. The actual failure screenshot shows WAITING_TO_BREAK, no
+user-break text, no prompt, and no modal dialog. This is an unresolved baseline
+behavior/harness issue, not an established overlay regression. Remaining macOS
+preservation cases are skipped after that baseline failure.
+
+The next diagnostic-only workflow version prints the fixture's actual break-enabled
+value, target/evaluator identity, thread running and in-evaluation states, bounded
+interaction text, and final timeout continuation context. It retains the same
+strict completion deadline and never injects a direct break, invokes second Kill,
+or changes evaluator settings. Workflow SHA256:
+b175a92754e8f0e8a0f524ae5947f5eae8da605b0f3274bbc098e20ce1de53bf.

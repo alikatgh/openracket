@@ -1,6 +1,6 @@
 {
   "scope": "isolated retained-DrRacket 9.3 presentation proof",
-  "state": "Benchmark lifecycle and supervisor repairs pass headless checks; native rerun pending",
+  "state": "Linux core, preservation and measured performance passed; macOS core passed, stock Stop and large-file readiness diagnostics pending",
   "racket_tests_passed": 120,
   "python_patcher_tests_passed": 12,
   "original_button_methods_audited": 18,
@@ -13,13 +13,13 @@
   "complete_native_host_compiled": true,
   "native_window_started": true,
   "native_stock_workflow_parity_verified": false,
-  "application_performance_measured": false,
+  "application_performance_measured": true,
   "toolbar_component_png": "artifacts/toolbar-paint-proof.png",
   "png_sha256": "03737fab4fa5756b1193dc133532a676b4102c9ef993e587b2e278c656d5b3d0",
   "sidebar_implemented": false,
   "blocking_prerequisites": [
-    "Verify benchmark startup-watcher cleanup and macOS timeout supervisor repair",
-    "Run macOS preservation cases and paired native benchmarks",
+    "Diagnose untouched macOS stock Stop completion timeout before certifying matching modern workflow",
+    "Attribute large-file lexer stabilization and multi-second event-loop stalls without disabling stock tools",
     "Debugger/Macro Stepper/teaching/accessibility coverage remains open"
   ],
   "original_projects_modified": false,
@@ -27,9 +27,9 @@
   "python_performance_tests_passed": 9,
   "portable_launcher_implemented": true,
   "workspace_chrome_implemented": true,
-  "native_ci_status": "fourth run: Linux core and preservation pass, benchmark cleanup fails; macOS stopped at supervisor unit test",
-  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38050213153",
-  "native_ci_commit": "0c8510d768483840d37c19afc4833ddc180a66a0",
+  "native_ci_status": "fifth run: Linux fully green; macOS core passes, pristine Stop times out and large-file trials fail readiness",
+  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38050824369",
+  "native_ci_commit": "fcf24f95dd0196b3be4945d1eede50e91ea43846",
   "native_toolbar_tests_per_mode": 14,
   "native_toolbar_modes_passed": 4,
   "native_canvas_status_tests_per_mode": 5,
@@ -49,5 +49,9 @@
   "native_preservation_cases_passed_linux": 8,
   "native_preservation_cases_passed_macos": 0,
   "check_syntax_graph_equal_stock_modern": true,
-  "stop_lifecycle_equal_stock_modern": true
+  "stop_lifecycle_equal_stock_modern": true,
+  "valid_performance_trials_linux": 12,
+  "valid_performance_trials_macos_100k": 6,
+  "invalid_performance_trials_macos_1mib": 6,
+  "speedup_claim": false
 }

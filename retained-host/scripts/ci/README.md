@@ -34,13 +34,22 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
 6. In fresh processes and preferences, first pristine stock and then modern dark,
    run strict Stop-state, Unicode input/EOF, WXME rich-document and actual Check
    Syntax preservation tests. Each case has a 60-second outer bound and failure
-   diagnostics; a failed stock baseline stops overlay attribution.
+   diagnostics. Independent cases continue in fresh processes after a failure;
+   only matching successful stock baselines allow the modern comparison. A
+   failed or skipped comparison remains explicit and the overall job fails.
 7. After all core compile/host/editor/theme gates pass, run paired native performance probes with identical synthetic fixtures and
    separate fresh preferences and addon registries. Command/event-loop timing is not input-to-photon
    timing and CI runner numbers are not representative hardware benchmarks.
    Measurements can still be collected if a separate preservation case fails;
    that failure remains in the report and fails the overall job. Diagnostic
    timings never turn an unverified workflow into an acceptance pass.
+
+The current follow-up workflow retains the completed paired baseline and runs
+one Linux pristine-stock 1 MiB attribution trial instead of repeating all twelve
+trials. It uses the standard Racket sampler plus existing GC, colorer and online
+expansion logs, unchanged features/settings, a 90-second process timeout and
+bounded diagnostics. Instrumented results carry an overhead warning and are
+not substituted for the ordinary paired timing records.
 
 Linux uses official Ubuntu Xvfb and Noto CJK font packages on the GitHub runner,
 with equal font coverage for pristine and retained modes. macOS uses

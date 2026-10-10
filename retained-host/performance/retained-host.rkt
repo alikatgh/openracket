@@ -1,7 +1,8 @@
 #lang racket/base
 ;; Run only in an authorized native graphical session. No tool/preference bypasses.
-(require racket/class racket/list racket/file racket/format json)
+(require racket/class racket/list racket/file racket/format racket/runtime-path json)
 
+(define-runtime-path diagnostics-path "diagnostics.rkt")
 (define started (current-inexact-monotonic-milliseconds))
 (define (now) (current-inexact-monotonic-milliseconds))
 (unless (zero? (vector-length (current-command-line-arguments)))
@@ -14,6 +15,10 @@
 (define mode (hash-ref config 'mode))
 (define edit-pos (hash-ref config 'edit_position))
 (define expected-size (hash-ref config 'characters))
+(define profile-enabled? (hash-ref config 'profile #f))
+(define finish-profile #f)
+(define diagnostic-root-logger (current-logger))
+(define last-heartbeat-time (now))
 ;; Stock reads launch arguments later in its initial-frame callback. No benchmark
 ;; config is passed as process arguments, and this is set before GUI creation.
 (current-command-line-arguments #())
@@ -25,6 +30,7 @@
 (hash-set! report 'os (~a (system-type 'os)))
 (hash-set! report 'vm (~a (system-type 'vm)))
 (hash-set! report 'status "running")
+(hash-set! report 'measurement_kind (if profile-enabled? "instrumented_attribution_only" "ordinary_timing"))
 (define (persist!)
   (call-with-output-file output #:exists 'truncate/replace
     (lambda (port) (write-json report port) (newline port))))
@@ -187,6 +193,7 @@
                (queue-callback
                 (lambda ()
                   (define observed (now))
+                  (set! last-heartbeat-time observed)
                   (set! heartbeat-samples
                         (cons (hasheq 'phase submitted-phase
                                       'dispatch_ms (- observed submitted)
@@ -195,6 +202,11 @@
                   (semaphore-post done)) #t)
                (semaphore-wait done)
                (loop (now)))))))
+  (when profile-enabled?
+    (set! finish-profile
+          ((dynamic-require diagnostics-path 'start-diagnostics)
+           (current-thread) (lambda () phase) (lambda () last-heartbeat-time)
+           #:logger diagnostic-root-logger)))
   (record! 'memory_before_open (memory-snapshot))
   (set! phase "first_open")
   (record! 'first_open (timed-command (lambda () (send frame change-to-file fixture))))
@@ -241,15 +253,21 @@
        ((dynamic-require 'drracket/tool-lib
                          'drracket:language-configuration:language-settings-settings)
         config))
-     (define annotations
-       ((dynamic-require 'drracket/tool-lib 'drracket:language:simple-settings-annotations)
+     ;; The public annotations accessor's 9.3 result contract mistakenly excludes
+     ;; 'lang-default. The documented vector API preserves that valid sixth field.
+     (define simple-vector
+       ((dynamic-require 'drracket/tool-lib 'drracket:language:simple-settings->vector)
         settings))
+     (unless (and (vector? simple-vector) (= (vector-length simple-vector) 6))
+       (error 'settings-capture "unexpected stock simple-settings vector"))
+     (define annotations (vector-ref simple-vector 5))
      (define default-instrumentation
        ((dynamic-require 'drracket/private/insulated-read-language 'call-read-language)
         (send editor get-irl) 'drracket:default-instrumentation 'debug))
      (hasheq 'status "complete"
              'language_position (~s (send language get-language-position))
              'serialized_settings (~s (send language marshall-settings settings))
+             'simple_settings_vector (~s simple-vector)
              'annotations (~s annotations)
              'language_default_instrumentation (~s default-instrumentation)
              'effective_annotations
@@ -285,6 +303,7 @@
   (gui-yield (thread-dead-evt heartbeat-thread))
   (record! 'heartbeat_samples (reverse heartbeat-samples))
   (record! 'memory_after_workload (memory-snapshot))
+  (when finish-profile (record! 'diagnostics (finish-profile)))
   ;; Explicit collection only after all latency work; do not hide allocation/GC.
   (collect-garbage) (collect-garbage)
   (record! 'memory_after_explicit_gc (memory-snapshot))

@@ -39,9 +39,12 @@ including Unicode loading, undo/redo, two real Run callbacks and live color-mode
 roundtrips. Native toolbar/canvas tests and genuine OS captures also pass.
 Linux additionally passes real Stop, stdin/EOF, WXME and Check Syntax preservation
 cases in both stock and modern modes, with identical binding graphs and Stop
-state transitions. macOS preservation and valid performance measurements remain
-incomplete while two benchmark-harness cleanup bugs are repaired. See
-[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38050213153)
+state transitions. All twelve Linux performance trials completed, exposing large-file
+lexer waits and multi-second event-loop stalls in both modes. Six macOS 100k trials
+completed, while all six 1 MiB trials timed out before warm readiness. Untouched
+macOS stock Stop also timed out after its label changed to Kill; its other
+preservation cases remain untested. No speedup is claimed. See
+[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38050824369)
 and `reports/RESULTS.md` for exact scope and remaining gates.
 
 Local package installation and its authorized retry were cancelled, and the

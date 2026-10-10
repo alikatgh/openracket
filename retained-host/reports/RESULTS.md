@@ -98,10 +98,33 @@ Racket lifecycle tests pass. These are bounded harness repairs; no production
 change is indicated. Earlier macOS native core passes
 remain valid for unchanged code, but macOS preservation cases did not run here.
 
+## Fifth native run: measured baseline and macOS diagnostics
+
+Run [38050824369](https://github.com/alikatgh/openracket/actions/runs/38050824369),
+commit `fcf24f95dd0196b3be4945d1eede50e91ea43846`, verified the benchmark
+lifecycle/supervisor fixes. Both platforms passed all core native modes, actual
+compilation, theme roundtrips, widget checks and runtime isolation. Linux passed
+all eight preservation cases and all twelve performance trials.
+
+The performance measurements reveal a substantial remaining engineering problem:
+1 MiB first-workload lexer stabilization takes roughly 21–24 seconds and heartbeat
+gaps reach multiple seconds in both stock and modern modes. Synchronous file-load
+time is only one part of readiness. No speed improvement is established. See
+`PERFORMANCE-BASELINE-38050824369.md` for measured medians, tails and limitations.
+
+On macOS, untouched stock Stop changed to Kill but the sleeping fixture did not
+finish within the strict 20-second completion bound. Remaining preservation cases
+were skipped. Six 100k performance trials completed; all six 1 MiB trials exceeded
+the unchanged 45-second initial lexer-readiness bound, so their warm timings are
+invalid. The cause of the Stop timeout is not established. The next source adds
+read-only state/stack diagnostics without relaxing the assertion, and one bounded
+pristine Linux profiling trial. The production presentation code remains unchanged.
+
 ## Remaining native gates
 
-- Verify the watcher/supervisor repairs, then collect valid paired benchmark
-  samples and run the eight preservation cases on macOS. No speed claim yet.
+- Diagnose macOS stock Stop completion and execute its other preservation cases.
+  Attribute large-file lexer delays and event-loop stalls before proposing safe
+  responsiveness changes. No speed improvement is claimed.
 - Debugger, Macro Stepper, teaching languages, accessibility, IME, Retina,
   complete stock parity and comprehensive visual layout review remain open.
 - Native menus/status/borders remain substantially stock. This is a first

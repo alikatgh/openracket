@@ -105,7 +105,8 @@ def run_trial(args, fixture, repetition):
     # PLTADDONDIR, active package set and OpenRacket mode remain caller-controlled.
     env['OPENRACKET_BENCH_CONFIG'] = json.dumps({
         'fixture': fixture['path'], 'output': str(output), 'mode': args.mode,
-        'edit_position': fixture['edit_position'], 'characters': fixture['characters']})
+        'edit_position': fixture['edit_position'], 'characters': fixture['characters'],
+        'profile': getattr(args, 'profile', False)})
     command = [args.racket, str(ROOT / 'retained-host.rkt')]
     system = platform.system()
     resource_file = directory / 'native-resource.txt'
@@ -154,13 +155,19 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--repetitions', type=int, default=3)
     parser.add_argument('--timeout', type=float, default=60)
+    parser.add_argument('--fixture', choices=['all', 'mixed-100k', 'mixed-1mib'], default='all')
+    parser.add_argument('--profile', action='store_true', help='Separate attribution-only trial; adds sampling/logging overhead')
     args = parser.parse_args()
     if not (1 <= args.repetitions <= 10 and 1 <= args.timeout <= 300):
         parser.error('repetitions must be1..10; timeout must be1..300 seconds')
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     fixtures = write_fixtures(args.output / 'fixtures')
-    metadata = {'schema_version': 1, 'mode': args.mode, 'platform': platform.platform(),
+    if args.fixture != 'all':
+        fixtures = [fixture for fixture in fixtures if fixture['name'] == args.fixture]
+    metadata = {'schema_version': 1, 'mode': args.mode,
+                'measurement_kind': 'instrumented_attribution_only' if args.profile else 'ordinary_timing',
+                'platform': platform.platform(),
                 'machine': platform.machine(), 'logical_cpus': os.cpu_count(),
                 'runner_os': os.getenv('RUNNER_OS'), 'runner_arch': os.getenv('RUNNER_ARCH'),
                 'github_sha': os.getenv('GITHUB_SHA'), 'repetitions': args.repetitions,

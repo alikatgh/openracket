@@ -19,7 +19,7 @@ STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
 PHASE_ROW_START = len(ROWS)
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
-assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'followon', 'performance'), 'Explicit phase required'
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'followon', 'performance', 'profile'), 'Explicit phase required'
 START = time.monotonic()
 
 
@@ -239,15 +239,27 @@ try:
             native_host(mode)
         command('Verify pristine source unchanged after overlay tests', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'followon':
-        for mode in ('pristine-stock', 'modern-dark'):
-            for case in ('stop', 'input-eof', 'wxme', 'check-syntax'):
-                if not native_host(mode, case):
-                    raise RuntimeError(f'{mode} {case} failed; subsequent preservation/performance checks not run')
+        cases = ('stop', 'input-eof', 'wxme', 'check-syntax')
+        baselines = {case: native_host('pristine-stock', case) for case in cases}
+        for case in cases:
+            if baselines[case]:
+                native_host('modern-dark', case)
+            else:
+                record('modern-dark-'+case+' comparative preservation', False,
+                       'Not run: corresponding pristine-stock case failed; no overlay attribution')
         command('Verify pristine source unchanged after preservation workflows', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'performance':
         performance('pristine-stock')
         performance('modern-dark')
         command('Verify pristine source unchanged after measurements', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'profile':
+        command('Pristine stock attribution diagnostic (instrumented, not acceptance timing)',
+                [sys.executable, 'performance/run.py', '--mode', 'pristine-stock',
+                 '--racket', os.environ['OPENRACKET_CI_STOCK_RACKET'],
+                 '--output', str(ROOT/'reports/stock-attribution'), '--fixture', 'mixed-1mib',
+                 '--repetitions', '1', '--timeout', '90', '--profile'],
+                environment('pristine-stock', 'attribution'), 120)
+        command('Verify pristine source unchanged after attribution', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
 except Exception as error:
     record(PHASE + ' validation orchestration', False, str(error))
     raise

@@ -49,19 +49,38 @@
   ;; No preference, instrumentation, language limits or tool discovery are changed.
   (case which
     [(stop)
-     (load! "#lang racket/base\n(displayln \"WAITING_TO_BREAK\")\n(flush-output)\n(sleep 120)\n(displayln \"UNREACHABLE\")\n")
+     (load! (string-append "#lang racket/base\n"
+                          "(printf \"BREAKS_ENABLED=~s\\n\" (break-enabled))\n"
+                          "(displayln \"WAITING_TO_BREAK\")\n(flush-output)\n"
+                          "(sleep 120)\n(displayln \"UNREACHABLE\")\n"))
      (start!)
      ;; Stock Run can remain enabled to restart a running program. Evaluation
      ;; liveness is the tab's independently maintained state, not widget enablement.
-     (define (stop-state stage)
+     (define (stop-state stage [include-context? #f])
        (define-values (thread custodian) (send tab get-breakables))
+       (define (inspect thunk)
+         (with-handlers ([exn:fail? (lambda (e) (exn-message e))]) (thunk)))
+       (define (excerpt text [limit 1600])
+         (substring text 0 (min limit (string-length text))))
        (display "OPENRACKET_STOP_STATE ")
        (write-json (hash 'stage stage 'running (send tab is-running?)
                          'run_enabled (send run is-enabled?)
                          'stop_enabled (send stop is-enabled?)
                          'break_thread_live (and (thread? thread) (not (thread-dead? thread)))
+                         'break_thread_running (and (thread? thread) (thread-running? thread))
                          'break_custodian_present (custodian? custodian)
-                         'stop_label (send stop get-label)))
+                         'break_target_is_evaluator (eq? thread (send ints get-user-thread))
+                         'in_evaluation (send ints get-in-evaluation?)
+                         'stop_label (send stop get-label)
+                         'interactions_excerpt (excerpt (send ints get-text))
+                         'break_thread_context
+                         (if (and include-context? (thread? thread))
+                             (inspect
+                              (lambda ()
+                                (define context
+                                  (continuation-mark-set->context (continuation-marks thread)))
+                                (excerpt (format "~s" (take context (min 12 (length context)))))))
+                             'null)))
        (newline) (flush-output))
      (await! "running blocking program with live break target"
              (lambda ()
@@ -76,8 +95,9 @@
      ;; Its real callback synchronously exposes that transition through this label.
      (check-equal? (send stop get-label) (string-constant break-button-kill-label))
      (stop-state "after-stop-before-event-loop")
-     (await! "interrupted evaluation completes and Run is available"
-             (lambda () (and (not (send tab is-running?)) (send run is-enabled?))))
+     (with-handlers ([exn:fail? (lambda (e) (stop-state "interrupt-timeout" #t) (raise e))])
+       (await! "interrupted evaluation completes and Run is available"
+               (lambda () (and (not (send tab is-running?)) (send run is-enabled?)))))
      (stop-state "after-interrupt-cleanup")
      (check-false (output-has? "UNREACHABLE"))
      (check-eq? (send frame get-definitions-text) defs)]

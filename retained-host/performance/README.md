@@ -112,3 +112,32 @@ still kills surviving descendants, and fails on a genuine permission/cleanup err
 Headless regressions include a different-custodian monitor and a descendant that
 ignores SIGTERM. Run `raco test performance/lifecycle-test.rkt` in addition to the
 Python tests. These repairs still require the next native benchmark run.
+
+
+## Separate attribution probe
+
+    python3 performance/run.py --mode pristine-stock --racket /path/to/stock/racket --output reports/stock-attribution --fixture mixed-1mib --repetitions 1 --timeout 90 --profile
+
+This is exactly one process and one1MiB fixture. It enables the existing Racket
+statistical sampler on the actual GUI eventspace handler at10ms nominal intervals,
+stock framework/colorer and online-expansion loggers, GC log messages, and bounded
+handler-stack observations when the heartbeat is over100ms old. It changes no tool,
+lexer, evaluator, memory-limit or custodian setting. Captures are capped at20,000 log
+records,100 stalled-stack observations and64,000 profile-text characters; dropped
+records and truncated text are explicit. It uses the official full distribution's
+profile-lib; the local minimal installation cannot execute that optional probe.
+See the official Racket [statistical profiler documentation](https://docs.racket-lang.org/profile/index.html).
+
+The report's measurement_kind is instrumented_attribution_only. Sampling and
+logging add overhead, and their timings must not be used as another ordinary
+stock/overlay comparison. A collector may itself be delayed by GC or a native
+call; absence of a sampled stack is not proof of responsiveness. Logs are from the
+main place's logger hierarchy, not a claim to observe every separate worker place.
+The one-process wrapper has the normal complete/timeout/failure semantics and
+prints the normal TRIAL/SUMMARY JSON markers, with a separate diagnostics object.
+
+The instrumentation metadata reader now uses the documented simple-settings vector
+and its sixth annotations field. Racket9.3's individual public annotation accessor
+has a result contract that rejects the valid lang-default value; this read-only
+workaround preserves that value and the complete serialized language settings.
+No original paired baseline file is replaced by later diagnostic results.
