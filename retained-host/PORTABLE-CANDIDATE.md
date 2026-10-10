@@ -2,7 +2,9 @@
 
 This candidate combines the tested retained DrRacket 9.3 appearance with the exact
 measured autosave guard. It is being prepared for a fresh native setup/launcher
-acceptance run. That installation route has not yet passed its native gate.
+acceptance run. The first actual setup failed on wider-scope package detection;
+its narrow repair is described in [the run report](reports/PORTABLE-INSTALLATION-38063379422.md).
+That installation route has not yet passed its native gate.
 
 ## What remains stock
 
@@ -87,7 +89,7 @@ changing installed source. Rerun setup to prepare the modern source again.
   refusal, root/intermediate links, outside-profile targets and tampered inputs.
 - Eleven generated stock-save model groups and five exact-source checks pass.
 - The original toolbar provenance and transaction tests are retained. The
-  combined local run passed 214 Racket tests and 29 Python checks. Native observer
+  combined local run passed 214 Racket tests and 34 Python checks. Native observer
   expansion and real installation are still pending.
 
 The Mac native gate must run the real setup and launcher, observe the genuine

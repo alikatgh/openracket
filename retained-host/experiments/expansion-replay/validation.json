@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "python_tests": {
+    "passed": 46,
+    "failed": 0
+  },
+  "racket_support_test_assertions": 37,
+  "racket_support_tests": "passed",
+  "racket_compilation": "passed",
+  "python_compilation": "passed",
+  "source_reader_and_disabled_boundaries": "passed",
+  "real_place_protocol_tests": "test-double expansion worker only",
+  "native_capture_or_stock_replay_executed": false,
+  "performance_measurements": null,
+  "log": "final-tests.log",
+  "portable_ci_python_tests": {
+    "passed": 39,
+    "failed": 0,
+    "source_input": "pinned official source directory, no cached ZIP access",
+    "explicit_profile_override": true,
+    "log": "portable-tests.log"
+  },
+  "previous_freeze_sha256": "2d5482e02df345aa32ff7e63b5e22ef0100da167c1773e930ae4b7bbfd85f23a",
+  "superseded_unpublished_intermediate_freeze_sha256": [
+    "eb7e998de3cc33a1d116fc11f5891937fbf6a753e15fe3bd425321e76c4ce1d2",
+    "f49b43fb580210b218a3cad725530578fa426b4c7c230b2dd84b5eb57aa511f6"
+  ],
+  "lifetime_boundary_tests": "passed: replacement response boundary, post-teardown reference sink, second request timeout/death without any response preserves preceding terminal/capabilities",
+  "counter_scope_labels": "verified: process CPU covers all places; managed/GC counters identified as observations, never summed as per-place ownership",
+  "original_implementation_freeze_sha256": "198de83d18f118a8c99a0ed8c270d31d0ee84a83759e715a85c6e31c9db2f203"
+}

@@ -8,8 +8,20 @@ if [ "${1:-}" != --install ]; then
   exit 2
 fi
 mkdir -p "$ADDON" "$XDG_CACHE_HOME"
-run_raco pkg install --auto --batch --no-setup --skip-installed --scope user \
-  --catalog https://download.racket-lang.org/releases/9.3/catalog/ drracket htdp-lib
+# --skip-installed only covers the requested scope. A full distribution already
+# supplies these packages in installation scope; do not request a duplicate user
+# install. pkg-directory searches all accessible scopes using read-only locks.
+for stock_package in drracket htdp-lib; do
+  availability=$(run_racket -e '(require pkg/lib)(define p (pkg-directory (vector-ref (current-command-line-arguments) 0)))(cond [p (unless (directory-exists? p) (error "Installed package directory is missing" p)) (display "available")] [else (display "missing")])' -- "$stock_package")
+  case "$availability" in
+    available) printf 'Using accessible stock package: %s\n' "$stock_package" ;;
+    missing)
+      run_raco pkg install --auto --batch --no-setup --skip-installed --scope user \
+        --catalog https://download.racket-lang.org/releases/9.3/catalog/ "$stock_package"
+      ;;
+    *) echo "Unexpected package-availability result: $stock_package" >&2; exit 3 ;;
+  esac
+done
 # A full Racket distribution may provide gui-lib outside the isolated profile.
 # In that case copy the complete installed package, never modify the distribution.
 gui=$(run_racket -e '(require pkg/lib)(display (or (pkg-directory "openracket-gui-lib") (pkg-directory "gui-lib") ""))')

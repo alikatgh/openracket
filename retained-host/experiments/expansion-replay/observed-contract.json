@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "source_contract_verified_native_run_pending",
+  "native_or_expansion_execution": false,
+  "performance_measurements": null,
+  "archives": {
+    "drracket-core-lib": {
+      "url": "https://download.racket-lang.org/releases/9.3/pkgs/drracket-core-lib.zip",
+      "sha1": "d55515fcc1d1da846555ea0b5c1b593c4af619ef",
+      "verified": true
+    },
+    "drracket-plugin-lib": {
+      "url": "https://download.racket-lang.org/releases/9.3/pkgs/drracket-plugin-lib.zip",
+      "sha1": "536a7093639c0eabc33bfb77be13a9b2a0d2ad0f",
+      "verified": true
+    }
+  },
+  "source_checks": {
+    "worker_exported_start": true,
+    "registry_public_export_absent": true,
+    "registry_internal_signature_present": true,
+    "stock_online_annotations_none": true,
+    "child_limit_default_128_mib": true,
+    "readiness_copy_removes_back_to_exact_stock": true,
+    "request_has_six_exact_fields": true,
+    "snapshot_keeps_string_or_wxme": true
+  },
+  "worker_sha256": "f6daeb1c8ca26d6f5a3c4c6920cc484f43d5bcd4116aa8d592334f037005a383",
+  "module_language_sha256": "e76f13b6700df1ce1096f978353c938ef7816672efe9532483ffd38b710ffd53",
+  "fixture": {
+    "bytes": 1048576,
+    "characters": 1048576,
+    "sha256": "766af354720de3e235cd60d9eb511f0469c35b36a99b599a071453d22a1b499e",
+    "edit_position": 524139,
+    "source_identity": "Must be captured from actual request; not substituted with this local path"
+  },
+  "native_gates_pending": [
+    "Run capture.py on an authorized native CI clone to obtain the real edited snapshot/registry.",
+    "Use the guarded initialization-instrumented worker copy; never claim byte-identical stock.",
+    "Run supervise.py in the captured environment and inspect actual outcomes, parity and cleanup."
+  ],
+  "scope": "Isolated expansion workload and support threads; not causal allocator attribution of concurrent GUI run"
+}

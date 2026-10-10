@@ -150,7 +150,7 @@ try:
         clone_env=os.environ.copy()
         command('Deep-copy independent official portable runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','portable'],clone_env,timeout=180)
         tree_check('baseline',STOCK);tree_check('baseline',RUNTIME)
-        for name in ('portable-profile-test.py','portable-source-test.py','autosave-source-test.py'):
+        for name in ('portable-profile-test.py','portable-source-test.py','portable-dependency-test.py','autosave-source-test.py'):
             command(name,[sys.executable,PROOF/'tests'/name])
         command('Portable installer observer and combined save contract tests',[STOCK/'bin/raco','test',PROOF/'tests/portable-autosave-installer-test.rkt',PROOF/'tests/independent-autosave-model-test.rkt',PROOF/'tests/portable-observer-contract-test.rkt',PROOF/'tests/portable-save-caller-contract-test.rkt'])
     elif PHASE=='install':
