@@ -35,7 +35,9 @@
     (error 'native-appearance-test "Native capability unavailable: ~a" unavailable))
   (define c (make-native-appearance-controller adapter #:enabled? #t))
   (define original (on-gui (lambda () (native-appearance-inspect c))))
-  (define dark? (gui-dynamic-require 'white-on-black-panel-scheme?))
+  ;; Official 9.3 exposes this predicate through mrlib/panel-wob, not gui/base.
+  ;; Keep the require inside the runner so import/compilation remains GUI-free.
+  (define dark? (dynamic-require 'mrlib/panel-wob 'white-on-black-panel-scheme?))
   (define get-fg (gui-dynamic-require 'get-label-foreground-color))
   (define get-bg (gui-dynamic-require 'get-label-background-color))
   (define get-selection-fg (gui-dynamic-require 'get-highlight-text-color))

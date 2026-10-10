@@ -47,6 +47,13 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
    registries. Compare complete pending-next-Run language settings and fixture
    reader defaults through documented APIs. This is not a measurement of live
    evaluator instrumentation. Failures remain explicit and fail the job.
+9. Independently of the appearance gate, run four fresh pristine-stock break
+   controls after a successful stock core gate. Each has a 35-second outer
+   process bound and the original 20-second break-completion requirement.
+   These isolate ordinary threads, GUI import, eventspace handlers and nested
+   versus returning callbacks. They never inject a break into DrRacket, replace
+   its original strict Stop case, or change its evaluator. See
+   `STOCK-BREAK-CONTROL.md` for exact interpretation limits.
 
 This appearance follow-up retains the previous ordinary paired performance
 baseline and single instrumented Linux attribution trial without repeating

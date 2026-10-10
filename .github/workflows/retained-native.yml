@@ -95,6 +95,10 @@ jobs:
         if: ${{ !cancelled() && steps.core_modern.outcome == 'success' }}
         timeout-minutes: 2
         run: bash retained-host/scripts/ci/run-phase.sh metadata
+      - name: Diagnose pristine stock break delivery independently
+        if: ${{ !cancelled() && steps.core_stock.outcome == 'success' }}
+        timeout-minutes: 3
+        run: bash retained-host/scripts/ci/run-phase.sh stock-break-control
       - name: Report actual test results
         if: always()
         run: |

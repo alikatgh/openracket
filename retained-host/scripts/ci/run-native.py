@@ -19,7 +19,7 @@ STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
 PHASE_ROW_START = len(ROWS)
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
-assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'native-appearance', 'followon', 'metadata', 'performance', 'profile'), 'Explicit phase required'
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'native-appearance', 'followon', 'stock-break-control', 'metadata', 'performance', 'profile'), 'Explicit phase required'
 START = time.monotonic()
 
 
@@ -287,6 +287,12 @@ try:
         record('Paired pending Run language settings equality', equal,
                'Documented selected configuration and fixture reader default only; live evaluator instrumentation is not measured')
         command('Verify pristine source unchanged after metadata', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'stock-break-control':
+        for case in ('plain-racket', 'gui-worker-nested', 'gui-eventspace-nested', 'gui-eventspace-returning'):
+            env = environment('pristine-stock', 'break-control-'+case)
+            command('Independent stock break-delivery control '+case,
+                    [env['RACKET'], 'scripts/ci/stock-break-delivery-control.rkt', case], env, 35)
+        command('Verify pristine source unchanged after break controls', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'profile':
         command('Pristine stock attribution diagnostic (instrumented, not acceptance timing)',
                 [sys.executable, 'performance/run.py', '--mode', 'pristine-stock',

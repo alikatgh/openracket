@@ -2,7 +2,7 @@
 ;; Native-only polish acceptance. Run through the genuine-host harness in an
 ;; isolated Cocoa process with OPENRACKET_NATIVE_APPEARANCE=1. No desktop settings
 ;; changes, private production reflection, or synthetic replacement editor.
-(require racket/class racket/gui/base racket/list racket/string
+(require racket/class racket/gui/base racket/list racket/string mrlib/panel-wob
          rackunit string-constants
          "../tool/native-appearance.rkt" "../tool/native-appearance-platform.rkt")
 (provide capture-native-appearance-baseline run-native-appearance-workflows!)
@@ -106,7 +106,7 @@
     (define open-frame (dynamic-require 'drracket/tool-lib 'drracket:unit:open-drscheme-window))
     (define painter-mode (dynamic-require 'mrlib/private/openracket-paint 'get-modern-host-theme))
     (define blended? (dynamic-require 'mrlib/private/openracket-paint 'get-modern-chrome-blended?))
-    (define native-dark? (dynamic-require 'racket/gui/base 'white-on-black-panel-scheme?))
+    (define native-dark? white-on-black-panel-scheme?)
     (define defs (send frame get-definitions-text))
     (define source (send defs get-text))
     (define original-toolbar (send (send frame get-button-panel) get-children))
