@@ -1,0 +1,101 @@
+name: Preserved Rust preview checks (public free runners)
+
+'on':
+  push:
+    branches: ['ci/rust-preview-checks']
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'runtime/**'
+      - 'runtime-tests/**'
+      - 'qa/**'
+      - 'assets/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - 'scripts/ci/**'
+      - '.github/workflows/rust-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openracket-rust-preview
+  cancel-in-progress: false
+
+jobs:
+  rust-preview:
+    # These conditions are evaluated before allocating a runner.
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/ci/rust-preview-checks'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }} # Standard free public runners only. No larger runners.
+    timeout-minutes: 45
+    env:
+      RUSTUP_TOOLCHAIN: '1.94.0'
+      CARGO_BUILD_JOBS: '3'
+      CARGO_INCREMENTAL: '0'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recheck repository is public
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # official v9.0.0
+        with:
+          debug: false
+          retries: 0
+          script: |
+            // The official client uses this job's existing read-only token.
+            // No custom credentials, additional scopes, persistence or token logs.
+            try {
+              const { data: repo } = await github.rest.repos.get({owner: 'alikatgh', repo: 'openracket'});
+              core.info(JSON.stringify({full_name: repo.full_name, private: repo.private, visibility: repo.visibility}));
+              if (repo.full_name !== 'alikatgh/openracket' || repo.private !== false || repo.visibility !== 'public') {
+                core.setFailed('Public repository required; Rust preview validation was not started.');
+              }
+            } catch (error) {
+              const headers = error.response?.headers || {};
+              core.info(JSON.stringify({status: error.status, message: error.response?.data?.message,
+                rate_limit_remaining: headers['x-ratelimit-remaining'], rate_limit_reset: headers['x-ratelimit-reset']}));
+              core.setFailed('Public repository metadata check failed; Rust preview validation was not started.');
+            }
+      - name: Check out exact tested commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # official v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Install Linux compilation dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends pkg-config libx11-dev libxkbcommon-dev libwayland-dev
+      - name: Install pinned official Rust toolchain
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy --no-self-update
+          rustc --version
+          cargo --version
+      - name: Install checksum-pinned official Racket 9.3 CS
+        run: bash scripts/ci/install-racket.sh
+      - name: Validate preserved Rust core and real runtime
+        timeout-minutes: 35
+        run: bash scripts/ci/check-rust-preview.sh
+      - name: Report actual results
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/openracket-rust-summary.md"; then
+            cat "$RUNNER_TEMP/openracket-rust-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Setup failed before checks; no Rust validation is claimed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'This validates the preserved Iced preview, not the retained DrRacket architecture or full DrRacket parity. Windowing, dialogs, clipboard and signing remain untested.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No Actions artifacts, caches, releases, deployments, packages, paid runners, credits or AI services are used.' >> "$GITHUB_STEP_SUMMARY"
