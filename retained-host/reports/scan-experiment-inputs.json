@@ -1,0 +1,13 @@
+{
+  "parent_native_commit": "fb9161426b16e4f28b04af772ab7d55c457b2d43",
+  "scan_manifest_sha256": "d9973600967c5a9068d4ae4e0b708764abe38e0131b20513dd8bca50b7e47728",
+  "shared_performance_files": {
+    "retained-host.rkt": "b803200cf79fbbacbbdfa16879c9b577ca61d79728a66cf1a0a745d560e58a4f",
+    "run.py": "a455819c4c55f25cf2f8cda64df192ea205d768ff659edac71b5b71ca56b67bb",
+    "activation.rkt": "c73dbb0aa51169ad73f074181443c2e7a4e1c9580aaeebb9efbf382d892a4e48",
+    "activation-test.rkt": "92bde2db4fff28b63cc652e4bc21ff35070157095661c058a948f92adc7bba4c",
+    "README.md": "da285c3bf46a73a5c3714d75bcf8c60824e35643ac48f06c5581c40d134c8ab5"
+  },
+  "scope": "Scan-only native correctness, then six matched fresh-process workload trials per OS; no appearance or color-budget experiment.",
+  "superseded_unpublished_scan_manifest": "8a76026b0bba3d9e3b8fb6f2ae18d735cd857df515d3494ead5255ac2e57462c"
+}

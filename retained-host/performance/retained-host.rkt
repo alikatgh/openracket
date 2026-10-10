@@ -4,6 +4,7 @@
 
 (define-runtime-path diagnostics-path "diagnostics.rkt")
 (define-runtime-path settings-path "settings.rkt")
+(define-runtime-path activation-path "activation.rkt")
 (define started (current-inexact-monotonic-milliseconds))
 (define (now) (current-inexact-monotonic-milliseconds))
 (unless (zero? (vector-length (current-command-line-arguments)))
@@ -102,6 +103,8 @@
       [else (pause .020) (loop (if valid? (add1 valid-count) 0))])))
 (define (memory-snapshot)
   (hasheq 'racket_managed_bytes (current-memory-use)
+          'racket_cumulative_allocated_bytes (current-memory-use 'cumulative)
+          'racket_peak_allocated_bytes (current-memory-use 'peak)
           'process_cpu_ms (current-process-milliseconds)
           'gc_ms (current-gc-milliseconds)))
 
@@ -174,7 +177,9 @@
                      (with-handlers ([exn:fail? (lambda (e) "UNAVAILABLE")])
                        (~s (prefs-get key))))))
   (record! 'ui_environment
-           (for/hasheq ([key '("OPENRACKET_UI" "OPENRACKET_HOST_THEME" "OPENRACKET_THEME")])
+           (for/hasheq ([key '("OPENRACKET_UI" "OPENRACKET_HOST_THEME" "OPENRACKET_THEME"
+                            "OPENRACKET_ALL_STRING_FAST_PATH"
+                            "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS")])
              (values (string->symbol key) (or (getenv key) "unset"))))
   (define editor (send frame get-definitions-text))
   (define canvas (send frame get-definitions-canvas))
@@ -210,8 +215,12 @@
           ((dynamic-require diagnostics-path 'start-diagnostics)
            (current-thread) (lambda () phase) (lambda () last-heartbeat-time)
            #:logger diagnostic-root-logger)))
+  (record! 'scan_activation
+           ((dynamic-require activation-path 'verify-scan-activation)
+            (hash-ref config 'scan_activation "none")))
   (record! 'memory_before_open (memory-snapshot))
   (set! phase "first_open")
+  (define initial-open-start (now))
   (record! 'first_open (timed-command (lambda () (send frame change-to-file fixture))))
   (unless (= (send editor last-position) expected-size)
     (error 'first-open "loaded character count differs: ~a vs ~a"
@@ -252,18 +261,24 @@
     (error 'first-edit "synthetic editor key event did not insert exactly one character"))
   (set! phase "initial_lexer_settle")
   (define initial-settle (await-lexer! editor))
+  (define initial-open-to-lexer-ms (- (now) initial-open-start))
   (record! 'initial_lexer_settle initial-settle)
+  (record! 'initial_open_to_lexer_observation_ms initial-open-to-lexer-ms)
   (unless (hash-ref initial-settle 'complete)
     (error 'initial-lexer-settle "lexer did not become valid within45s; warm timings invalid"))
   (record! 'memory_after_initial_settle (memory-snapshot))
   (set! phase "warm_typing")
+  (define warm-input-start (now))
   (define warm-samples
     (for/list ([i (in-range 80)])
       (define sample
         (timed-command (lambda () (send editor on-char (new key-event% [key-code #\a])))))
       (pause .016)
       sample))
+  (define warm-input-elapsed (- (now) warm-input-start))
   (record! 'warm_editor_key_samples warm-samples)
+  (record! 'warm_input_phase_ms warm-input-elapsed)
+  (record! 'memory_after_warm_input (memory-snapshot))
   (unless (= (send editor last-position) (+ expected-size 81))
     (error 'warm-typing "synthetic editor key count mismatch"))
   (unless (string=? (send editor get-text edit-pos (+ edit-pos 81))

@@ -29,7 +29,9 @@ def summarize(report):
     out = {key: report[key] for key in (
         'mode', 'status', 'error', 'fresh_process_gui_startup_ms', 'first_open',
         'first_jump', 'first_edit', 'initial_lexer_settle', 'final_lexer_settle',
-        'preserved_settings', 'selected_language_settings', 'loaded_characters', 'memory_before_open',
+        'preserved_settings', 'selected_language_settings', 'scan_activation', 'loaded_characters', 'memory_before_open',
+        'initial_open_to_lexer_observation_ms', 'warm_input_phase_ms',
+        'memory_after_initial_settle', 'memory_after_warm_input',
         'memory_after_workload', 'memory_after_explicit_gc') if key in report}
     for key in ('warm_editor_key_samples', 'warm_jump_samples'):
         out[key] = {metric: quantiles([row[metric] for row in report.get(key, [])])
@@ -107,7 +109,8 @@ def run_trial(args, fixture, repetition):
         'fixture': fixture['path'], 'output': str(output), 'mode': args.mode,
         'edit_position': fixture['edit_position'], 'characters': fixture['characters'],
         'profile': getattr(args, 'profile', False),
-        'metadata_only': getattr(args, 'metadata_only', False)})
+        'metadata_only': getattr(args, 'metadata_only', False),
+        'scan_activation': getattr(args, 'scan_activation', 'none')})
     command = [args.racket, str(ROOT / 'retained-host.rkt')]
     system = platform.system()
     resource_file = directory / 'native-resource.txt'
@@ -159,6 +162,8 @@ def main():
     parser.add_argument('--fixture', choices=['all', 'mixed-100k', 'mixed-1mib'], default='all')
     parser.add_argument('--profile', action='store_true', help='Separate attribution-only trial; adds sampling/logging overhead')
     parser.add_argument('--metadata-only', action='store_true', help='Open fixture and read settings; no latency workload')
+    parser.add_argument('--scan-activation', choices=['none', 'stock', 'candidate'], default='none',
+                        help='Read-only assertion of scan helper absence/selection; never enables it')
     args = parser.parse_args()
     if args.metadata_only and args.profile:
         parser.error('--metadata-only and --profile are mutually exclusive')

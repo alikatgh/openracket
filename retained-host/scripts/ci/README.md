@@ -1,3 +1,20 @@
+# Current speed-focused batch
+
+The active guarded workflow now tests only the private snip-scan experiment, then
+three interleaved stock/candidate 1 MiB workload pairs if native correctness passes.
+Pair two reverses the order. Source hashes, per-process activation, equal selected
+settings, and completed initial/final lexer work are required. Appearance and
+color-budget variables are unset in both arms. The common harness records event
+loop stalls, managed/native memory, cumulative/peak allocation and GC time.
+This is lexer/editor workload evidence, not full background-tool completion or
+input-to-photon latency. No earlier timing baseline is substituted for this pair.
+
+The previous complete acceptance workflow is preserved as
+`retained-native-validation.yml` beside these scripts, with its runner and tests
+unchanged. It is not a second active Actions workflow. Its appearance, Stop and
+packaging gates still matter for eventual release acceptance. The speed batch
+does not silently make an unresolved historical result pass.
+
 # Native validation on free standard public runners
 
 The repository's `retained-native.yml` workflow runs only on pushes that change

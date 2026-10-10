@@ -1,0 +1,25 @@
+{
+  "racket": "9.3",
+  "sources": {
+    "framework/private/text-misc.rkt": {
+      "package": "gui-lib",
+      "package_catalog_sha1": "31187c9593c5eaabcb1850c0120408d7d9734496",
+      "upstream_sha256": "7f95100d31c510ae1b29ddf01c6801d34ba709880b0dfc953ccd895a5bb06638",
+      "modified": false
+    },
+    "drracket/private/unit.rkt": {
+      "package": "drracket-core-lib",
+      "package_catalog_sha1": "d55515fcc1d1da846555ea0b5c1b593c4af619ef",
+      "upstream_sha256": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5",
+      "patched_sha256": "5f47fc99f2b97c6e37733df197f6f1113463c67f04866016a5fbe98819a0ed16"
+    }
+  },
+  "helper_module": "drracket/private/openracket-all-string-snips.rkt",
+  "helper_sha256": "674c25bc4ed09ca0a8159162a944adb9fa985ec29407cfa4c2f83386c3a31c0b",
+  "opt_in_environment": "OPENRACKET_ALL_STRING_FAST_PATH=1",
+  "scope": "one private stock DrRacket definitions composition; generic Framework mixin is unchanged",
+  "default_off": "uses exact stock text:all-string-snips-mixin object",
+  "eligibility": "exact native string-snip% only; rich/unknown history and subclasses permanently delegate",
+  "native_run": false,
+  "speedup_proven": false
+}

@@ -174,3 +174,44 @@ unchanged; their attribution first-open heartbeat ages included startup, and lat
 `initial_lexer_settle` profile samples included metadata import work.
 
 Headless metadata checks: `racket performance/settings-test.rkt`.
+
+## Matched isolated scan experiment
+
+The next ordinary pair adds the same read-only observability to both arms:
+`current-memory-use 'cumulative` and `'peak` in every memory snapshot,
+`initial_open_to_lexer_observation_ms`, `warm_input_phase_ms`, and an after-warm
+memory snapshot. Interval timestamps are captured before persisting their JSON.
+Allocation counters cover the whole runtime, including benchmark reporting;
+they do not identify an allocating component. The 80-event warm interval includes
+the unchanged 16 ms pacing. Initial open-to-ready includes the same jump/edit and
+three-observation lexer-valid gate, so do not label it pure file-open throughput.
+
+Run the same frozen harness against pristine full 9.3 and a separate deep copy
+with only the private stock-definitions scan candidate. The control has
+`OPENRACKET_ALL_STRING_FAST_PATH` unset; the candidate has it set to `1`.
+`OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS` must be unset in both arms. Appearance,
+tools, preferences, default memory limit and package set remain identical.
+
+```
+python3 performance/run.py --mode pristine-stock --racket "$STOCK_RACKET" \
+  --output reports/scan-perf-stock --fixture mixed-1mib --repetitions 3 --timeout 60 \
+  --scan-activation stock
+OPENRACKET_ALL_STRING_FAST_PATH=1 \
+  python3 performance/run.py --mode scan-candidate --racket "$SCAN_RACKET" \
+  --output reports/scan-perf-candidate --fixture mixed-1mib --repetitions 3 --timeout 60 \
+  --scan-activation candidate
+```
+
+Run core/native scan and shared lexer-equivalence gates first. Verify source
+hashes, candidate activation, and exact language/settings metadata. If either
+arm fails initial or final lexer readiness, do not claim a completed-workload
+speedup. Inspect all raw command/fence tails and heartbeat gaps, initial/final
+readiness, full warm-phase time, GC CPU deltas, allocation deltas, managed memory
+and native peak RSS. This is a new matched pair; do not substitute historical
+baseline timings obtained before metadata capture moved outside warm work.
+
+`--scan-activation` is a read-only pre-workload assertion, not an activation
+switch. Stock requires the flag unset and the private helper module absent.
+Candidate requires flag `1` and the installed helper's exported selected flag
+exactly true. A missing dependency is an error, not helper absence. The assertion
+is recorded per process; six headless activation checks cover these branches.

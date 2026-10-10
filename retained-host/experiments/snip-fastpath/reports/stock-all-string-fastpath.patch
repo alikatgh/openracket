@@ -1,0 +1,19 @@
+--- stock9.3/drracket/private/unit.rkt
++++ candidate/drracket/private/unit.rkt
+@@ -24,6 +24,7 @@
+          drracket/private/drsig
+          drracket/private/standalone-module-browser
+          "insulated-read-language.rkt"
++         "openracket-all-string-snips.rkt"
+          "insert-large-letters.rkt"
+          "get-defs.rkt"
+          "local-member-names.rkt"
+@@ -566,7 +567,7 @@
+                       (text:normalize-paste-mixin
+                        (text:column-guide-mixin
+                         (text:inline-overview-mixin
+-                         (text:all-string-snips-mixin
++                         (openracket:all-string-snips-mixin
+                           (text:ascii-art-enlarge-boxes-mixin
+                            (number-snip:remove-decimal-looking-number-snips-on-insertion-mixin
+                             text:info%))))))))))))))))])

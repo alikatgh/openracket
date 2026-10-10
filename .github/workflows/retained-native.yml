@@ -1,4 +1,4 @@
-name: Retained DrRacket native checks (public free runners)
+name: Retained DrRacket scan experiment (public free runners)
 
 'on':
   push:
@@ -68,47 +68,23 @@ jobs:
           sudo apt-get install -y --no-install-recommends xvfb xauth imagemagick libgtk-3-0t64 fonts-noto-cjk
       - name: Install checksum-pinned full official Racket 9.3
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare and headless integrity checks
-        timeout-minutes: 3
-        run: bash retained-host/scripts/ci/run-phase.sh prepare
-      - name: Verify pristine stock native host
-        id: core_stock
-        timeout-minutes: 3
-        run: bash retained-host/scripts/ci/run-phase.sh stock
-      - name: Compile disposable retained overlay and actual DrRacket
-        id: core_overlay
+      - name: Prepare isolated candidate and compile full native host
         timeout-minutes: 8
-        run: bash retained-host/scripts/ci/run-phase.sh overlay
-      - name: Verify retained fallback, light and dark native hosts
-        id: core_modern
-        timeout-minutes: 6
-        run: bash retained-host/scripts/ci/run-phase.sh modern
-      - name: Verify native Stop, input, WXME and Check Syntax preservation
-        if: ${{ !cancelled() && steps.core_modern.outcome == 'success' }}
-        timeout-minutes: 8
-        run: bash retained-host/scripts/ci/run-phase.sh followon
-      - name: Verify Cocoa app-local appearance and restoration
-        if: ${{ !cancelled() && runner.os == 'macOS' && steps.core_modern.outcome == 'success' }}
+        run: bash retained-host/scripts/ci/run-scan-phase.sh prepare
+      - name: Verify native editor and exact lexer equivalence
+        id: scan_correctness
         timeout-minutes: 4
-        run: bash retained-host/scripts/ci/run-phase.sh native-appearance
-      - name: Record paired pending Run settings metadata
-        if: ${{ !cancelled() && steps.core_modern.outcome == 'success' }}
-        timeout-minutes: 2
-        run: bash retained-host/scripts/ci/run-phase.sh metadata
-      - name: Diagnose pristine stock break delivery independently
-        if: ${{ !cancelled() && steps.core_stock.outcome == 'success' }}
-        timeout-minutes: 3
-        run: bash retained-host/scripts/ci/run-phase.sh stock-break-control
-      - name: Diagnose stock Stop with returning dispatch
-        if: ${{ !cancelled() && steps.core_stock.outcome == 'success' }}
-        timeout-minutes: 2
-        run: bash retained-host/scripts/ci/run-phase.sh stock-stop-returning
-      - name: Report actual test results
+        run: bash retained-host/scripts/ci/run-scan-phase.sh correctness
+      - name: Measure matched stock and candidate workloads
+        if: steps.scan_correctness.outcome == 'success'
+        timeout-minutes: 8
+        run: bash retained-host/scripts/ci/run-scan-phase.sh performance
+      - name: Report actual scan results
         if: always()
         run: |
-          if test -f retained-host/reports/ci-summary.md; then
-            cat retained-host/reports/ci-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/scan-ci/summary.md; then
+            cat retained-host/reports/scan-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Setup failed before native tests; no GUI validation is claimed.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Setup failed before scan validation; no speed or correctness claim.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'No Actions artifacts, caches, releases, packages, or other paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No Actions artifacts, caches, releases, packages or paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"
