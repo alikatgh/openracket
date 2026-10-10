@@ -1,0 +1,12 @@
+{
+  "editor-misc-v9.3.rkt": {
+    "original_module": "framework/private/editor-misc.rkt",
+    "sha256": "3becc626874477283cdd1b9f45631f11baed586aa37a3c95d67a4a0a2b677885",
+    "modified": false
+  },
+  "editor-mred-v9.3.rkt": {
+    "original_module": "mred/private/editor.rkt",
+    "sha256": "1eef92a431da2c2cf40d193237d4ab9879adae9518c71b39ba5af0dc6b32f75a",
+    "modified": false
+  }
+}

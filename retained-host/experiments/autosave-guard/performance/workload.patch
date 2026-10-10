@@ -1,0 +1,200 @@
+--- baseline/retained-host.rkt
++++ autosave/retained-host.rkt
+@@ -5,6 +5,7 @@
+ (define-runtime-path diagnostics-path "diagnostics.rkt")
+ (define-runtime-path settings-path "settings.rkt")
+ (define-runtime-path activation-path "activation.rkt")
++(define-runtime-path autosave-activation-path "autosave-activation.rkt")
+ (define started (current-inexact-monotonic-milliseconds))
+ (define (now) (current-inexact-monotonic-milliseconds))
+ (unless (zero? (vector-length (current-command-line-arguments)))
+@@ -33,7 +34,7 @@
+ (hash-set! report 'os (~a (system-type 'os)))
+ (hash-set! report 'vm (~a (system-type 'vm)))
+ (hash-set! report 'status "running")
+-(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "ordinary_timing"]))
++(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "settled_editor_autosave"]))
+ (define (persist!)
+   (call-with-output-file output #:exists 'truncate/replace
+     (lambda (port) (write-json report port) (newline port))))
+@@ -170,7 +171,9 @@
+     '(drracket:child-only-memory-limit
+       framework:coloring-active drracket:online-compilation-default-on
+       drracket:inline-overview-shown?
+-      framework:spell-check-on? framework:spell-check-strings? framework:spell-check-text?))
++      framework:spell-check-on? framework:spell-check-strings? framework:spell-check-text?
++      framework:autosaving-on? framework:autosave-delay
++      framework:backup-files? framework:verify-change-format))
+   (record! 'preserved_settings
+            (for/hasheq ([key (in-list settings-keys)])
+              (values key
+@@ -179,7 +182,8 @@
+   (record! 'ui_environment
+            (for/hasheq ([key '("OPENRACKET_UI" "OPENRACKET_HOST_THEME" "OPENRACKET_THEME"
+                             "OPENRACKET_ALL_STRING_FAST_PATH"
+-                            "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS")])
++                            "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS"
++                            "OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD")])
+              (values (string->symbol key) (or (getenv key) "unset"))))
+   (define editor (send frame get-definitions-text))
+   (define canvas (send frame get-definitions-canvas))
+@@ -218,6 +222,9 @@
+   (record! 'scan_activation
+            ((dynamic-require activation-path 'verify-scan-activation)
+             (hash-ref config 'scan_activation "none")))
++  (record! 'autosave_activation
++           ((dynamic-require autosave-activation-path 'verify-autosave-activation)
++            (hash-ref config 'autosave_activation "none")))
+   (record! 'memory_before_open (memory-snapshot))
+   (set! phase "first_open")
+   (define initial-open-start (now))
+@@ -267,34 +274,122 @@
+   (unless (hash-ref initial-settle 'complete)
+     (error 'initial-lexer-settle "lexer did not become valid within45s; warm timings invalid"))
+   (record! 'memory_after_initial_settle (memory-snapshot))
+-  (set! phase "warm_typing")
+-  (define warm-input-start (now))
+-  (define warm-samples
+-    (for/list ([i (in-range 80)])
+-      (define sample
+-        (timed-command (lambda () (send editor on-char (new key-event% [key-code #\a])))))
+-      (pause .016)
+-      sample))
+-  (define warm-input-elapsed (- (now) warm-input-start))
+-  (record! 'warm_editor_key_samples warm-samples)
+-  (record! 'warm_input_phase_ms warm-input-elapsed)
+-  (record! 'memory_after_warm_input (memory-snapshot))
+-  (unless (= (send editor last-position) (+ expected-size 81))
+-    (error 'warm-typing "synthetic editor key count mismatch"))
+-  (unless (string=? (send editor get-text edit-pos (+ edit-pos 81))
+-                   (string-append "x" (make-string 80 #\a)))
+-    (error 'warm-typing "synthetic input content mismatch"))
+-  (set! phase "warm_jump")
+-  (record! 'warm_jump_samples
+-           (for/list ([i (in-range 12)])
+-             (define pos (if (even? i) near-end 0))
+-             (define sample
+-               (timed-command (lambda () (send editor set-position pos)
+-                                          (send editor scroll-to-position pos))))
+-             (pause .016)
+-             sample))
++  ;; This separate workload starts with a real comment edit already made
++  ;; and the stock lexer valid. Background expansion completion is not claimed.
++  (set! phase "autosave_preparation")
++  (define original-file-bytes (file->bytes fixture))
++  (define original-filename (send editor get-filename))
++  (define original-format (send editor get-file-format))
++  (unless (send editor is-modified?)
++    (error 'autosave-preparation "the real comment edit did not mark the document dirty"))
++  (unless (send editor autosave?)
++    (error 'autosave-preparation "stock autosave is disabled"))
++  (record! 'autosave_preconditions
++           (hasheq 'lexer_valid (send editor is-lexer-valid?)
++                   'modified #t 'autosave_enabled #t
++                   'original_filename (~a original-filename)
++                   'original_format (~a original-format)
++                   'forced_dirty_precondition "set-modified #t after real edit and lexer settle; no intervening GUI yield"))
++  (define-values (fixture-directory fixture-name fixture-directory?) (split-path fixture))
++  (define existing-artifact-paths (directory-list fixture-directory #:build? #t))
++  (define toc-path
++    (build-path (find-system-path 'pref-dir)
++                (if (eq? (system-type) 'unix) ".plt-autosave-toc.rktd" "PLT-autosave-toc.rktd")))
++  (define (read-toc)
++    (if (file-exists? toc-path)
++        (parameterize ([read-accept-reader #f] [read-accept-lang #f])
++          (call-with-input-file toc-path read))
++        null))
++  (define prior-toc (read-toc))
++  (unless (list? prior-toc) (error 'autosave-preparation "unexpected stock recovery TOC shape"))
++  (define fixture-prior-entries
++    (for/list ([entry (in-list prior-toc)]
++               #:when (and (list? entry) (= (length entry) 2)
++                            (equal? (car entry) (path->bytes original-filename))))
++      entry))
++  (record! 'autosave_prior_state
++           (hasheq 'toc_present (file-exists? toc-path) 'toc_entry_count (length prior-toc)
++                   'fixture_toc_entry_count (length fixture-prior-entries)
++                   'fixture_existing_artifact_count
++                   (for/sum ([entry (in-list fixture-prior-entries)])
++                     (if (and (bytes? (cadr entry)) (file-exists? (bytes->path (cadr entry)))) 1 0))
++                   'toc_entries (~s prior-toc)
++                   'directory_entries (map path->string existing-artifact-paths)))
++  (set! phase "actual_autosave")
++  ;; Queue a single GUI probe before the synchronous operation. Unlike the
++  ;; periodic heartbeat it cannot miss a save shorter than one sampling period.
++  (define probe-delay #f)
++  (define probe-submitted (now))
++  (queue-callback (lambda () (set! probe-delay (- (now) probe-submitted))) #t)
++  ;; The stock timer may already have saved during the initial lexer wait.
++  ;; Its documented setter marks any prior autosave out-of-date. No GUI yield
++  ;; intervenes before do-autosave; the timed method must execute its real write.
++  (send editor set-modified #t)
++  (define memory-before-save (memory-snapshot))
++  (define save-start (now))
++  (define auto-name (send editor do-autosave))
++  (define command-returned (now))
++  (define memory-after-save-command (memory-snapshot))
++  (fence!)
++  (define save-finished (now))
++  (define memory-after-save-fence (memory-snapshot))
++  (define save-timing
++    (hasheq 'command_ms (- command-returned save-start)
++            'command_plus_low_priority_fence_ms (- save-finished save-start)))
++  (unless probe-delay (error 'actual-autosave "queued GUI probe did not dispatch before the fence"))
++  (record! 'actual_autosave save-timing)
++  (record! 'autosave_queued_gui_probe_ms probe-delay)
++  (record! 'actual_autosave_interval
++           (hasheq 'started_ms (- save-start started) 'finished_ms (- save-finished started)))
++  ;; No JSON persistence occurs between the before and after snapshots.
++  (record! 'memory_before_autosave memory-before-save)
++  (record! 'memory_after_autosave_command memory-after-save-command)
++  (record! 'memory_after_autosave memory-after-save-fence)
++  (record! 'autosave_memory_scope
++           "command snapshot before fence; final snapshot after fence; both before JSON persistence; runtime-wide counters")
++  (set! phase "autosave_recovery_verification")
++  (unless (and (path-string? auto-name) (file-exists? auto-name))
++    (error 'actual-autosave "no real recovery artifact was produced"))
++  (define-values (auto-directory auto-filename auto-directory?)
++    (split-path (path->complete-path auto-name)))
++  (unless (equal? (simplify-path auto-directory #f) (simplify-path fixture-directory #f))
++    (error 'actual-autosave "artifact is outside the directory covered by the preexisting-path witness"))
++  (when (member (path->complete-path auto-name) existing-artifact-paths)
++    (error 'actual-autosave "returned an already-existing artifact instead of a newly generated save"))
++  (unless (equal? (send editor get-filename) original-filename)
++    (error 'actual-autosave "original editor filename changed"))
++  (unless (eq? (send editor get-file-format) original-format)
++    (error 'actual-autosave "original editor format was not restored"))
++  (unless (send editor is-modified?)
++    (error 'actual-autosave "copy autosave cleared the document's modified state"))
++  (unless (bytes=? original-file-bytes (file->bytes fixture))
++    (error 'actual-autosave "original document file was modified"))
++  (define original-source (bytes->string/utf-8 original-file-bytes))
++  (define expected-source
++    (string-append (substring original-source 0 edit-pos) "x"
++                   (substring original-source edit-pos)))
++  (unless (string=? (send editor get-text) expected-source)
++    (error 'actual-autosave "full source differs from the single intended comment edit"))
++  (define native-text% (dynamic-require 'racket/gui/base 'text%))
++  (define restored (new native-text%))
++  (unless (send restored load-file auto-name 'guess #f)
++    (error 'actual-autosave "recovery artifact did not load in a fresh native editor"))
++  (unless (string=? (send restored get-text) expected-source)
++    (error 'actual-autosave "recovered source differs from the actual document"))
++  (unless (member (list (path->bytes original-filename)
++                        (path->bytes (path->complete-path auto-name))) (read-toc))
++    (error 'actual-autosave "new artifact is absent from the real recovery TOC"))
++  (record! 'autosave_recovery
++           (hasheq 'artifact_path (~a auto-name) 'artifact_bytes (file-size auto-name)
++                   'recovered_characters (send restored last-position)
++                   'exact_recovered_source #t 'original_file_unchanged #t
++                   'filename_restored #t 'format_restored #t 'still_modified #t
++                   'new_artifact_path_verified #t 'recovery_toc_entry_verified #t))
+   (set! phase "final_lexer_settle")
+-  (record! 'final_lexer_settle (await-lexer! editor))
++  (define final-settle (await-lexer! editor))
++  (record! 'final_lexer_settle final-settle)
++  (unless (hash-ref final-settle 'complete)
++    (error 'final-lexer-settle "lexer did not become valid after autosave verification"))
+   (set! phase "idle")
+   (pause .500)
+   (set! heartbeat-running? #f)

@@ -1,0 +1,16 @@
+{
+  "racket": "9.3",
+  "package": "gui-lib",
+  "package_catalog_sha1": "31187c9593c5eaabcb1850c0120408d7d9734496",
+  "module": "framework/private/text-misc.rkt",
+  "upstream_sha256": "7f95100d31c510ae1b29ddf01c6801d34ba709880b0dfc953ccd895a5bb06638",
+  "patched_sha256": "00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d",
+  "environment": "OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD=1",
+  "activation_export": "openracket-experimental-save-scan-guard?",
+  "default_enabled": false,
+  "scope": "two format-conversion scan predicates only; no cache or save-hook removal",
+  "stock_autosave_format_selection": "unchanged",
+  "extension_caveat": "non-same-format custom find-first-snip/next callback counts can differ when enabled",
+  "native_tested": false,
+  "measured_benefit": false
+}

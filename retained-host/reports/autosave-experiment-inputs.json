@@ -1,0 +1,7 @@
+{
+  "parent_commit": "10da76d194d8b1ceefdfbc39117d874aef15c1c5",
+  "autosave_manifest_sha256": "f46202d1eb6c020cb29151071d136d4866a6bfc45ad7b2b27af2a1b3d3d22648",
+  "scope": "Stock/candidate-off/candidate-on native save/recovery checks, then three interleaved stock/on actual do-autosave pairs. Scan, budget and appearance overlays absent. Original Stop failures retained independently. No expansion replay in this batch.",
+  "previous_budget_run": 38059373890,
+  "budget8_not_adopted": true
+}

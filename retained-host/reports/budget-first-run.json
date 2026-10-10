@@ -1,0 +1,723 @@
+{
+  "run_id": 38059373890,
+  "commit": "10da76d194d8b1ceefdfbc39117d874aef15c1c5",
+  "url": "https://github.com/alikatgh/openracket/actions/runs/38059373890",
+  "conclusion": "failure",
+  "actions_artifact_count": 0,
+  "scan_manifest_sha256": "0842b0e2aadaa8d6ee2ce91084cd37826da809edd1c3a698c8df7cbfeec0ece1",
+  "budget_manifest_sha256": "528ded3580298b2a69d0f2e9e64d7f7eb87b207dd269ed883e0508b7ddcf9c78",
+  "platforms": {
+    "linux": {
+      "conclusion": "failure",
+      "log_sha256": "e388e7c65a6d4609ef167c8e63471dca2c1cbc3931fc193dfa280ae2691a4ae1",
+      "scan_native_editor_cases": 15,
+      "scan_native_editor_result": "passed",
+      "scan_lexer_equivalence": "passed",
+      "budget_lexer_equivalence": "passed",
+      "stages": [
+        {
+          "scope": "scan",
+          "name": "Frozen experiment source hashes",
+          "passed": true,
+          "detail": "27 files"
+        },
+        {
+          "scope": "scan",
+          "name": "generator-integrity-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "installed-source-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Native lexer comparator unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Headless scan source and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Shared benchmark supervisor checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Shared benchmark metadata, activation and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Deep-copy independent candidate runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Compile actual candidate and native test modules",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Compile complete candidate DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Frozen budget experiment source hashes",
+          "passed": true,
+          "detail": "28 files"
+        },
+        {
+          "scope": "budget",
+          "name": "Synthetic budget comparison acceptance tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget source, comparator and contention unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget configuration, activation and native fixture tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Contention process supervisor unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Frozen budget experiment source hashes",
+          "passed": true,
+          "detail": "28 files"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "Deep-copy independent budget runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "Compile actual budget and all native callers",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Compile complete budget DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Native editor preservation cases with asserted private activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Exact native lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual loaded budget activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation baseline",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation input-eof",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation wxme",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation check-syntax",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation stop-returning",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual loaded budget activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation baseline",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation input-eof",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation wxme",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation check-syntax",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation stop-returning",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Exact budget lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 1 stock matched 1 MiB contention workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 1 budget8 matched 1 MiB contention workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 2 budget8 matched 1 MiB contention workload",
+          "passed": false,
+          "detail": "exit=1"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 2 stock matched 1 MiB contention workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 3 stock matched 1 MiB contention workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget pair 3 budget8 matched 1 MiB contention workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Complete contended workload and equal selected settings",
+          "passed": false,
+          "detail": "{\"completed_trials\": {\"stock\": 3, \"budget8\": 2}, \"expected_per_arm\": 3, \"settings_runtime_fixture_equal_for_valid_trials\": true, \"completed_workload_comparison_available\": false, \"warning\": \"Interleaved fresh-process typing during coloring. Background expansion completion, cold filesystem caches and input-to-photon are not measured. Any incomplete or non-contended trial blocks a complete comparison.\"}"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        }
+      ],
+      "budget_paired_comparison": {
+        "completed_trials": {
+          "stock": 3,
+          "budget8": 2
+        },
+        "expected_per_arm": 3,
+        "settings_runtime_fixture_equal_for_valid_trials": true,
+        "completed_workload_comparison_available": false,
+        "warning": "Interleaved fresh-process typing during coloring. Background expansion completion, cold filesystem caches and input-to-photon are not measured. Any incomplete or non-contended trial blocks a complete comparison."
+      },
+      "performance": "5of6 complete; budgetpair2 finallexer45s failure",
+      "records_sha256": "97ca1e2c86a18af4b8301985e5e6d552455816464e2ed4e0ecaffa9ec8b17668"
+    },
+    "macos": {
+      "conclusion": "failure",
+      "log_sha256": "3a572273e48a29569a58e3af59c62216f2c8c22bb8319aadd2645b4cb673fb7a",
+      "scan_native_editor_cases": 15,
+      "scan_native_editor_result": "passed",
+      "scan_lexer_equivalence": "passed",
+      "budget_lexer_equivalence": "passed",
+      "stages": [
+        {
+          "scope": "scan",
+          "name": "Frozen experiment source hashes",
+          "passed": true,
+          "detail": "27 files"
+        },
+        {
+          "scope": "scan",
+          "name": "generator-integrity-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "installed-source-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Native lexer comparator unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Headless scan source and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Shared benchmark supervisor checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Shared benchmark metadata, activation and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Deep-copy independent candidate runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Compile actual candidate and native test modules",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Compile complete candidate DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Frozen budget experiment source hashes",
+          "passed": true,
+          "detail": "28 files"
+        },
+        {
+          "scope": "budget",
+          "name": "Synthetic budget comparison acceptance tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget source, comparator and contention unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Budget configuration, activation and native fixture tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Contention process supervisor unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Frozen budget experiment source hashes",
+          "passed": true,
+          "detail": "28 files"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "Deep-copy independent budget runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "Compile actual budget and all native callers",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Compile complete budget DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Native editor preservation cases with asserted private activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "Exact native lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "scan",
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual loaded budget activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation baseline",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation input-eof",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation wxme",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation check-syntax",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual host preservation stop-returning",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual loaded budget activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation baseline",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation input-eof",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation wxme",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation check-syntax",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual host preservation stop-returning",
+          "passed": false,
+          "detail": "exit=1"
+        },
+        {
+          "scope": "budget",
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "Exact budget lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "scope": "budget",
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        },
+        {
+          "scope": "budget",
+          "name": "budget8 exact installed source verification",
+          "passed": true,
+          "detail": "Only budget arm color.rkt may differ; scan/appearance absent"
+        }
+      ],
+      "budget_paired_comparison": null,
+      "performance": "not run: returningStop correctness gate failed"
+    }
+  }
+}
