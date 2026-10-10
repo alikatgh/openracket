@@ -19,7 +19,7 @@ STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
 PHASE_ROW_START = len(ROWS)
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
-assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'native-appearance', 'followon', 'stock-break-control', 'metadata', 'performance', 'profile'), 'Explicit phase required'
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'native-appearance', 'followon', 'stock-stop-returning', 'stock-break-control', 'metadata', 'performance', 'profile'), 'Explicit phase required'
 START = time.monotonic()
 
 
@@ -129,7 +129,8 @@ def native_host(mode, case=None, appearance_check=False):
     if appearance_check:
         env['OPENRACKET_NATIVE_APPEARANCE_CHECK'] = '1'
     if case is not None:
-        assert case in ('stop', 'input-eof', 'wxme', 'check-syntax')
+        assert case in ('stop', 'input-eof', 'wxme', 'check-syntax', 'stop-returning')
+        assert case != 'stop-returning' or mode == 'pristine-stock', 'Stock-only diagnostic'
         env['OPENRACKET_NATIVE_CASE'] = case
     ready, done = TEMP/f'{label}-ready.json', TEMP/f'{label}-capture-done'
     env['OPENRACKET_READY_FILE'], env['OPENRACKET_CAPTURE_DONE'] = str(ready), str(done)
@@ -226,7 +227,7 @@ def overlay():
         raise RuntimeError('Appearance registration failed')
     if not command('Compile real GUI and register appearance metadata', [RACO, 'setup', '--no-docs', '--pkgs', 'gui-lib', 'openracket-appearance'], environment('modern-dark', 'setup'), 360):
         raise RuntimeError('Real GUI compilation failed')
-    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt', 'tests/independent-native-workflows.rkt', 'tests/independent-native-appearance-workflows.rkt', 'tool/native-appearance-native-tests.rkt'], environment('modern-dark', 'setup'), 180):
+    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt', 'tests/independent-native-workflows.rkt', 'tests/independent-native-appearance-workflows.rkt', 'tests/independent-native-stop-returning.rkt', 'tool/native-appearance-native-tests.rkt'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Actual theme/tool compilation failed')
     if not command('Compile retained DrRacket entrypoint', [RACO, 'make', '-l', 'drracket/drracket'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Retained DrRacket compilation failed')
@@ -293,6 +294,9 @@ try:
             command('Independent stock break-delivery control '+case,
                     [env['RACKET'], 'scripts/ci/stock-break-delivery-control.rkt', case], env, 35)
         command('Verify pristine source unchanged after break controls', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'stock-stop-returning':
+        native_host('pristine-stock', 'stop-returning')
+        command('Verify pristine source unchanged after returning Stop diagnostic', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'profile':
         command('Pristine stock attribution diagnostic (instrumented, not acceptance timing)',
                 [sys.executable, 'performance/run.py', '--mode', 'pristine-stock',

@@ -8,6 +8,7 @@
 (define checks 0)
 (define-runtime-path follow-on-module "independent-native-workflows.rkt")
 (define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")
 (define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
 (define native-appearance-result #f)
 (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
@@ -293,15 +294,18 @@
                   (set! created-frames (cons created created-frames)))))))))
 
   (when follow-on-case
-    (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax"))
+    (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax" "stop-returning"))
       (error 'independent-native-host "Unsupported follow-on case ~s" follow-on-case))
     (printf "OPENRACKET_NATIVE_STAGE follow-on=~a\n" follow-on-case)
     (flush-output)
     (set! follow-on-result
-          (on-gui
-           (lambda ()
-             ((dynamic-require follow-on-module 'run-follow-on-check!)
-              frame (string->symbol follow-on-case))))))
+          (if (equal? follow-on-case "stop-returning")
+              ((dynamic-require returning-stop-module 'run-returning-stop-check!)
+               frame on-gui wait-for)
+              (on-gui
+               (lambda ()
+                 ((dynamic-require follow-on-module 'run-follow-on-check!)
+                  frame (string->symbol follow-on-case)))))))
 
   ;; A low-priority event turn allows actual paint work to follow the last update.
   (on-gui (lambda ()

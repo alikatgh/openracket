@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 phase=${1:?Provide a validation phase}
-case "$phase" in prepare|stock|overlay|modern|native-appearance|followon|stock-break-control|metadata|performance|profile) ;; *) echo 'Unknown validation phase'; exit 1;; esac
+case "$phase" in prepare|stock|overlay|modern|native-appearance|followon|stock-stop-returning|stock-break-control|metadata|performance|profile) ;; *) echo 'Unknown validation phase'; exit 1;; esac
 if [[ ${RUNNER_OS:-} == Linux ]]; then
   exec xvfb-run -a -s '-screen 0 1280x900x24 -nolisten tcp' python3 scripts/ci/run-native.py "$phase"
 elif [[ ${RUNNER_OS:-} == macOS ]]; then

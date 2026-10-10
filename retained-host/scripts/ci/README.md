@@ -54,6 +54,11 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
    versus returning callbacks. They never inject a break into DrRacket, replace
    its original strict Stop case, or change its evaluator. See
    `STOCK-BREAK-CONTROL.md` for exact interpretation limits.
+10. In a separate pristine DrRacket process, repeat the exact original Stop
+    fixture with the interrupt callback returning before completion is awaited.
+    Pin tab, widget, evaluator thread and custodian identities across the action.
+    The same 20-second completion assertion and bounded screenshot handshake
+    remain; the original Stop case is unchanged and retains its own result.
 
 This appearance follow-up retains the previous ordinary paired performance
 baseline and single instrumented Linux attribution trial without repeating
