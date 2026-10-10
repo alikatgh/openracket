@@ -1,0 +1,76 @@
+name: Publish macOS preview (manual, public only)
+
+# DISABLED EXAMPLE. Publish/install only after explicit approval of source,
+# public binary delivery and the bounded contents:write job permission.
+# Replace the build-only workflow; do not run both for one requested build.
+'on':
+  workflow_dispatch:
+
+permissions:
+  contents: write # Required only for the separately approved public release upload.
+
+concurrency:
+  group: openracket-macos-preview
+  cancel-in-progress: false
+
+jobs:
+  macos-preview:
+    # Evaluated before runner allocation. Do not remove these no-charge guards.
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/main'
+    runs-on: macos-15 # Standard Apple Silicon runner; never -large or -xlarge.
+    timeout-minutes: 60
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '15.0'
+      RUSTUP_TOOLCHAIN: '1.94.0'
+      CARGO_BUILD_JOBS: '3'
+      CARGO_INCREMENTAL: '0'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Verify current public visibility before fetching source
+        run: |
+          set -euo pipefail
+          test "$RUNNER_OS" = macOS
+          test "$RUNNER_ARCH" = ARM64
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 \
+            https://api.github.com/repos/alikatgh/openracket |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert r.get("full_name")=="alikatgh/openracket" and r.get("private") is False and r.get("visibility")=="public", "Public repository required"'
+      - name: Check out exact manually selected commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0, official GitHub action
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Install pinned official Rust toolchain
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy --no-self-update
+          rustc --version
+          cargo --version
+      - name: Install checksum-pinned official Racket 9.3 CS
+        run: bash scripts/macos/install-racket.sh
+      - name: Test real Racket and build native release
+        run: bash scripts/macos/test-build.sh
+      - name: Package ad-hoc-signed Apple Silicon app
+        run: bash scripts/macos/bundle.sh
+      - name: Record this run's actual outcome
+        if: ${{ always() }}
+        run: |
+          if test -f scripts/macos/write-report.py; then
+            python3 scripts/macos/write-report.py
+            cat MACOS-TEST-REPORT.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Source checkout or preflight failed; no Mac tests were completed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Publish verified preview assets to a GitHub prerelease
+        env:
+          OPENRACKET_ALLOW_PUBLIC_RELEASE: 'yes'
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/macos/publish-preview.sh

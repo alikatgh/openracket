@@ -1,0 +1,19 @@
+/target/
+/.local/
+*.tmp
+
+# Local or macOS CI build products (never commit binaries/logs)
+/dist/
+/qa/macos-run/
+/MACOS-TEST-REPORT.md
+
+# Generated local verification output
+/qa/screenshots/
+/qa/*-results.txt
+/qa/*-result.txt
+/qa/release-artifact.json
+/qa/release-benchmark.json
+/runtime-tests/*-result.txt
+/runtime-tests/*-result.json
+/runtime-tests/parameter-state-memory.json
+__pycache__/
