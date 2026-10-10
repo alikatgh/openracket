@@ -264,6 +264,7 @@
      "stock evaluator output and completion"
      (lambda ()
        (and (send run-button is-enabled?)
+            (not (send (send frame get-current-tab) is-running?))
             (string-contains? (send interactions get-text) "OPENRACKET_NATIVE_EVAL_OK")
             (regexp-match? #rx"(^|\n)42(\n|$)" (send interactions get-text)))))
     (assert! #t (format "real Run ~a produces marker and value 42" (add1 iteration))))
@@ -281,7 +282,11 @@
 
   ;; A low-priority event turn allows actual paint work to follow the last update.
   (on-gui (lambda ()
-            (send frame resize 1100 760)
+            ;; Capture dimensions only: fit the actual runner display (the macOS
+            ;; runner can be 1024x768) without clipping native toolbar controls.
+            (define-values (display-width display-height) (get-display-size))
+            (send frame resize (max 1 (min 1100 (- display-width 24)))
+                  (max 1 (min 760 (- display-height 100))))
             (send frame show #t)
             (send (send frame get-definitions-canvas) focus)))
   (yield (alarm-evt (+ (current-inexact-milliseconds) 500)))

@@ -72,18 +72,24 @@ jobs:
         timeout-minutes: 3
         run: bash retained-host/scripts/ci/run-phase.sh prepare
       - name: Verify pristine stock native host
+        id: core_stock
         timeout-minutes: 3
         run: bash retained-host/scripts/ci/run-phase.sh stock
       - name: Compile disposable retained overlay and actual DrRacket
+        id: core_overlay
         timeout-minutes: 8
         run: bash retained-host/scripts/ci/run-phase.sh overlay
       - name: Verify retained fallback, light and dark native hosts
+        id: core_modern
         timeout-minutes: 6
         run: bash retained-host/scripts/ci/run-phase.sh modern
       - name: Verify native Stop, input, WXME and Check Syntax preservation
         timeout-minutes: 8
         run: bash retained-host/scripts/ci/run-phase.sh followon
       - name: Measure matched pristine and retained native editors
+        # Collect bounded measurements after passing core gates even when a
+        # later preservation test fails. That earlier failure still fails CI.
+        if: ${{ !cancelled() && steps.core_stock.outcome == 'success' && steps.core_overlay.outcome == 'success' && steps.core_modern.outcome == 'success' }}
         timeout-minutes: 15
         run: bash retained-host/scripts/ci/run-phase.sh performance
       - name: Report actual test results

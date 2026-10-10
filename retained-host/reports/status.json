@@ -1,6 +1,6 @@
 {
   "scope": "isolated retained-DrRacket 9.3 presentation proof",
-  "state": "Dark painter synchronization repaired with local regression coverage; native rerun pending",
+  "state": "Linux and macOS four-mode host/theme tests pass; targeted Stop harness repair pending rerun",
   "racket_tests_passed": 115,
   "python_patcher_tests_passed": 12,
   "original_button_methods_audited": 18,
@@ -18,18 +18,18 @@
   "png_sha256": "03737fab4fa5756b1193dc133532a676b4102c9ef993e587b2e278c656d5b3d0",
   "sidebar_implemented": false,
   "blocking_prerequisites": [
-    "Verify repaired dark-mode painter synchronization in real native host",
+    "Rerun corrected stock Stop lifecycle test then remaining EOF/WXME/Check Syntax tests",
     "Complete correctness-gated native benchmarks",
-    "Verify corrected official macOS installer checksum then native platform tests"
+    "Broader debugger/macro/teaching/accessibility coverage remains open"
   ],
   "original_projects_modified": false,
   "remote_writes": true,
   "python_performance_tests_passed": 6,
   "portable_launcher_implemented": true,
   "workspace_chrome_implemented": true,
-  "native_ci_status": "second run: pristine stock/fallback/light host passes; dark synchronization fails",
-  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38048840909",
-  "native_ci_commit": "720699694999cbf3cf97d864666b2e48c64aadc4",
+  "native_ci_status": "third run: both platforms full basic host pass; follow-on Stop readiness assertion failed in pristine stock",
+  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38049557901",
+  "native_ci_commit": "cbf78aa05bb911effd3b011ac1cd1492592e2d0d",
   "native_toolbar_tests_per_mode": 14,
   "native_toolbar_modes_passed": 4,
   "native_canvas_status_tests_per_mode": 5,
@@ -38,7 +38,12 @@
   "native_host_workflow_checks_passed": {
     "pristine-stock": 20,
     "stock-fallback": 20,
-    "modern-light": 24
+    "modern-light": 28,
+    "modern-dark": 28
   },
-  "native_screenshots_captured": true
+  "native_screenshots_captured": true,
+  "native_platforms_verified": [
+    "Linux",
+    "macOS"
+  ]
 }

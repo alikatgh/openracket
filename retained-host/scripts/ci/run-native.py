@@ -17,6 +17,7 @@ REPORT = ROOT/'reports/ci-summary.md'
 REPORT.parent.mkdir(exist_ok=True)
 STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
+PHASE_ROW_START = len(ROWS)
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
 assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'followon', 'performance'), 'Explicit phase required'
 START = time.monotonic()
@@ -84,9 +85,10 @@ def capture(path, ready):
             args += ['-crop', f'{w}x{h}+{x}+{y}', '+repage']
         args += [str(path)]
     else:
+        # Racket/macOS frame coordinates omit native menu/title insets. Capture
+        # the full disposable desktop so those coordinate systems cannot clip
+        # the retained Stop button or status area. The harness sizes to fit.
         args = ['/usr/sbin/screencapture', '-x']
-        if rectangle:
-            args += ['-R', f'{x},{y},{w},{h}']
         args += [str(path)]
     result = subprocess.run(args, timeout=15, check=False, capture_output=True, text=True)
     if result.returncode != 0:
@@ -253,5 +255,5 @@ finally:
     print('Results: ' + str(REPORT), flush=True)
 
 # A denied/unavailable OS capture is disclosed and does not mask test failures.
-failures = [n for n, ok, _ in ROWS if not ok and not n.endswith('OS screenshot capture')]
+failures = [n for n, ok, _ in ROWS[PHASE_ROW_START:] if not ok and not n.endswith('OS screenshot capture')]
 sys.exit(1 if failures else 0)

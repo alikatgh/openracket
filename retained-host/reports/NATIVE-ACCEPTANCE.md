@@ -7,13 +7,13 @@ remaining dynamic gates below stay open. See `ci-first-run.json`.
 
 ## Environment status
 
-1. The official full Racket 9.3 distribution installed in the authorized Linux
-   CI environment. Local package transactions remain cancelled and untouched.
-2. Linux CI provides a permitted native display. The separate local display
+1. Official full Racket 9.3 installs and real native sessions are verified on both
+   authorized standard Linux and macOS CI runners. Basic four-mode host tests,
+   dynamic theme roundtrips and captures pass on both; see `ci-third-run.json`.
+2. Local package transactions remain cancelled. The separate local display
    attempt could not create sockets and remains blocked without retry.
-3. macOS CI must get past its public-repository metadata precheck, then use the
-   official stock 9.3 distribution on the same OS/display scale/settings as the
-   supplied reference. Linux cannot pass the macOS gate.
+3. The macOS runner is a CI machine, not the exact user reference environment.
+   Retina scaling, fonts and interactive accessibility still need dedicated review.
 
 ## Ordered checks
 

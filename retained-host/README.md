@@ -32,15 +32,15 @@ not a native DrRacket instance. The preservation test compares the entire module
 explicitly declared presentation edits; it also checks every original button
 method and original painter fallback.
 
-Native Linux CI compiled the patched GUI, actual appearance tool and complete
-DrRacket entrypoint. All 14 toolbar tests passed in each of four modes; five native
-canvas/status tests passed in both modern modes. The second run passed 20 complete
-host-harness checks in pristine stock/fallback and 24 in modern light, including
-Unicode file loading, undo/redo and two real Run callbacks. Genuine screenshots
-were captured. Modern dark exposed a painter synchronization defect under repair;
-performance and macOS validation remain incomplete. See
-[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38048840909)
-and `reports/RESULTS.md` for exact passes and remaining gates.
+Native Linux and macOS CI compiled the patched GUI, actual appearance tool and
+complete DrRacket entrypoint. Both platforms pass the four-mode basic host gate:
+20 checks each for pristine stock/fallback and 28 each for modern light/dark,
+including Unicode loading, undo/redo, two real Run callbacks and live color-mode
+roundtrips. Native toolbar/canvas tests and genuine OS captures also pass.
+A baseline Stop test assumption is repaired for the next run; later workflow and
+performance gates remain incomplete. See
+[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38049557901)
+and `reports/RESULTS.md` for exact scope and remaining gates.
 
 Local package installation and its authorized retry were cancelled, and the
 local display is unavailable. The original shared runtime and package profile,

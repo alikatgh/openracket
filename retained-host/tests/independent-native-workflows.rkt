@@ -51,15 +51,34 @@
     [(stop)
      (load! "#lang racket/base\n(displayln \"WAITING_TO_BREAK\")\n(flush-output)\n(sleep 120)\n(displayln \"UNREACHABLE\")\n")
      (start!)
-     (await! "running blocking program" (lambda () (and (output-has? "WAITING_TO_BREAK")
-                                                       (not (send run is-enabled?)))))
+     ;; Stock Run can remain enabled to restart a running program. Evaluation
+     ;; liveness is the tab's independently maintained state, not widget enablement.
+     (define (stop-state stage)
+       (define-values (thread custodian) (send tab get-breakables))
+       (display "OPENRACKET_STOP_STATE ")
+       (write-json (hash 'stage stage 'running (send tab is-running?)
+                         'run_enabled (send run is-enabled?)
+                         'stop_enabled (send stop is-enabled?)
+                         'break_thread_live (and (thread? thread) (not (thread-dead? thread)))
+                         'break_custodian_present (custodian? custodian)
+                         'stop_label (send stop get-label)))
+       (newline) (flush-output))
+     (await! "running blocking program with live break target"
+             (lambda ()
+               (define-values (thread custodian) (send tab get-breakables))
+               (and (output-has? "WAITING_TO_BREAK") (send tab is-running?)
+                    (thread? thread) (not (thread-dead? thread)) (custodian? custodian))))
+     (stop-state "before-stop")
      (check-true (send stop is-enabled?))
+     (check-equal? (send stop get-label) (string-constant break-button-label))
      (send stop command)
-     ;; The real callback synchronously offers Kill before queued cleanup occurs.
-     (check-true (send tab does-break-kill?))
+     ;; Stock's private local-member does-break-kill? is not externally callable.
+     ;; Its real callback synchronously exposes that transition through this label.
      (check-equal? (send stop get-label) (string-constant break-button-kill-label))
-     (await! "interrupt cleanup reenables Run" (lambda () (and (send run is-enabled?)
-                                                              (not (send tab is-running?)))))
+     (stop-state "after-stop-before-event-loop")
+     (await! "interrupted evaluation completes and Run is available"
+             (lambda () (and (not (send tab is-running?)) (send run is-enabled?))))
+     (stop-state "after-interrupt-cleanup")
      (check-false (output-has? "UNREACHABLE"))
      (check-eq? (send frame get-definitions-text) defs)]
     [(input-eof)
@@ -82,6 +101,7 @@
      ;; It verifies EOF semantics, not physical pointer hit-testing on that snip.
      (send ints send-eof-to-box-in-port)
      (await! "EOF completes real program" (lambda () (and (output-has? "EOF=#t")
+                                                         (not (send tab is-running?))
                                                          (send run is-enabled?))))
      (check-eq? (send frame get-interactions-text) ints)]
     [(wxme)
@@ -117,7 +137,8 @@
      ;; Let the actual Run callback perform stock #lang selection first.
      (start!)
      (await! "module Run returns 42 before Check Syntax"
-             (lambda () (and (send run is-enabled?) (regexp-match? #rx"(^|\n)42(\n|$)" (send ints get-text)))))
+             (lambda () (and (send run is-enabled?) (not (send tab is-running?))
+                            (regexp-match? #rx"(^|\n)42(\n|$)" (send ints get-text)))))
      (define button (send frame syncheck:get-button))
      (await! "Check Syntax enabled" (lambda () (send button is-enabled?)))
      (send button command)

@@ -1,7 +1,7 @@
 # Independent retained-host audit
 
-Date: 2026-10-10. Scope: local source/headless audit and first authorized native CI review.
-This report does not certify full DrRacket parity, native rendering, or performance.
+Date: 2026-10-10. Scope: local source/headless audit and authorized native CI review.
+This report does not certify full DrRacket parity, complete rendering coverage, or performance.
 No denied local display operation was retried. No package installation was performed
 by this audit. All adverse patcher inputs were tested in temporary copies.
 
@@ -53,12 +53,12 @@ by this audit. All adverse patcher inputs were tested in temporary copies.
   revert, altered upstream/overlay/painter/vendor, unrelated destination refusal,
   missing target, target-symlink escape and profile-root symlink refusal. All 9 pass.
 - Both independent native harnesses passed reader syntax checks locally. Native
-  compilation and scoped widget checks subsequently passed on Linux CI; the host
-  harness reached seven class/identity assertions before its fixture check failed.
+  compilation, scoped widget checks, and all four full-host modes subsequently
+  passed on Linux CI. Separate follow-on workflow validation remains incomplete.
 
 The first painter run emitted Fontconfig cache-writability warnings while its eight
-assertions passed. The final isolated-cache run passes all 30 independent Racket
-tests without those warnings. This is not a native font-availability or DPI verdict.
+assertions passed. The initial isolated-cache run passed all 30 then-existing independent Racket
+tests without those warnings; nine later bridge regressions also pass. This is not a native font-availability or DPI verdict.
 
 ## Native checks prepared for authorized CI
 
@@ -128,8 +128,8 @@ text, checks the exact target filename, and retains the strict Unicode compariso
 Failures now publish bounded window labels/editor excerpts and geometry before
 cleanup, with a screenshot-capture window explicitly marked as failure diagnostics.
 This is a harness-only repair; production toolbar/theme behavior was not changed.
-A native rerun is still required for file-open, undo/redo, Run, theme activation and
-screenshots. No full parity or performance claim follows from the first run.
+At this first-run stage, native confirmation was still required for file-open,
+undo/redo, Run, theme activation and screenshots; later results are recorded below. No full parity or performance claim follows from the first run.
 
 ## Second native CI result and theme callback defect
 
@@ -156,7 +156,7 @@ painter; and repaint request. All 39 independent headless Racket tests pass afte
 the repair (22 transaction, 8 pixel/state, 9 bridge). The host harness now logs exact
 mode/schemes/background/painter state and checks a real opposite-mode-and-back
 preference round trip, using event-loop fences but no test-side forced repaint.
-Native confirmation of this production fix is pending the next CI run.
+The third Linux run below subsequently confirmed this production fix.
 
 Four scoped follow-on cases are integrated behind optional `OPENRACKET_NATIVE_CASE`:
 `stop`, `input-eof`, `wxme`, and `check-syntax`. Each must run in a separate fresh
@@ -169,3 +169,28 @@ The Linux screenshots also show missing Japanese glyphs in both pristine stock a
 the modern failure capture. UTF-8 buffer equality passed; font glyph availability
 is a separate environment/visual acceptance item and is not claimed fixed by this
 appearance change.
+
+## Third Linux CI: theme repair confirmed, Stop harness corrected
+
+Run 38049557901, commit c3d12f3313a95f25162a1503be624f3b0617f8c0:
+all four genuine host modes passed. Pristine stock and stock-fallback each passed
+20 checks; modern light and dark each passed 28, including real opposite-mode-and-back
+preference transitions. The actual background, mode preference and painter agreed
+at all three stages in each modern mode. OS screenshots were captured.
+
+The first new pristine-stock Stop case timed out before invoking Stop because its
+readiness predicate incorrectly assumed Run must be disabled during evaluation.
+The diagnostic screenshot shows the real sleeping fixture and WAITING_TO_BREAK
+output. Official stock `rep.rkt:1174–1179, 1600–1605` independently maintains tab
+running state; Run enablement is not a valid evaluation-liveness proxy.
+
+The repaired test awaits the exact marker, true tab running state and a live
+registered break-thread/custodian. It logs those states before Stop, immediately
+after Stop, and after cleanup. Source review also caught that `does-break-kill?`
+is an unexported local-member name despite its public method declaration. The
+test does not reflect into that private name: it strictly asserts the real
+localized Stop-to-Kill label transition, which stock updates synchronously from
+the same flag. Completion now requires tab not running in the main host's repeated
+Run checks, the EOF workflow, and Check Syntax's initial Run. Reader validation
+passes; the corrected Stop and remaining workflow cases still need native execution.
+The baseline failure correctly prevented later workflow/performance runs.

@@ -56,21 +56,38 @@ fixture handling and verified separate pristine/patched runtime paths and hashes
 - Missing Japanese glyphs appear in both pristine and modern captures. Exact
   Unicode source equality passes; this is a runner font coverage limitation.
 
+## Third native Linux and macOS run
+
+Run [38049557901](https://github.com/alikatgh/openracket/actions/runs/38049557901),
+commit `cbf78aa05bb911effd3b011ac1cd1492592e2d0d`, passed the complete basic
+host harness on both standard Linux and macOS runners: 20 checks each for
+pristine stock and stock fallback, and 28 each for modern light and modern dark.
+Both live light/dark roundtrips now synchronize actual editor colors and toolbar
+painter state. Native captures succeeded in all four modes on both platforms.
+Actual compilation, toolbar/canvas checks and pristine runtime isolation passed.
+Linux Japanese glyph coverage is now supplied by the official Noto CJK package.
+
+The first follow-on Stop case failed in pristine stock on both systems before
+pressing Stop: the harness incorrectly assumed Run must be disabled while the
+program runs. Stock allows Run to restart evaluation. The repaired test observes
+the real tab running state and live break thread/custodian, then checks the
+public localized Stop-to-Kill label transition. Source review also removed a
+candidate direct call to an unexported local member. Existing Run completion
+checks now require the real tab to stop, rather than infer that from Run's state.
+These are test-only repairs; the native-tested production code did not change.
+
 ## Remaining native gates
 
-- Rerun dark startup and live preference-mode changes after the bridge repair.
-  Do not treat the diagnostic failure screenshot as a passed modern-dark state.
-- The corrected performance harness was skipped after the correctness failure.
-  First-run timeout records are not usable timings; no speed claim is supported.
-- macOS passed the repaired public-repository guard, then failed official DMG
-  checksum verification before installation. The CI digest pin is being corrected
-  from official release evidence; no native macOS checks passed yet.
-- Stop/EOF/WXME/Check Syntax candidates are prepared separately for the next native
-  batch. Debugger, Macro Stepper, teaching languages, accessibility, IME, Retina,
+- Rerun corrected Stop then EOF, WXME and Check Syntax cases in pristine/modern
+  processes. They were skipped after the first baseline failure.
+- Run the corrected benchmark harness after correctness gates. No valid latency,
+  memory comparison or speed claim is supported by the earlier timeout records.
+- Debugger, Macro Stepper, teaching languages, accessibility, IME, Retina,
   complete stock parity and comprehensive visual layout review remain open.
-- Local full-package installation and its authorized retry were cancelled before
-  registry commit. Local display socket creation remains blocked without retry.
-  Native evidence above comes only from the separately authorized CI.
+- Native menus/status/borders remain substantially stock. This is a first
+  retained-host modernization increment, not the final desired polished design.
+- Local package transactions and display remain blocked without retry; all native
+  evidence comes from the separately authorized public CI.
 
 The portable Racket applier compiles, shell setup/launchers pass syntax and
 check-mode validation, and six performance-harness Python tests pass. The full
