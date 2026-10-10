@@ -1,5 +1,5 @@
 #lang racket/base
-(require rackunit racket/class racket/list racket/runtime-path setup/getinfo
+(require rackunit racket/class racket/list racket/match racket/runtime-path setup/getinfo
          "appearance-state.rkt"
          "layout.rkt")
 
@@ -187,3 +187,97 @@
                                     (lambda (dark?) (if dark? 'white-on-black 'classic))
                                     (lambda (name) (error 'fixture "style callback failed")))))
   (check-equal? (for/list ([key (in-list appearance-pref-keys)]) (cons key (hash-ref prefs key))) snapshot))
+
+;; Execute the actual production toolbar registration/refresh definitions with
+;; minimal GUI interfaces. This tests targeting/lifetime, not native repaint.
+(define refresh-canvas<%> (interface () refresh))
+(define refresh-container<%> (interface () get-children))
+(define refresh-canvas%
+  (class* object% (refresh-canvas<%>)
+    (super-new)
+    (define n 0)
+    (define/public (refresh) (set! n (add1 n)))
+    (define/public (refresh-count) n)))
+(define refresh-panel%
+  (class* object% (refresh-container<%>)
+    (init-field [children '()] [parent #f])
+    (super-new)
+    (define/public (get-children) children)
+    (define/public (get-parent) parent)))
+(define-namespace-anchor toolbar-test-anchor)
+(define (make-toolbar-test-context)
+  (define definitions
+    (match (parameterize ([read-accept-reader #t]) (call-with-input-file tool-source read))
+      [`(module ,_ ,_ (#%module-begin ,forms ...)) forms]))
+  (define ns (make-base-namespace))
+  ;; Class values must share their actual racket/class module instance.
+  (namespace-attach-module (namespace-anchor->namespace toolbar-test-anchor)
+                           'racket/class ns)
+  (parameterize ([current-namespace ns])
+    (namespace-require 'racket/class)
+    (namespace-set-variable-value! 'canvas<%> refresh-canvas<%> #t)
+    (namespace-set-variable-value! 'area-container<%> refresh-container<%> #t)
+    (for ([form (in-list definitions)]
+          #:when (memq (match form
+                         [`(define (,name ,_ ...) ,_ ...) name]
+                         [`(define ,(? symbol? name) ,_ ...) name]
+                         [_ #f])
+                       '(toolbar-parents refresh-retained-toolbars! track-toolbar-parent-mixin)))
+      (eval form)))
+  (values
+   (lambda (root)
+     (define initialized? #f)
+     (define panel (new refresh-panel% [parent root]))
+     (define frame%
+       (class object%
+         (super-new)
+         (set! initialized? #t)
+         (define/public (get-button-panel)
+           (unless initialized? (error 'fixture "toolbar read before superclass initialization"))
+           panel)))
+     (parameterize ([current-namespace ns])
+       (new ((eval 'track-toolbar-parent-mixin) frame%))))
+   (lambda () (parameterize ([current-namespace ns]) ((eval 'refresh-retained-toolbars!))))
+   (lambda () (parameterize ([current-namespace ns]) (hash-count (eval 'toolbar-parents))))))
+
+(test-case "live theme refresh targets retained toolbar canvases only"
+  (define-values (track refresh! count) (make-toolbar-test-context))
+  (define save (new refresh-canvas%))
+  (define run (new refresh-canvas%))
+  (define unrelated (new refresh-canvas%))
+  (define ordinary-control (new object%))
+  (define buttons (new refresh-panel% [children (list run ordinary-control)]))
+  (define children (list save buttons))
+  (define top (new refresh-panel% [children children]))
+  (define frame (track top))
+  (refresh!)
+  (check-equal? (send save refresh-count) 1)
+  (check-equal? (send run refresh-count) 1)
+  (check-equal? (send unrelated refresh-count) 0)
+  (check-eq? (send top get-children) children)
+  (check-eq? (send (send frame get-button-panel) get-parent) top)
+  (check-equal? (count) 1))
+
+(test-case "toolbar registration deduplicates parents and supports multiple frames"
+  (define-values (track refresh! count) (make-toolbar-test-context))
+  (define first (new refresh-canvas%))
+  (define second (new refresh-canvas%))
+  (define first-root (new refresh-panel% [children (list first)]))
+  (define second-root (new refresh-panel% [children (list second)]))
+  (define frames (list (track first-root) (track first-root) (track second-root)))
+  (check-equal? (count) 2)
+  (refresh!)
+  (check-equal? (send first refresh-count) 1)
+  (check-equal? (send second refresh-count) 1)
+  (check-equal? (length frames) 3))
+
+(test-case "closed toolbar parents are weakly held and automatically pruned"
+  (define-values (track refresh! count) (make-toolbar-test-context))
+  (define weak-root
+    (let ([root (new refresh-panel% [children (list (new refresh-canvas%))])])
+      (track root)
+      (make-weak-box root)))
+  (for ([i (in-range 3)]) (collect-garbage))
+  (check-false (weak-box-value weak-root))
+  (check-equal? (count) 0)
+  (check-not-exn refresh!))

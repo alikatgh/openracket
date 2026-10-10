@@ -26,19 +26,21 @@ claim yet.
 ## Evidence so far
 
 The source matches both the official Git v9.3 source and the exact official9.3
-release-catalog gui-lib package archive. 103 headless Racket tests and 12 Python patcher tests
+release-catalog gui-lib package archive. 115 headless Racket tests and 12 Python patcher tests
 pass. Theme mixin tests use focused mock contracts and source inspection,
 not a native DrRacket instance. The preservation test compares the entire module and allows only the
 explicitly declared presentation edits; it also checks every original button
 method and original painter fallback.
 
-The first native Linux CI run compiled the patched GUI, actual appearance tool
-and complete DrRacket entrypoint. All 14 toolbar tests passed in each of four
-modes; five native canvas/status tests passed in both modern modes. Genuine stock
-frames and editors started. Later fixture/startup test failures still block full
-Run/undo/redo, screenshots and performance verification. See
-[the exact run](https://github.com/alikatgh/openracket/actions/runs/38047260644)
-and `reports/RESULTS.md`; macOS tests did not run because of a CI precheck failure.
+Native Linux CI compiled the patched GUI, actual appearance tool and complete
+DrRacket entrypoint. All 14 toolbar tests passed in each of four modes; five native
+canvas/status tests passed in both modern modes. The second run passed 20 complete
+host-harness checks in pristine stock/fallback and 24 in modern light, including
+Unicode file loading, undo/redo and two real Run callbacks. Genuine screenshots
+were captured. Modern dark exposed a painter synchronization defect under repair;
+performance and macOS validation remain incomplete. See
+[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38048840909)
+and `reports/RESULTS.md` for exact passes and remaining gates.
 
 Local package installation and its authorized retry were cancelled, and the
 local display is unavailable. The original shared runtime and package profile,

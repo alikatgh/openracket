@@ -23,7 +23,7 @@
   (match (parameterize ([read-accept-reader #t]) (call-with-input-file source read))
     [`(module ,_ ,_ (#%module-begin ,forms ...)) forms]))
 (define needed
-  '(enabled-pref state-pref snapshot-pref modern-session? layout-enabled?
+  '(enabled-pref state-pref snapshot-pref synchronize-painter! modern-session? layout-enabled?
                  capture-appearance restore-snapshot! apply-appearance! initialize-once!))
 (define (definition-name form)
   (match form [`(define (,name ,_ ...) ,_ ...) name]

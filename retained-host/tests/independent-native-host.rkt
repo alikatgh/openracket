@@ -2,10 +2,13 @@
 ;; Genuine stock DrRacket launch/retained-host integration. Native GUI required.
 ;; No substitute editor, evaluator, disabled tool, changed memory limit or mocked GUI.
 ;; The CI runner supplies a fresh preference profile and external timeout.
-(require racket/class racket/file racket/gui/base racket/list racket/string
+(require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
          json mrlib/switchable-button)
 
 (define checks 0)
+(define-runtime-path follow-on-module "independent-native-workflows.rkt")
+(define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
+(define follow-on-result #f)
 (define created-frames '())
 (define fixture
   (make-temporary-file "openracket-native-fixture-~a.rkt"))
@@ -69,6 +72,26 @@
                 (>= (current-inexact-monotonic-milliseconds) deadline))
       (yield (alarm-evt (+ (current-inexact-milliseconds) 50)))
       (loop))))
+(define (assert-theme-state! expected-dark? stage)
+  (define pref-get (dynamic-require 'framework 'preferences:get))
+  (define scheme-name (dynamic-require 'framework 'color-prefs:get-current-color-scheme-name))
+  (define color-lookup (dynamic-require 'framework 'color-prefs:lookup-in-color-scheme))
+  (define painter-theme (dynamic-require 'mrlib/private/openracket-paint 'get-modern-host-theme))
+  (define background (color-lookup 'framework:basic-canvas-background))
+  (printf "OPENRACKET_NATIVE_THEME_STATE ~a\n"
+          (jsexpr->string
+           (hash 'stage stage 'requested_dark expected-dark?
+                 'mode_preference (format "~s" (pref-get 'framework:white-on-black-mode?))
+                 'light_scheme (symbol->string (scheme-name #:wob? #f))
+                 'dark_scheme (symbol->string (scheme-name #:wob? #t))
+                 'painter (symbol->string (painter-theme))
+                 'background (list (send background red) (send background green) (send background blue)))))
+  (flush-output)
+  (assert! (eq? (pref-get 'framework:white-on-black-mode?) expected-dark?)
+           (string-append stage ": requested light/dark mode actually activated"))
+  (assert! (eq? (painter-theme) (if expected-dark? 'dark 'light))
+           (string-append stage ": retained toolbar painter synchronized with editor mode")))
+
 (define (failure-diagnostics! exception)
   ;; Bounded synthetic-test window evidence. Never dismiss or answer a dialog.
   (with-handlers ([exn? (lambda (e)
@@ -197,11 +220,7 @@
                       (eq? (scheme-name #:wob? #t) '|OpenRacket Dark|))
                  "both OpenRacket schemes registered and selected")
         (define expected-dark? (not (equal? (getenv "OPENRACKET_THEME") "light")))
-        (assert! (eq? (pref-get 'framework:white-on-black-mode?) expected-dark?)
-                 "requested light/dark mode actually activated")
-        (define painter-theme (dynamic-require 'mrlib/private/openracket-paint 'get-modern-host-theme))
-        (assert! (eq? (painter-theme) (if expected-dark? 'dark 'light))
-                 "retained toolbar painter synchronized with editor mode")
+        (assert-theme-state! expected-dark? "initial appearance")
         (assert! (and (= (send defs-canvas horizontal-inset) 12)
                       (= (send defs-canvas vertical-inset) 10)
                       (= (send ints-canvas horizontal-inset) 12)
@@ -223,6 +242,18 @@
      (send definitions undo)
      (send definitions set-modified #f)))
 
+  (when (and (equal? (getenv "OPENRACKET_HOST_THEME") "1")
+             (not (equal? (getenv "OPENRACKET_UI") "stock")))
+    (define initial-dark? (not (equal? (getenv "OPENRACKET_THEME") "light")))
+    ;; Use stock preference callbacks; never force a toolbar repaint from the test.
+    ;; A second low-priority callback is a fence for the bridge's queued sync.
+    (for ([dark? (in-list (list (not initial-dark?) initial-dark?))]
+          [stage '("switched appearance" "restored appearance")])
+      (on-gui (lambda ()
+                ((dynamic-require 'framework 'preferences:set)
+                 'framework:white-on-black-mode? dark?)))
+      (on-gui (lambda () (assert-theme-state! dark? stage)))))
+
   ;; Two real Run callbacks exercise stock evaluator lifecycle and repeated Run.
   ;; This deliberately does not claim debugger, macro-stepper, teaching-language,
   ;; modal preferences, snip, IME or accessibility parity.
@@ -236,6 +267,17 @@
             (string-contains? (send interactions get-text) "OPENRACKET_NATIVE_EVAL_OK")
             (regexp-match? #rx"(^|\n)42(\n|$)" (send interactions get-text)))))
     (assert! #t (format "real Run ~a produces marker and value 42" (add1 iteration))))
+
+  (when follow-on-case
+    (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax"))
+      (error 'independent-native-host "Unsupported follow-on case ~s" follow-on-case))
+    (printf "OPENRACKET_NATIVE_STAGE follow-on=~a\n" follow-on-case)
+    (flush-output)
+    (set! follow-on-result
+          (on-gui
+           (lambda ()
+             ((dynamic-require follow-on-module 'run-follow-on-check!)
+              frame (string->symbol follow-on-case))))))
 
   ;; A low-priority event turn allows actual paint work to follow the last update.
   (on-gui (lambda ()
@@ -252,6 +294,7 @@
           'ui (or (getenv "OPENRACKET_UI") "modern")
           'theme (or (getenv "OPENRACKET_THEME") "unspecified")
           'genuine_host #t 'repeated_real_run #t 'geometry geometry
+          'follow_on_case (or follow-on-case 'null) 'follow_on_result (or follow-on-result 'null)
           'complete_stock_parity #f 'physical_input_to_photon_measured #f))
   (printf "OPENRACKET_NATIVE_RESULT ~a\n" (jsexpr->string report))
   (publish-ready! report "OPENRACKET_NATIVE_READY")

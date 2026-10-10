@@ -4,7 +4,7 @@ The repository's `retained-native.yml` workflow runs only on pushes that change
 this retained-host prototype or its workflow on `prototype/retained-drracket`.
 It never runs on `main`, arbitrary branches, pull requests, forks, or a private
 repository. Job-level owner, branch, visibility and event guards are evaluated
-before runner allocation; a live unauthenticated public-repository check is also
+before runner allocation; a live public-repository check is also
 made before checkout using the official GitHub client and the job’s existing read-only authentication. No custom credentials are created or saved.
 
 Only `ubuntu-24.04` and `macos-15` standard hosted runners are selected. GitHub
@@ -31,11 +31,16 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
    register and compile the retained appearance tool with existing dependencies.
 5. Repeat native widget/host checks with the stock-painter fallback and modern
    light/dark appearances, using fresh preference directories.
-6. Only after all correctness gates pass, run paired native performance probes with identical synthetic fixtures and
+6. In fresh processes and preferences, first pristine stock and then modern dark,
+   run strict Stop-state, Unicode input/EOF, WXME rich-document and actual Check
+   Syntax preservation tests. Each case has a 60-second outer bound and failure
+   diagnostics; a failed stock baseline stops overlay attribution.
+7. Only after all correctness gates pass, run paired native performance probes with identical synthetic fixtures and
    separate fresh preferences and addon registries. Command/event-loop timing is not input-to-photon
    timing and CI runner numbers are not representative hardware benchmarks.
 
-Linux uses the official Ubuntu Xvfb package on the GitHub runner. macOS uses
+Linux uses official Ubuntu Xvfb and Noto CJK font packages on the GitHub runner,
+with equal font coverage for pristine and retained modes. macOS uses
 its native window system. No local/cloud display restriction is bypassed. A
 real GUI failure is a failed test and must be diagnosed; functionality is not
 removed to make the tests pass.

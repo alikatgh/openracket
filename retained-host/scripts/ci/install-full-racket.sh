@@ -12,7 +12,7 @@ case "$(uname -s)/$(uname -m)" in
     ;;
   Darwin/arm64)
     file=racket-9.3-aarch64-macosx-cs.dmg
-    sha=404dcf7198eb8847bd357295a9f2659e427ab9d481d488a16c70d03db72d7b02
+    sha=21f4937ca0bf37c31e60c1d77f5fd20f175e3ad51f6197f27149055bc222e559
     ;;
   *) echo 'Only standard Ubuntu x64 / macOS Apple Silicon runners supported'; exit 1;;
 esac

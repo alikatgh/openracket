@@ -3,7 +3,7 @@
 ## Passed locally
 
 - Racket9.3 `raco make src/paint.rkt` succeeds using the existing racket/draw dependency.
-- 103 headless Racket tests pass: rendering states, retained bitmap fallback, compact
+- 115 headless Racket tests pass: rendering states, retained bitmap fallback, compact
   inputs, DC state restoration, full-module presentation-only diff, stock-method
   preservation, theme metadata/contrast/opt-in protection and mock-based mixin contracts.
   These mock checks do not count as native DrRacket tests.
@@ -34,23 +34,43 @@ Racket 9.3 distribution on standard Ubuntu 24.04 CI.
 The entire CI run failed later checks. These are partial native passes, not
 complete workflow parity. Exact stage results are in `ci-first-run.json`.
 
-## Not yet passed / not run
+## Second native Linux run
 
-- All four real-host harness runs stopped at Unicode fixture equality. The queued
-  stock startup callback consumed arguments after the test's temporary parameter
-  scope ended. The test now starts normally and opens its fixture through the
-  existing frame method; the repair needs native rerun. Run/undo/redo assertions
-  after that failure have not passed, and no application screenshot was captured.
-- All 12 performance trials timed out in a stock startup dialog. There are no
-  valid application speed or latency results. The benchmark startup harness is
-  being corrected without changing stock instrumentation, tools or limits.
-- macOS failed its public-repository metadata precheck with HTTP 403 before
-  checkout; no macOS native tests ran.
-- Debugger, Macro Stepper, teaching languages, WXME, accessibility, IME, Retina,
+Run [38048840909](https://github.com/alikatgh/openracket/actions/runs/38048840909),
+commit `720699694999cbf3cf97d864666b2e48c64aadc4`, fixed the delayed-startup
+fixture handling and verified separate pristine/patched runtime paths and hashes.
+
+- Pristine stock and stock fallback each passed 20 real-host checks.
+- Modern light passed 24 checks, including actual scheme activation, retained
+  editor/canvas identities, exact Unicode file loading, menu/tab/toolbar presence,
+  native undo/redo and two real Run callbacks producing the marker and value 42.
+- Genuine OS screenshots were captured in those three passing modes. The light
+  image shows the original selected 128 MB evaluation limit.
+- Modern dark passed its first 17 checks, then failed the strict painter/editor
+  synchronization assertion. Its failure screenshot shows a dark editor and light
+  toolbar. Official preference source confirms callbacks run before storing the
+  new preference; the immediate bridge reread stale mode. The bridge now coalesces post-commit synchronization, synchronizes completed
+  apply/restore transactions and refreshes existing toolbar canvases. Nine new
+  independent callback-order regressions and three retained-toolbar refresh tests
+  pass locally; actual dark startup/live switching still require the next native run.
+- Missing Japanese glyphs appear in both pristine and modern captures. Exact
+  Unicode source equality passes; this is a runner font coverage limitation.
+
+## Remaining native gates
+
+- Rerun dark startup and live preference-mode changes after the bridge repair.
+  Do not treat the diagnostic failure screenshot as a passed modern-dark state.
+- The corrected performance harness was skipped after the correctness failure.
+  First-run timeout records are not usable timings; no speed claim is supported.
+- macOS passed the repaired public-repository guard, then failed official DMG
+  checksum verification before installation. The CI digest pin is being corrected
+  from official release evidence; no native macOS checks passed yet.
+- Stop/EOF/WXME/Check Syntax candidates are prepared separately for the next native
+  batch. Debugger, Macro Stepper, teaching languages, accessibility, IME, Retina,
   complete stock parity and comprehensive visual layout review remain open.
 - Local full-package installation and its authorized retry were cancelled before
-  package registry commit. The local native display cannot open sockets and was
-  not retried. Native evidence above comes only from the separately authorized CI.
+  registry commit. Local display socket creation remains blocked without retry.
+  Native evidence above comes only from the separately authorized CI.
 
 The portable Racket applier compiles, shell setup/launchers pass syntax and
 check-mode validation, and six performance-harness Python tests pass. The full

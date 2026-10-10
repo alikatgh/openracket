@@ -15,6 +15,24 @@
 (define enabled-pref 'openracket:appearance-enabled?)
 (define state-pref 'openracket:appearance-state)
 (define snapshot-pref 'openracket:appearance-snapshot)
+(define synchronize-painter! void)
+;; Weak keys neither keep closed frames alive nor accumulate dead registrations.
+(define toolbar-parents (make-weak-hasheq))
+
+(define (refresh-retained-toolbars!)
+  (define (visit widget)
+    (when (is-a? widget canvas<%>) (send widget refresh))
+    (when (is-a? widget area-container<%>)
+      (for ([child (in-list (send widget get-children))]) (visit child))))
+  (for ([parent (in-hash-keys toolbar-parents)]) (visit parent)))
+
+(define (track-toolbar-parent-mixin super%)
+  (class super%
+    (inherit get-button-panel)
+    (super-new)
+    ;; The original parent includes Save and the plugin button panel. Do not
+    ;; traverse other frame areas, reparent widgets, or replace their callbacks.
+    (hash-set! toolbar-parents (send (get-button-panel) get-parent) #t)))
 (define (modern-session?)
   (host-theme-enabled? (getenv "OPENRACKET_HOST_THEME") (getenv "OPENRACKET_UI")))
 
@@ -44,22 +62,43 @@
            (string-constant break-button-label) 'stop
            (string-constant break-button-kill-label) 'stop)))
   (when set-theme!
-    (define (sync-theme! background)
-      (set-theme! (if (color-prefs:white-on-black-color-scheme?) 'dark 'light)))
-    (sync-theme! #f)
-    ;; Framework owns color/mode changes, including the standard Preferences UI.
+    (define sync-queued? #f)
+    (define (sync-theme!)
+      (set-theme! (if (color-prefs:white-on-black-color-scheme?) 'dark 'light))
+      (refresh-retained-toolbars!))
+    (define (schedule-theme-sync!)
+      (unless sync-queued?
+        (set! sync-queued? #t)
+        (queue-callback
+         (lambda ()
+           (set! sync-queued? #f)
+           ;; Framework invokes preference callbacks BEFORE committing the
+           ;; new value. Read the final mode on the next event, not in the
+           ;; color-entry callback (which otherwise observes the old mode).
+           (sync-theme!)))))
+    (set! synchronize-painter! sync-theme!)
+    (sync-theme!)
+    ;; Keep following Framework's mode, including native Preferences changes,
+    ;; platform-driven mode changes, and custom schemes with equal backgrounds.
     (color-prefs:register-color-scheme-entry-change-callback
-     'framework:basic-canvas-background sync-theme!)))
+     'framework:basic-canvas-background (lambda (background) (schedule-theme-sync!)))
+    (preferences:add-callback
+     'framework:white-on-black-mode?
+     (lambda (preference incoming-mode) (schedule-theme-sync!)))))
 
 (define (capture-appearance)
   (for/list ([key (in-list appearance-pref-keys)])
     (cons key (preferences:get key))))
 
 (define (restore-snapshot! snapshot)
-  (restore-appearance!
-   snapshot preferences:set
-   (lambda (dark?) (color-prefs:get-current-color-scheme-name #:wob? dark?))
-   color-prefs:set-current-color-scheme))
+  (dynamic-wind
+    void
+    (lambda ()
+      (restore-appearance!
+       snapshot preferences:set
+       (lambda (dark?) (color-prefs:get-current-color-scheme-name #:wob? dark?))
+       color-prefs:set-current-color-scheme))
+    synchronize-painter!))
 
 (define (apply-appearance!)
   (define before (capture-appearance))
@@ -111,6 +150,9 @@
       (preferences:set snapshot-pref before))
     (preferences:set enabled-pref #t)
     (preferences:set state-pref 'applied)
+    ;; Our transaction is now committed; first-frame painting must not depend
+    ;; on whether the queued synchronization event has run yet.
+    (synchronize-painter!)
     #t))
 
 (define (initialize-once!)
@@ -187,4 +229,5 @@
       (drracket:get/extend:extend-unit-frame
        (make-frame-spacing-mixin initialize-once! layout-enabled?))
       (drracket:get/extend:extend-unit-frame
-       (make-status-chrome-mixin layout-enabled?)))))
+       (make-status-chrome-mixin layout-enabled?))
+      (drracket:get/extend:extend-unit-frame track-toolbar-parent-mixin))))

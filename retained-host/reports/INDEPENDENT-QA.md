@@ -130,3 +130,42 @@ cleanup, with a screenshot-capture window explicitly marked as failure diagnosti
 This is a harness-only repair; production toolbar/theme behavior was not changed.
 A native rerun is still required for file-open, undo/redo, Run, theme activation and
 screenshots. No full parity or performance claim follows from the first run.
+
+## Second native CI result and theme callback defect
+
+Run 38048840909, commit 720699694999cbf3cf97d864666b2e48c64aadc4:
+Linux pristine-stock and stock-fallback full-host checks passed (20 each), including
+exact UTF-8 file opening, undo/redo, and two real Run cycles returning 42. Modern
+light passed 24 checks, including actual appearance activation. Native OS screenshots
+were captured. The repaired harness logged that ordinary startup initially had an
+empty untitled editor, then public file-open loaded the exact 154-character fixture.
+
+Modern dark failed the strict painter-synchronization assertion after the correct
+mode preference and both selected schemes had passed. The failure screenshot shows
+a dark editor and light toolbar buttons. Independent source review identified a
+production callback-ordering defect: `framework/preferences.rkt` invokes preference
+callbacks before writing the new value. The bridge reread that old mode during a
+new dark background callback, leaving its painter light after commit.
+
+The owner repaired this with a coalesced queued synchronization that rereads committed
+mode, explicit synchronization after apply/restore, and weakly tracked retained
+button repainting. Independent source-extraction tests now include nine bridge cases:
+both initial modes; before-commit transitions; repeated and rapid toggles; equal
+background custom schemes; explicit transaction synchronization; absent optional
+painter; and repaint request. All 39 independent headless Racket tests pass after
+the repair (22 transaction, 8 pixel/state, 9 bridge). The host harness now logs exact
+mode/schemes/background/painter state and checks a real opposite-mode-and-back
+preference round trip, using event-loop fences but no test-side forced repaint.
+Native confirmation of this production fix is pending the next CI run.
+
+Four scoped follow-on cases are integrated behind optional `OPENRACKET_NATIVE_CASE`:
+`stop`, `input-eof`, `wxme`, and `check-syntax`. Each must run in a separate fresh
+process/profile in pristine stock and modern dark. They retain the same failure
+window/text/screenshot contract. The Check Syntax case requires exact `bump` and `x`
+local binding edges and emits normalized numeric endpoints for paired comparison.
+These candidate workflows have source/reader review only, not a native pass yet.
+
+The Linux screenshots also show missing Japanese glyphs in both pristine stock and
+the modern failure capture. UTF-8 buffer equality passed; font glyph availability
+is a separate environment/visual acceptance item and is not claimed fixed by this
+appearance change.

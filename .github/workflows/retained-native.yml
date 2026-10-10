@@ -65,7 +65,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends xvfb xauth imagemagick libgtk-3-0t64
+          sudo apt-get install -y --no-install-recommends xvfb xauth imagemagick libgtk-3-0t64 fonts-noto-cjk
       - name: Install checksum-pinned full official Racket 9.3
         run: bash retained-host/scripts/ci/install-full-racket.sh
       - name: Prepare and headless integrity checks
@@ -80,6 +80,9 @@ jobs:
       - name: Verify retained fallback, light and dark native hosts
         timeout-minutes: 6
         run: bash retained-host/scripts/ci/run-phase.sh modern
+      - name: Verify native Stop, input, WXME and Check Syntax preservation
+        timeout-minutes: 8
+        run: bash retained-host/scripts/ci/run-phase.sh followon
       - name: Measure matched pristine and retained native editors
         timeout-minutes: 15
         run: bash retained-host/scripts/ci/run-phase.sh performance

@@ -18,7 +18,7 @@ REPORT.parent.mkdir(exist_ok=True)
 STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
-assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'performance'), 'Explicit phase required'
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'followon', 'performance'), 'Explicit phase required'
 START = time.monotonic()
 
 
@@ -112,17 +112,21 @@ def emit_image(mode, path):
     print(f'OPENRACKET_SCREENSHOT_END {mode}', flush=True)
 
 
-def native_host(mode):
-    env = environment(mode, 'host')
-    ready, done = TEMP/f'{mode}-ready.json', TEMP/f'{mode}-capture-done'
+def native_host(mode, case=None):
+    label = mode if case is None else mode+'-'+case
+    env = environment(mode, 'host' if case is None else 'followon-'+case)
+    if case is not None:
+        assert case in ('stop', 'input-eof', 'wxme', 'check-syntax')
+        env['OPENRACKET_NATIVE_CASE'] = case
+    ready, done = TEMP/f'{label}-ready.json', TEMP/f'{label}-capture-done'
     env['OPENRACKET_READY_FILE'], env['OPENRACKET_CAPTURE_DONE'] = str(ready), str(done)
-    logfile = TEMP/f'{mode}-native-host.log'
-    screenshot = TEMP/f'{mode}-native-host.png'
-    print('\n::group::' + mode + ' genuine DrRacket host', flush=True)
+    logfile = TEMP/f'{label}-native-host.log'
+    screenshot = TEMP/f'{label}-native-host.png'
+    print('\n::group::' + label + ' genuine DrRacket host', flush=True)
     captured, capture_detail = False, 'Native host never became ready'
     with logfile.open('w') as log:
-        proc = subprocess.Popen([RACKET, 'tests/independent-native-host.rkt'], env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-        deadline = time.monotonic() + 100
+        proc = subprocess.Popen([env['RACKET'], 'tests/independent-native-host.rkt'], env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        deadline = time.monotonic() + (60 if case else 100)
         while proc.poll() is None and time.monotonic() < deadline:
             if ready.exists():
                 try:
@@ -146,14 +150,15 @@ def native_host(mode):
             result = 124
     print(logfile.read_text(), flush=True)
     passed = result == 0 and ready.exists() and json.loads(ready.read_text()).get('status') == 'passed'
-    record(mode + ' genuine host/editor assertions', passed, f'exit={result}; report-status={json.loads(ready.read_text()).get("status") if ready.exists() else "absent"}')
+    record(label + ' genuine host/editor assertions', passed, f'exit={result}; report-status={json.loads(ready.read_text()).get("status") if ready.exists() else "absent"}')
     if ready.exists() and captured:
-        label = mode if passed else mode+('-timeout-diagnostic' if result == 124 else '-failure-diagnostic')
+        label = label if passed else label+('-timeout-diagnostic' if result == 124 else '-failure-diagnostic')
         emit_image(label, screenshot)
         record(label + ' OS screenshot capture', True, capture_detail)
     else:
-        record(mode + ' OS screenshot capture', False, capture_detail)
+        record(label + ' OS screenshot capture', False, capture_detail)
     print('::endgroup::', flush=True)
+    return passed
 
 
 def widgets(mode):
@@ -208,7 +213,7 @@ def overlay():
         raise RuntimeError('Appearance registration failed')
     if not command('Compile real GUI and register appearance metadata', [RACO, 'setup', '--no-docs', '--pkgs', 'gui-lib', 'openracket-appearance'], environment('modern-dark', 'setup'), 360):
         raise RuntimeError('Real GUI compilation failed')
-    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt'], environment('modern-dark', 'setup'), 180):
+    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt', 'tests/independent-native-workflows.rkt'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Actual theme/tool compilation failed')
     if not command('Compile retained DrRacket entrypoint', [RACO, 'make', '-l', 'drracket/drracket'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Retained DrRacket compilation failed')
@@ -231,6 +236,12 @@ try:
             widgets(mode)
             native_host(mode)
         command('Verify pristine source unchanged after overlay tests', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'followon':
+        for mode in ('pristine-stock', 'modern-dark'):
+            for case in ('stop', 'input-eof', 'wxme', 'check-syntax'):
+                if not native_host(mode, case):
+                    raise RuntimeError(f'{mode} {case} failed; subsequent preservation/performance checks not run')
+        command('Verify pristine source unchanged after preservation workflows', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'performance':
         performance('pristine-stock')
         performance('modern-dark')
