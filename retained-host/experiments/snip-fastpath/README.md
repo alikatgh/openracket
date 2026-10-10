@@ -1,8 +1,11 @@
 # Private retained-DrRacket snip scan experiment
 
 This is an uninstalled, opt-in performance candidate for exactly Racket 9.3.
-It has no native outcome or measured speed benefit yet. It is outside the
-retained-host appearance branch and is not included in its CI snapshot.
+This working revision adds a conservative contract-wrapper guard that has not
+yet run natively. The preceding revision passed Linux native editor and exact
+lexer equivalence gates in run 38058079020; its paired measurements are still
+pending. No measured speed benefit is established. Appearance changes are not
+part of the scan experiment.
 
 ## Intended shortcut
 
@@ -13,7 +16,7 @@ walks when the stock colorer opens another editor-backed input port.
 
 The candidate returns false only when the cache is already true, no mutation
 callback is pending, no uncertain callback exit occurred, and the argument is
-false or an owned exact native string snip. Every detached/custom/subclass/rich
+false or an owned, uncontracted exact native string snip. Every detached/custom/subclass/rich
 argument is delegated, including stock's detached-snip contract exception.
 Unknown/false cache states and invalid arguments use the exact inherited method. It does not rescan an unknown cache or add virtual
 calls while deciding whether to use the shortcut.
@@ -37,13 +40,19 @@ required.
 
 ## Conservative eligibility
 
-Only buffers observed through exact native `string-snip%` objects keep the
-shortcut. Custom string subclasses and other string-derived snips fall back
+Only buffers observed through uncontracted exact native `string-snip%` objects
+keep the shortcut. The documented `has-contract?` predicate excludes object and
+class contracts even when their object interface is unchanged. This avoids
+introducing contract callbacks through the shortcut’s public `get-admin` check.
+The guard deliberately accepts a smaller set of snips; the native fast-hit
+assertion must still prove ordinary editor-created strings qualify.
+
+Custom string subclasses and other string-derived snips fall back
 permanently, preserving their split/merge behavior. In particular, stock text%
 can splice a subclass's rich `merge-with` result during a style change without
 insert/delete hooks, leaving the inherited all-string cache stale. The original
-after-insert range walk now checks interface identity without adding any virtual
-snip call. Mutations beginning with false/unknown cache knowledge also disable
+after-insert range walk now checks interface identity and contract metadata
+without adding any virtual snip call. Mutations beginning with false/unknown cache knowledge also disable
 the shortcut, preventing unexamined rich histories from becoming eligible later.
 This restricts the optimization; it does not restrict what the editor accepts.
 

@@ -1,4 +1,4 @@
-name: Retained DrRacket scan experiment (public free runners)
+name: Retained DrRacket isolated speed experiments (public free runners)
 
 'on':
   push:
@@ -67,24 +67,40 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends xvfb xauth imagemagick libgtk-3-0t64 fonts-noto-cjk
       - name: Install checksum-pinned full official Racket 9.3
+        id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare isolated candidate and compile full native host
+      - name: Prepare guarded scan candidate and compile native host
+        id: scan_prepare
         timeout-minutes: 8
         run: bash retained-host/scripts/ci/run-scan-phase.sh prepare
-      - name: Verify native editor and exact lexer equivalence
+      - name: Prepare separate budget candidate and common contention workload
+        if: ${{ !cancelled() && steps.runtime.outcome == 'success' }}
+        id: budget_prepare
+        timeout-minutes: 8
+        run: bash retained-host/scripts/ci/run-budget-phase.sh prepare
+      - name: Verify guarded scan native editor and exact lexer equivalence
+        if: ${{ !cancelled() && steps.scan_prepare.outcome == 'success' }}
         id: scan_correctness
         timeout-minutes: 4
         run: bash retained-host/scripts/ci/run-scan-phase.sh correctness
-      - name: Measure matched stock and candidate workloads
-        if: steps.scan_correctness.outcome == 'success'
+      - name: Verify budget host workflows and exact lexer equivalence
+        if: ${{ !cancelled() && steps.budget_prepare.outcome == 'success' }}
+        id: budget_correctness
         timeout-minutes: 8
-        run: bash retained-host/scripts/ci/run-scan-phase.sh performance
-      - name: Report actual scan results
+        run: bash retained-host/scripts/ci/run-budget-phase.sh correctness
+      - name: Measure isolated20ms versus8ms typing-during-coloring workloads
+        if: ${{ !cancelled() && steps.scan_correctness.outcome == 'success' && steps.budget_correctness.outcome == 'success' }}
+        timeout-minutes: 8
+        run: bash retained-host/scripts/ci/run-budget-phase.sh performance
+      - name: Report actual correctness and budget results
         if: always()
         run: |
-          if test -f retained-host/reports/scan-ci/summary.md; then
-            cat retained-host/reports/scan-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'Setup failed before scan validation; no speed or correctness claim.' >> "$GITHUB_STEP_SUMMARY"
-          fi
+          for report in retained-host/reports/scan-ci/summary.md retained-host/reports/budget-ci/summary.md; do
+            if test -f "$report"; then
+              cat "$report" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "No result available for $report; setup or an earlier gate failed." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          echo 'The scan guard was checked only for correctness in this batch. Budget timing has scan and appearance overlays absent.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No Actions artifacts, caches, releases, packages or paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"

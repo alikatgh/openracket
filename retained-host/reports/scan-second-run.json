@@ -1,0 +1,355 @@
+{
+  "run_id": 38058079020,
+  "commit": "028f01282977aed8aa11764ca3e881dbaab8a2ec",
+  "url": "https://github.com/alikatgh/openracket/actions/runs/38058079020",
+  "conclusion": "failure",
+  "actions_artifact_count": 0,
+  "candidate_manifest_sha256": "ca44e0cd8578f5bcc9721ac69710bed12731987b2c8dd171d2088fec29cf6562",
+  "platforms": {
+    "linux": {
+      "conclusion": "success",
+      "log_sha256": "036c7ab84dd7745b05a4c1acc263e408a92ed7e397b1860bca3d2de20a0778b8",
+      "records_sha256": "6ff4b18197817f3b3e1108945cf3dbae6997c12b702be97f488c2ffaa897bbe3",
+      "native_editor_cases": 14,
+      "native_editor_result": "passed",
+      "lexer_equivalence": "passed",
+      "stages": [
+        {
+          "name": "Frozen experiment source hashes",
+          "passed": true,
+          "detail": "26 files"
+        },
+        {
+          "name": "generator-integrity-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "installed-source-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Native lexer comparator unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Headless scan source and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Shared benchmark supervisor checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Shared benchmark metadata, activation and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Deep-copy independent candidate runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Compile actual candidate and native test modules",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Compile complete candidate DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Native editor preservation cases with asserted private activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Exact native lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 1 stock matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 1 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 2 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 2 stock matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 3 stock matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 3 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Complete paired workload and equal selected settings",
+          "passed": true,
+          "detail": "{\"completed_trials\": {\"stock\": 3, \"candidate\": 3}, \"expected_per_arm\": 3, \"settings_equal_for_valid_trials\": true, \"completed_workload_comparison_available\": true, \"warning\": \"Interleaved fresh-process lexer/editor workloads on one runner; total background-tool completion, cold filesystem caches and input-to-photon are not measured. Previous baseline is not substituted.\", \"initial_open_to_lexer_observation_ms_median\": {\"stock\": 30741.427819, \"candidate\": 28254.936123}, \"candidate_over_stock_readiness_ratio\": 0.9191159333704336}"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        }
+      ],
+      "paired_comparison": {
+        "completed_trials": {
+          "stock": 3,
+          "candidate": 3
+        },
+        "expected_per_arm": 3,
+        "settings_equal_for_valid_trials": true,
+        "completed_workload_comparison_available": true,
+        "warning": "Interleaved fresh-process lexer/editor workloads on one runner; total background-tool completion, cold filesystem caches and input-to-photon are not measured. Previous baseline is not substituted.",
+        "initial_open_to_lexer_observation_ms_median": {
+          "stock": 30741.427819,
+          "candidate": 28254.936123
+        },
+        "candidate_over_stock_readiness_ratio": 0.9191159333704336
+      }
+    },
+    "macos": {
+      "conclusion": "failure",
+      "log_sha256": "6decf4e01a4fae46b013defe054bbd8b02fc0fbce6de97dab5729e6261406e1c",
+      "records_sha256": "ba8fcf5dd8e5fa9406106ee4a5d90ccd2ea723ad3b96362fb9023305f19bc293",
+      "native_editor_cases": 14,
+      "native_editor_result": "passed",
+      "lexer_equivalence": "passed",
+      "stages": [
+        {
+          "name": "Frozen experiment source hashes",
+          "passed": true,
+          "detail": "26 files"
+        },
+        {
+          "name": "generator-integrity-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "installed-source-test.py",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Native lexer comparator unit tests",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Headless scan source and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Shared benchmark supervisor checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Shared benchmark metadata, activation and lifecycle checks",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Deep-copy independent candidate runtime",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Compile actual candidate and native test modules",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Compile complete candidate DrRacket entrypoint",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Native editor preservation cases with asserted private activation",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate actual retained-editor lexer outcomes",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Exact native lexer/token/style/parenthesis equivalence",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 1 stock matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 1 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 2 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 2 stock matched 1 MiB workload",
+          "passed": false,
+          "detail": "exit=1"
+        },
+        {
+          "name": "Pair 3 stock matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Pair 3 candidate matched 1 MiB workload",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "Complete paired workload and equal selected settings",
+          "passed": false,
+          "detail": "{\"completed_trials\": {\"stock\": 2, \"candidate\": 3}, \"expected_per_arm\": 3, \"settings_equal_for_valid_trials\": true, \"completed_workload_comparison_available\": false, \"warning\": \"Interleaved fresh-process lexer/editor workloads on one runner; total background-tool completion, cold filesystem caches and input-to-photon are not measured. Previous baseline is not substituted.\"}"
+        },
+        {
+          "name": "stock exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        },
+        {
+          "name": "candidate exact installed source verification",
+          "passed": true,
+          "detail": "exit=0"
+        }
+      ],
+      "paired_comparison": {
+        "completed_trials": {
+          "stock": 2,
+          "candidate": 3
+        },
+        "expected_per_arm": 3,
+        "settings_equal_for_valid_trials": true,
+        "completed_workload_comparison_available": false,
+        "warning": "Interleaved fresh-process lexer/editor workloads on one runner; total background-tool completion, cold filesystem caches and input-to-photon are not measured. Previous baseline is not substituted."
+      }
+    }
+  }
+}

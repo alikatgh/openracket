@@ -4,6 +4,7 @@
 ;; This private helper is used ONLY at the pinned stock DrRacket composition.
 ;; The public Framework mixin/module remains byte-for-byte original.
 (require racket/class racket/gui/base
+         (only-in racket/contract/base has-contract?)
          (only-in framework text:all-string-snips<%> text:all-string-snips-mixin))
 (provide openracket:all-string-snips-mixin openracket-fast-path-selected?)
 ;; Reuse the real public interface object; never create a replacement interface.
@@ -89,13 +90,14 @@
                  (null? openracket-mutations-pending)
                  (eq? all-string-snips-state #t)
                  ;; Keep the exact arity and stock detached-snip contract.
-                 ;; Only an exact native string snip has the known field-only
-                 ;; get-admin method. Subclasses/custom/invalid arguments always
+                 ;; Only an uncontracted exact native string snip has the known
+                 ;; field-only get-admin method. Subclasses/custom/invalid arguments always
                  ;; delegate, without invoking an additional virtual callback.
                  ;; A detached native snip delegates too: stock object=? raises
                  ;; for its #f admin, even when this editor is empty.
                  (or (not snip)
                      (and (is-a? snip string-snip%)
+                          (not (has-contract? snip))
                           (eq? (object-interface snip) (class->interface string-snip%))
                           (send snip get-admin))))
             #f
@@ -123,7 +125,8 @@
                   [(not (< i end)) (void)]
                   [(is-a? s string-snip%)
                    (when (and openracket-fast-path-enabled?
-                              (not (eq? (object-interface s) (class->interface string-snip%))))
+                              (or (has-contract? s)
+                                  (not (eq? (object-interface s) (class->interface string-snip%)))))
                      (set! openracket-fast-path-safe? #f))
                    (define size (send s get-count))
                    (loop (send s next) (+ i size))]

@@ -23,7 +23,7 @@ is a separate assertion, not implied by these file hashes.
 Compile the actual candidate helper and unit module, the complete DrRacket
 entrypoint, and tests/independent-native-fastpath-test.rkt. Run the latter with
 OPENRACKET_ALL_STRING_FAST_PATH=1 and a 60-second process bound. It asserts the
-private module selection and real public interface, then compares 14 native
+private module selection and real public interface, then compares 15 native
 editor cases. Do not treat a compile error or a stock-only run as a pass.
 
 ## Retained-editor lexer equivalence

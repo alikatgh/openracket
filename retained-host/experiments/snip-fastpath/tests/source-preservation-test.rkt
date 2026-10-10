@@ -23,7 +23,8 @@
 (define eligibility-guards-removed 0)
 (define eligibility-guard
   '(when (and openracket-fast-path-enabled?
-              (not (eq? (object-interface s) (class->interface string-snip%))))
+              (or (has-contract? s)
+                  (not (eq? (object-interface s) (class->interface string-snip%)))))
      (set! openracket-fast-path-safe? #f)))
 (define (restore-stock-scan tree)
   (cond [(pair? tree)

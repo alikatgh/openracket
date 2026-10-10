@@ -1,0 +1,19 @@
+{
+  "racket": "9.3",
+  "package": "gui-lib",
+  "package_catalog_sha1": "31187c9593c5eaabcb1850c0120408d7d9734496",
+  "module": "framework/private/color.rkt",
+  "upstream_sha256": "da45ea64a5a0b413296a60ebe61d3e5ee69a27b53a6f1e13ae258701bdce1578",
+  "patched_sha256": "e3770a8d0837ea98a4568b2474af1a10f30aee46705cffc29916120be5ada707",
+  "environment": "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS",
+  "accepted_values_ms": [
+    4,
+    8,
+    12,
+    20
+  ],
+  "default_ms": 20,
+  "native_tested": false,
+  "speedup_proven": false,
+  "activation": "isolated experiment only; never combine changes for first attribution"
+}

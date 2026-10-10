@@ -88,13 +88,14 @@ helpers='''
                  (null? openracket-mutations-pending)
                  (eq? all-string-snips-state #t)
                  ;; Keep the exact arity and stock detached-snip contract.
-                 ;; Only an exact native string snip has the known field-only
-                 ;; get-admin method. Subclasses/custom/invalid arguments always
+                 ;; Only an uncontracted exact native string snip has the known
+                 ;; field-only get-admin method. Subclasses/custom/invalid arguments always
                  ;; delegate, without invoking an additional virtual callback.
                  ;; A detached native snip delegates too: stock object=? raises
                  ;; for its #f admin, even when this editor is empty.
                  (or (not snip)
                      (and (is-a? snip string-snip%)
+                          (not (has-contract? snip))
                           (eq? (object-interface snip) (class->interface string-snip%))
                           (send snip get-admin))))
             #f
@@ -108,7 +109,7 @@ scan_start=s.index('      (define/augment (after-insert ',s.index('  (define all
 scan_end=s.index('      (define/augment (on-delete',scan_start)
 scan=s[scan_start:scan_end]
 scan_needle='              [(is-a? s string-snip%)\n               (define size (send s get-count))'
-scan_replacement='              [(is-a? s string-snip%)\n               (when (and openracket-fast-path-enabled?\n                          (not (eq? (object-interface s) (class->interface string-snip%))))\n                 (set! openracket-fast-path-safe? #f))\n               (define size (send s get-count))'
+scan_replacement='              [(is-a? s string-snip%)\n               (when (and openracket-fast-path-enabled?\n                          (or (has-contract? s)\n                              (not (eq? (object-interface s) (class->interface string-snip%)))))\n                 (set! openracket-fast-path-safe? #f))\n               (define size (send s get-count))'
 assert scan.count(scan_needle)==1
 s=s[:scan_start]+scan.replace(scan_needle,scan_replacement)+s[scan_end:]
 for name,next_marker,guard in [
@@ -145,6 +146,7 @@ helper_header='''#lang racket/base
 ;; This private helper is used ONLY at the pinned stock DrRacket composition.
 ;; The public Framework mixin/module remains byte-for-byte original.
 (require racket/class racket/gui/base
+         (only-in racket/contract/base has-contract?)
          (only-in framework text:all-string-snips<%> text:all-string-snips-mixin))
 (provide openracket:all-string-snips-mixin openracket-fast-path-selected?)
 ;; Reuse the real public interface object; never create a replacement interface.
@@ -175,7 +177,7 @@ manifest={
  'opt_in_environment':'OPENRACKET_ALL_STRING_FAST_PATH=1',
  'scope':'one private stock DrRacket definitions composition; generic Framework mixin is unchanged',
  'default_off':'uses exact stock text:all-string-snips-mixin object',
- 'eligibility':'exact native string-snip% only; rich/unknown history and subclasses permanently delegate',
+ 'eligibility':'uncontracted exact native string-snip% only; rich/unknown history, contracts and subclasses permanently delegate',
  'native_run':False,'speedup_proven':False}
 (ROOT/'reports/fastpath-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
 (ROOT/'reports/stock-all-string-fastpath.patch').write_text(''.join(difflib.unified_diff(unit_raw.decode().splitlines(True),unit.splitlines(True),fromfile='stock9.3/drracket/private/unit.rkt',tofile='candidate/drracket/private/unit.rkt')))

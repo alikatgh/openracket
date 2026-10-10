@@ -1,0 +1,163 @@
+--- scan/performance/retained-host.rkt
++++ contention/retained-host.rkt
+@@ -5,6 +5,7 @@
+ (define-runtime-path diagnostics-path "diagnostics.rkt")
+ (define-runtime-path settings-path "settings.rkt")
+ (define-runtime-path activation-path "activation.rkt")
++(define-runtime-path budget-activation-path "budget-activation.rkt")
+ (define started (current-inexact-monotonic-milliseconds))
+ (define (now) (current-inexact-monotonic-milliseconds))
+ (unless (zero? (vector-length (current-command-line-arguments)))
+@@ -33,7 +34,7 @@
+ (hash-set! report 'os (~a (system-type 'os)))
+ (hash-set! report 'vm (~a (system-type 'vm)))
+ (hash-set! report 'status "running")
+-(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "ordinary_timing"]))
++(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "initial_coloring_typing"]))
+ (define (persist!)
+   (call-with-output-file output #:exists 'truncate/replace
+     (lambda (port) (write-json report port) (newline port))))
+@@ -218,6 +219,9 @@
+   (record! 'scan_activation
+            ((dynamic-require activation-path 'verify-scan-activation)
+             (hash-ref config 'scan_activation "none")))
++  (record! 'budget_activation
++           ((dynamic-require budget-activation-path 'verify-budget-activation)
++            (hash-ref config 'budget_activation "none")))
+   (record! 'memory_before_open (memory-snapshot))
+   (set! phase "first_open")
+   (define initial-open-start (now))
+@@ -259,42 +263,85 @@
+                             (send editor on-char (new key-event% [key-code #\x])))))
+   (unless (= (send editor last-position) (add1 expected-size))
+     (error 'first-edit "synthetic editor key event did not insert exactly one character"))
+-  (set! phase "initial_lexer_settle")
+-  (define initial-settle (await-lexer! editor))
+-  (define initial-open-to-lexer-ms (- (now) initial-open-start))
+-  (record! 'initial_lexer_settle initial-settle)
+-  (record! 'initial_open_to_lexer_observation_ms initial-open-to-lexer-ms)
+-  (unless (hash-ref initial-settle 'complete)
+-    (error 'initial-lexer-settle "lexer did not become valid within45s; warm timings invalid"))
+-  (record! 'memory_after_initial_settle (memory-snapshot))
+-  (set! phase "warm_typing")
+-  (define warm-input-start (now))
+-  (define warm-samples
+-    (for/list ([i (in-range 80)])
+-      (define sample
+-        (timed-command (lambda () (send editor on-char (new key-event% [key-code #\a])))))
+-      (pause .016)
+-      sample))
+-  (define warm-input-elapsed (- (now) warm-input-start))
+-  (record! 'warm_editor_key_samples warm-samples)
+-  (record! 'warm_input_phase_ms warm-input-elapsed)
+-  (record! 'memory_after_warm_input (memory-snapshot))
++  ;; Separate experiment: type while initial coloring may still be pending.
++  ;; This is deliberately not comparable to the settled-input scan workload.
++  (record! 'memory_before_contention (memory-snapshot))
++  (set! phase "initial_coloring_typing")
++  (define contention-start (now))
++  (define next-contention-deadline (+ contention-start 16.0))
++  (define contention-reversed null)
++  (define contention-error #f)
++  ;; One outstanding request avoids an unbounded synthetic input backlog.
++  ;; The producer sleeps off the GUI thread and timestamps actual enqueueing.
++  (define contention-producer
++    (thread
++     (lambda ()
++       (for ([i (in-range 80)] #:break contention-error)
++         (define scheduled next-contention-deadline)
++         (sleep (max 0 (/ (- scheduled (now)) 1000.0)))
++         (define done (make-semaphore))
++         (define submitted (now))
++         (queue-callback
++          (lambda ()
++            (with-handlers ([(lambda (_) #t) (lambda (e) (set! contention-error (cons 'raised e)))])
++              (define dispatched (now))
++              (define valid-before? (send editor is-lexer-valid?))
++              (define editor-completed #f)
++              (define sample
++                (timed-command (lambda ()
++                                 (send editor on-char (new key-event% [key-code #\a]))
++                                 (set! editor-completed (now)))))
++              (define fenced (now))
++              (define valid-after? (send editor is-lexer-valid?))
++              (define dispatch-ms (- dispatched submitted))
++              (set! contention-reversed
++                    (cons (for/fold ([result sample])
++                                    ([key '(ordinal lexer_valid_before lexer_valid_after
++                                                    queue_to_handler_ms
++                                                    queue_to_editor_completion_ms
++                                                    queue_to_fence_ms
++                                                    producer_scheduling_delay_ms
++                                                    scheduled_to_editor_completion_ms
++                                                    scheduled_to_fence_ms)]
++                                     [value (list i valid-before? valid-after? dispatch-ms
++                                                  (- editor-completed submitted)
++                                                  (- fenced submitted)
++                                                  (max 0 (- submitted scheduled))
++                                                  (- editor-completed scheduled)
++                                                  (- fenced scheduled))])
++                            (hash-set result key value))
++                          contention-reversed))
++              (set! next-contention-deadline (+ fenced 16.0)))
++            (semaphore-post done)) #t)
++         (semaphore-wait done)))))
++  (gui-yield (thread-dead-evt contention-producer))
++  (when contention-error
++    (if (exn? (cdr contention-error))
++        (raise (cdr contention-error))
++        (error 'initial-coloring-typing "callback raised a non-exception: ~e" (cdr contention-error))))
++  (define contention-samples (reverse contention-reversed))
++  (unless (= (length contention-samples) 80)
++    (error 'initial-coloring-typing "producer did not complete exactly 80 requests"))
++  (define contention-elapsed (- (now) contention-start))
++  (record! 'initial_coloring_key_samples contention-samples)
++  (record! 'initial_coloring_typing_phase_ms contention-elapsed)
++  (record! 'keys_starting_with_lexer_invalid
++           (for/sum ([sample (in-list contention-samples)])
++             (if (hash-ref sample 'lexer_valid_before) 0 1)))
++  (record! 'memory_after_contention (memory-snapshot))
+   (unless (= (send editor last-position) (+ expected-size 81))
+-    (error 'warm-typing "synthetic editor key count mismatch"))
++    (error 'initial-coloring-typing "synthetic editor key count mismatch"))
+   (unless (string=? (send editor get-text edit-pos (+ edit-pos 81))
+                    (string-append "x" (make-string 80 #\a)))
+-    (error 'warm-typing "synthetic input content mismatch"))
+-  (set! phase "warm_jump")
+-  (record! 'warm_jump_samples
+-           (for/list ([i (in-range 12)])
+-             (define pos (if (even? i) near-end 0))
+-             (define sample
+-               (timed-command (lambda () (send editor set-position pos)
+-                                          (send editor scroll-to-position pos))))
+-             (pause .016)
+-             sample))
+-  (set! phase "final_lexer_settle")
+-  (record! 'final_lexer_settle (await-lexer! editor))
++    (error 'initial-coloring-typing "synthetic input content mismatch"))
++  (set! phase "post_typing_lexer_settle")
++  (define post-typing-settle (await-lexer! editor))
++  (define completed-workload-ms (- (now) initial-open-start))
++  (record! 'post_typing_lexer_settle post-typing-settle)
++  (record! 'open_to_completed_workload_ms completed-workload-ms)
++  (unless (hash-ref post-typing-settle 'complete)
++    (error 'post-typing-lexer-settle "lexer did not become valid within 45 seconds"))
++  (record! 'memory_after_post_typing_settle (memory-snapshot))
+   (set! phase "idle")
+   (pause .500)
+   (set! heartbeat-running? #f)
+@@ -304,6 +351,14 @@
+   (when finish-profile (record! 'diagnostics (finish-profile)))
+   ;; Metadata imports are outside every latency/profile phase.
+   (capture-settings!)
++  ;; Full source comparison is deliberately outside every timed/GC workload.
++  (define original-source (file->string fixture))
++  (define expected-source
++    (string-append (substring original-source 0 edit-pos) "x" (make-string 80 #\a)
++                   (substring original-source edit-pos)))
++  (unless (string=? (send editor get-text) expected-source)
++    (error 'contention-source "Full resulting source differs from the intended edits"))
++  (record! 'exact_resulting_source_verified #t)
+   ;; Explicit collection only after all latency work; do not hide allocation/GC.
+   (collect-garbage) (collect-garbage)
+   (record! 'memory_after_explicit_gc (memory-snapshot))

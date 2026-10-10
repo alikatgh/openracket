@@ -1,0 +1,20 @@
+#lang racket/base
+(require rackunit "../contention/budget-activation.rkt")
+(define (env value) (lambda (_) value))
+(define (lookup value) (lambda (_module _export fail) (if (eq? value 'absent) (fail) value)))
+(check-equal? (hash-ref (verify-budget-activation "stock" #:environment (env #f)
+                                                #:lookup (lookup 'absent)) 'status) "verified")
+(for ([value '("4" "8" "12" "20")])
+  (check-equal? (hash-ref (verify-budget-activation value #:environment (env value)
+                                                  #:lookup (lookup (string->number value)))
+                         'loaded_budget_ms) (string->number value)))
+(for ([case (list (list "stock" "8" 'absent) (list "stock" #f 20.0)
+                  (list "8" #f 8.0) (list "8" "8" 'absent) (list "8" "8" 20.0))])
+  (check-exn exn:fail?
+             (lambda () (verify-budget-activation (car case) #:environment (env (cadr case))
+                                                   #:lookup (lookup (caddr case))))))
+(check-exn exn:fail?
+           (lambda () (verify-budget-activation "stock" #:environment (env #f)
+                                                 #:lookup (lambda _ (error 'dependency "broken module")))))
+(check-equal? (hash-ref (verify-budget-activation "none" #:environment (env #f)) 'status)
+              "not-requested")

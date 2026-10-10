@@ -1,0 +1,8 @@
+{
+  "parent_commit": "028f01282977aed8aa11764ca3e881dbaab8a2ec",
+  "scan_manifest_sha256": "0842b0e2aadaa8d6ee2ce91084cd37826da809edd1c3a698c8df7cbfeec0ece1",
+  "budget_manifest_sha256": "528ded3580298b2a69d0f2e9e64d7f7eb87b207dd269ed883e0508b7ddcf9c78",
+  "scope": "Scan guard correctness only. Separate pristine20ms/budget8ms runtimes, no scan or appearance overlays in budget arms. Host and lexer correctness before six matched contention timing trials per OS.",
+  "previous_scan_run": 38058079020,
+  "prior_scan_measurements_not_transferred_to_guarded_revision": true
+}

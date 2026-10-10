@@ -1,7 +1,7 @@
 #lang racket/base
 ;; Execute the actual generated mixin against a deliberately small, GUI-free
 ;; mutation model. This verifies guard logic, not native text% behavior.
-(require rackunit racket/class racket/list racket/match racket/runtime-path)
+(require rackunit racket/class racket/contract racket/list racket/match racket/runtime-path)
 (define-runtime-path candidate "../overlay/drracket/private/openracket-all-string-snips.rkt")
 (define-runtime-path stock "../vendor/text-misc-v9.3.rkt")
 (define-runtime-path forbidden-framework-overlay "../overlay/framework/private/text-misc.rkt")
@@ -90,6 +90,7 @@
       (namespace-require 'racket/class)
       (for ([entry (in-list (list (cons 'text% text%) (cons 'snip% snip%)
                                  (cons 'string-snip% string-snip%)
+                                 (cons 'has-contract? has-contract?)
                                  (cons 'text:all-string-snips<%> public-all-string-interface)
                                  (cons 'getenv (lambda (_) (if enabled? "1" #f)))))])
         (namespace-set-variable-value! (car entry) (cdr entry) #t))
@@ -275,3 +276,29 @@
   (check-true (send t all-string-snips?))
   (send t silent-replace! (list rich))
   (check-eq? (send t find-next-non-string-snip #f) rich))
+
+(test-case "contract-wrapped native strings never introduce public getter callbacks"
+  (define t (fixture))
+  (define s (new string-snip%))
+  (send t insert! s)
+  (define range-calls 0)
+  (define wrapped
+    (contract (object/c [get-admin (->m (lambda (v) (set! range-calls (add1 range-calls)) #t))])
+              s 'snip-provider 'snip-client))
+  (check-true (impersonator? wrapped))
+  (check-true (has-contract? wrapped))
+  (check-eq? (object-interface wrapped) (class->interface string-snip%))
+  (set! range-calls 0)
+  (check-false (send t find-next-non-string-snip wrapped))
+  (check-equal? range-calls 0 "The original query never calls public get-admin")
+  (check-equal? (send t get-delegations) 1)
+  ;; The insertion scan must also exclude wrapped exact-interface snips, not
+  ;; merely the argument predicate. The public all-string result stays true.
+  (define other (fixture))
+  (define inserted
+    (contract (object/c [get-admin (->m any/c)])
+              (new string-snip%) 'snip-provider 'snip-client))
+  (send other insert! inserted)
+  (check-true (send other all-string-snips?))
+  (check-false (send other find-next-non-string-snip #f))
+  (check-equal? (send other get-delegations) 1))

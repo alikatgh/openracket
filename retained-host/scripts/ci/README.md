@@ -116,3 +116,7 @@ need their own evidence. See the prototype's acceptance and parity reports.
 The Racket distributions are downloaded from the official release site, not
 redistributed as repository files. Original upstream license notices included
 with the presentation overlay are retained.
+
+## Guarded scan correctness and independent budget batch
+
+The active workflow validates the contracted-snip fallback with the scan-only runtime, then validates a third budget-only runtime with pristine Framework text and DrRacket composition. Scan has no timing stage in this batch. Budget compares pristine20ms with explicitly verified8ms in three interleaved fresh-process pairs, after real host Run/input/EOF/WXME/Check Syntax/returning-Stop and exact lexer/token/style/parenthesis checks. The same contention workload, fixture, settings and appearance apply to both arms. Final source, completed coloring and observed contention are mandatory. The prior full acceptance workflow remains `retained-native-validation.yml`; deferred release gates and earlier failures are not erased.

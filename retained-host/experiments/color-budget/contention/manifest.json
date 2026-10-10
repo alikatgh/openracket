@@ -1,0 +1,15 @@
+{
+  "scope": "Separate initial-coloring typing measurement only; no runtime optimization installed",
+  "source_host_sha256": "b803200cf79fbbacbbdfa16879c9b577ca61d79728a66cf1a0a745d560e58a4f",
+  "source_run_sha256": "a455819c4c55f25cf2f8cda64df192ea205d768ff659edac71b5b71ca56b67bb",
+  "output_sha256": {
+    "retained-host.rkt": "01e7ab70522d84d32d1a4f63d629aeb4f6de4655ac3101b4f303ba90f401ebb4",
+    "run.py": "3225d6489e786490e462c16fb14d8212129c2d3368ec94a2ca53cf9de87c3fe3",
+    "budget-activation.rkt": "8e7dd28acd59a54e1a0791df49fcc90550d8b0b8cee32884d1d95b69a60d9230",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "settings.rkt": "728c9b4afb53ef6a5e117dbdc7118a5b64744457dffffe65a6b002fb14b7a950",
+    "diagnostics.rkt": "ae9d15a7f556a293a188ae2633157ab9d61133b9c30453ce69965f5df6e15319",
+    "activation.rkt": "c73dbb0aa51169ad73f074181443c2e7a4e1c9580aaeebb9efbf382d892a4e48",
+    "test_harness.py": "bb70969ce0d809a6fe64f49d54f73c88834646c6cddc1ecd2a096a3bbf81f087"
+  }
+}

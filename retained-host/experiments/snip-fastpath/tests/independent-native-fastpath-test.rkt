@@ -1,7 +1,7 @@
 #lang racket/base
 ;; Native-only correctness gate. Requires the installed private overlay and
 ;; OPENRACKET_ALL_STRING_FAST_PATH=1. No GUI execution is authorized locally.
-(require racket/class racket/file racket/gui/base racket/list racket/port
+(require racket/class racket/contract racket/file racket/gui/base racket/list racket/port
          rackunit rackunit/text-ui framework
          drracket/private/openracket-all-string-snips)
 
@@ -121,7 +121,8 @@
             (check-true (send editor all-string-snips?))
             (check-true (pair? (snips editor)))
             (for ([s (in-list (snips editor))])
-              (check-eq? (object-interface s) (class->interface string-snip%)))
+              (check-eq? (object-interface s) (class->interface string-snip%))
+              (check-false (has-contract? s) "Editor-created native strings remain eligible"))
             (set! calls 0)
             (check-false (send editor find-next-non-string-snip #f))
             (check-false (send editor find-next-non-string-snip (send editor find-first-snip)))
@@ -234,6 +235,27 @@
                         ((error arity) (error arity) (error contract) (error contract) (error contract))))
         (check-equal? (cadr results) (car results)
                       "Candidate preserves every original value or exception category"))))
+   (test-case "contract-wrapped native string arguments preserve stock internal-field access"
+     (on-gui
+      (lambda ()
+        (paired
+         (lambda (base%)
+           (define editor (new base%)) (send editor insert "contract café λ")
+           (define original (send editor find-first-snip))
+           (check-eq? (object-interface original) (class->interface string-snip%))
+           (define range-calls 0)
+           (define wrapped
+             (contract
+              (object/c [get-admin (->m (lambda (v) (set! range-calls (add1 range-calls)) #t))])
+              original 'snip-provider 'snip-client))
+           (check-true (impersonator? wrapped))
+           (check-true (has-contract? wrapped))
+           (check-eq? (object-interface wrapped) (object-interface original))
+           (set! range-calls 0)
+           (check-false (send editor find-next-non-string-snip wrapped))
+           (check-equal? range-calls 0
+                         "Stock's internal admin read has no public contract callback")
+           range-calls)))))
    (test-case "custom and string-subclass snips preserve exact suffix queries"
      (on-gui
       (lambda ()
