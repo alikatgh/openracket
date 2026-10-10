@@ -220,6 +220,10 @@ Without overrides, test_implementation.py retains the original local toolchain,
 profile and archive-backed source defaults as a convenience. Native prepare,
 capture and replay CLI contracts are unchanged by these test-only overrides.
 
+The launch-context tests preserve the exact captured environment strings and check
+resolved path identity separately. An explicit symlink-alias case covers macOS
+`/var` versus `/private/var` spelling without relaxing runtime context validation.
+
 Racket compilation of support.rkt, replay.rkt and capture-host.rkt is also checked.
 The protocol tests use an explicitly labeled fake expansion worker in a real
 Racket place, with real channel capabilities. They test framing, actual-terminal

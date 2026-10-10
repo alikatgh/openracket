@@ -1,0 +1,109 @@
+name: Retained DrRacket Mac portable installation (public free runner)
+
+'on':
+  push:
+    branches: ['prototype/retained-drracket']
+    paths:
+      - 'retained-host/**'
+      - '.github/workflows/retained-native.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retained-drracket-native
+  cancel-in-progress: false
+
+jobs:
+  native:
+    # These conditions are evaluated before allocating a runner.
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/prototype/retained-drracket'
+    runs-on: macos-15 # Standard free public runner only. No larger runner.
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recheck repository is public
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # official v9.0.0
+        with:
+          debug: false
+          retries: 0
+          script: |
+            // The official client uses this job's existing read-only token.
+            // No custom credentials, additional scopes, persistence or token logs.
+            try {
+              const { data: repo } = await github.rest.repos.get({owner: 'alikatgh', repo: 'openracket'});
+              core.info(JSON.stringify({full_name: repo.full_name, private: repo.private, visibility: repo.visibility}));
+              if (repo.full_name !== 'alikatgh/openracket' || repo.private !== false || repo.visibility !== 'public') {
+                core.setFailed('Public repository required; native validation was not started.');
+              }
+            } catch (error) {
+              const headers = error.response?.headers || {};
+              core.info(JSON.stringify({status: error.status, message: error.response?.data?.message,
+                rate_limit_remaining: headers['x-ratelimit-remaining'], rate_limit_reset: headers['x-ratelimit-reset']}));
+              core.setFailed('Public repository metadata check failed; native validation was not started.');
+            }
+      - name: Check out exact tested commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # official v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Install checksum-pinned full official Racket 9.3
+        id: runtime
+        run: bash retained-host/scripts/ci/install-full-racket.sh
+      - name: Verify source and prepare isolated runtime plus full-file baselines
+        id: prepare
+        timeout-minutes: 6
+        run: python3 retained-host/scripts/ci/run-portable.py prepare
+      - name: Run actual portable setup and compile read-only observer
+        id: install
+        timeout-minutes: 16
+        run: python3 retained-host/scripts/ci/run-portable.py install
+      - name: Run real modern default opt-out and stock launchers
+        if: steps.install.outcome == 'success'
+        timeout-minutes: 6
+        run: python3 retained-host/scripts/ci/run-portable.py launch
+      - name: Verify combined appearance and autosave save-recovery behavior
+        if: always() && steps.install.outcome == 'success'
+        timeout-minutes: 8
+        run: python3 retained-host/scripts/ci/run-portable.py save
+      - name: Prepare independent initialization-instrumented stock expansion clone
+        id: replay_prepare
+        if: always() && steps.prepare.outcome == 'success'
+        timeout-minutes: 9
+        run: python3 retained-host/scripts/ci/run-replay.py prepare
+      - name: Capture the actual native edited request and full handler registry
+        id: replay_capture
+        if: always() && steps.replay_prepare.outcome == 'success'
+        timeout-minutes: 4
+        run: python3 retained-host/scripts/ci/run-replay.py capture
+      - name: Diagnose two bounded same-process expansion replays
+        if: always() && steps.replay_capture.outcome == 'success'
+        timeout-minutes: 3
+        run: python3 retained-host/scripts/ci/run-replay.py replay
+      - name: Verify all original runtime files and bytecode stayed untouched
+        if: always() && steps.prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-portable.py verify
+      - name: Report actual portable installation results and limits
+        if: always()
+        run: |
+          if test -f retained-host/reports/portable-ci/summary.md; then
+            cat retained-host/reports/portable-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Portable preparation failed before a result was available.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'Mac-first real source-overlay setup/launcher gate. Linux and Windows installation gates are pending. Earlier Stop failures remain independent recorded release gaps.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/replay-ci/summary.md; then
+            cat retained-host/reports/replay-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'No Actions artifacts, caches, releases, packages or paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"

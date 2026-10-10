@@ -6,7 +6,7 @@ assert os.environ.get('GITHUB_ACTIONS')=='true'
 assert os.environ.get('GITHUB_REPOSITORY')=='alikatgh/openracket'
 assert os.environ.get('GITHUB_REF')=='refs/heads/prototype/retained-drracket'
 assert platform.system()=='Darwin'
-assert sys.argv[1:] in (['prepare'],['capture'],['replay'])
+assert sys.argv[1:] in (['prepare'],['capture'],['replay'],['verify'])
 PHASE=sys.argv[1];TEMP=pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
 STOCK=pathlib.Path(os.environ['OPENRACKET_CI_STOCK_RACKET']).resolve().parents[1]
 CLONE=STOCK.with_name(STOCK.name+'-replay');RACKET=CLONE/'bin/racket'
@@ -59,6 +59,7 @@ try:
             assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==expected,name
         record('Frozen diagnostic source hashes',True,hashlib.sha256(manifest.read_bytes()).hexdigest())
         command('Readable evidence transport unit tests',[sys.executable,ROOT/'scripts/ci/test-replay-evidence.py'])
+        command('Pristine complete runtime baseline',[sys.executable,ROOT/'scripts/ci/runtime-tree-check.py','baseline',STOCK,TEMP/'replay-pristine-tree.json'],timeout=180)
         command('Dedicated independent stock diagnostic clone',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','replay'],os.environ.copy(),timeout=180)
         expression='(display (collection-file-path "module-language.rkt" "drracket" "private"))'
         pristine=pathlib.Path(subprocess.check_output([str(STOCK/'bin/racket'),'-e',expression],env=env(),text=True,timeout=30)).resolve()
@@ -76,6 +77,8 @@ try:
         command('Actual native edited-snapshot request and registry capture',[sys.executable,EXP/'capture.py','--racket',RACKET,'--fixture',REPORTS/'fixtures/mixed-1mib.rkt','--output',CAPTURE],timeout=205)
     elif PHASE=='replay':
         command('Two same-process actual worker expansion replays',[sys.executable,EXP/'supervise.py','--racket',RACKET,'--capture',CAPTURE/'capture.rktd','--output',RESULTS,'--trials','2'],timeout=170)
+    elif PHASE=='verify':
+        command('Pristine complete runtime unchanged after diagnostic',[sys.executable,ROOT/'scripts/ci/runtime-tree-check.py','compare',STOCK,TEMP/'replay-pristine-tree.json'],timeout=180)
 except Exception as error:
     record(PHASE+' diagnostic orchestration',False,str(error));raise
 finally:

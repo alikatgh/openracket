@@ -312,12 +312,29 @@ class LaunchContextTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "posix", "requires POSIX process groups")
     def test_cli_restores_cwd_and_environment_for_fake_executable(self):
+        self.check_cli_restores_cwd_and_environment()
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process groups and symlinks")
+    def test_cli_preserves_captured_environment_through_symlink_alias(self):
+        alias = self.root / "path-alias"
+        alias.symlink_to(self.root, target_is_directory=True)
+        self.root = alias
+        self.capture = alias / "capture.rktd"
+        self.cwd = alias / "captured-cwd"
+        self.launch["cwd"] = str(self.cwd)
+        # Exercise /var versus /private/var-style spelling differences on any POSIX host.
+        self.assertNotEqual(str(alias / "captured-home"), str((alias / "captured-home").resolve()))
+        self.check_cli_restores_cwd_and_environment()
+
+    def check_cli_restores_cwd_and_environment(self):
         self.launch["environment"]["PLTUSERHOME"] = str(self.root / "captured-home")
         self.write_launch()
         fake = self.root / "fake-racket"
         fake.write_text("#!" + sys.executable + "\n" + FAKE_PREAMBLE + r'''
-assert pathlib.Path.cwd() == pathlib.Path(config['capture']).parent / 'captured-cwd'
-assert os.environ['PLTUSERHOME'] == str(pathlib.Path(config['capture']).parent / 'captured-home')
+launch = json.loads(pathlib.Path(config['capture']).with_suffix('.launch.json').read_text())
+assert pathlib.Path.cwd() == pathlib.Path(launch['cwd']).resolve()
+assert os.environ['PLTUSERHOME'] == launch['environment']['PLTUSERHOME']
+assert pathlib.Path(os.environ['PLTUSERHOME']).resolve() == (pathlib.Path(config['capture']).parent / 'captured-home').resolve()
 assert 'PLTADDONDIR' not in os.environ
 assert pathlib.Path(sys.argv[1]).name == 'replay.rkt'
 assert pathlib.Path(sys.argv[1]).is_absolute()
