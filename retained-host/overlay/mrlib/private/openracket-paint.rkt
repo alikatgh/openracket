@@ -4,6 +4,7 @@
 (provide modern-ui? modern-control-font paint-modern-button
          modern-role-labels current-modern-theme theme-color
          set-modern-host-theme! get-modern-host-theme set-modern-role-labels!
+         set-modern-chrome-blended! get-modern-chrome-blended?
          make-preview-icon call-with-dc-state)
 
 (define (modern-ui?) (not (equal? (getenv "OPENRACKET_UI") "stock")))
@@ -22,6 +23,14 @@
   (unless (memq theme '(auto dark light)) (raise-argument-error 'set-modern-host-theme! "(or/c 'auto 'dark 'light)" theme))
   (set-box! host-theme theme))
 (define (get-modern-host-theme) (unbox host-theme))
+;; Retained canvases are already transparent. Only a verified coherent native
+;; appearance may expose their parent's background; otherwise keep safe capsules.
+(define chrome-blended? (box #f))
+(define (set-modern-chrome-blended! enabled?)
+  (unless (boolean? enabled?)
+    (raise-argument-error 'set-modern-chrome-blended! "boolean?" enabled?))
+  (set-box! chrome-blended? enabled?))
+(define (get-modern-chrome-blended?) (unbox chrome-blended?))
 (define palettes
   (hash 'light (hash 'background "#F7F8FA" 'surface "#FFFFFF" 'hover "#E9EDF4"
                      'pressed "#DCE4EF" 'text "#253047" 'muted "#62718A"
@@ -36,14 +45,17 @@
   (make-object color% (string->number (substring h 1 3) 16)
                (string->number (substring h 3 5) 16)
                (string->number (substring h 5 7) 16)))
-(define modern-font
+;; Used only by GUI-free component samples when no host font is supplied.
+(define preview-font
   (make-font #:size 13 #:family 'system
              #:face (case (system-type 'os)
                       [(macosx) "SF Pro Text"] [(windows) "Segoe UI"]
                       [else "DejaVu Sans"])
              #:size-in-pixels? #t #:smoothing 'smoothed))
 (define (modern-control-font stock-font)
-  (if (modern-ui?) modern-font stock-font))
+  ;; The same original platform font is used by measurement and painting.
+  ;; Preserve its point/pixel sizing, face, weight and accessibility scaling.
+  stock-font)
 
 ;; Restore every mutable DC setting this module touches, including on failure.
 (define (call-with-dc-state dc thunk)
@@ -105,17 +117,20 @@
 ;; The stock host decides has-label?, small-width, in?, down?, and disabled?.
 ;; Unknown/localized/custom bitmap buttons retain their stock artwork.
 (define (paint-modern-button dc cw ch label bitmap alternate-bitmap
-                             has-label? disabled? in? down? small-width)
+                             has-label? disabled? in? down? small-width
+                             [control-font preview-font])
   (call-with-dc-state
    dc
    (lambda ()
      (send dc set-smoothing 'smoothed)
-     (send dc set-font modern-font)
+     (send dc set-font control-font)
      (define bg (theme-color (cond [(and in? (not disabled?) down?) 'pressed]
                                    [(and in? (not disabled?)) 'hover]
                                    [else 'background])))
-     (send dc set-brush bg 'solid) (send dc set-pen bg 0 'transparent)
-     (send dc draw-rounded-rectangle 1 2 (max 0 (- cw 2)) (max 0 (- ch 4)) 6)
+     (unless (and (get-modern-chrome-blended?)
+                  (not (and in? (not disabled?))))
+       (send dc set-brush bg 'solid) (send dc set-pen bg 0 'transparent)
+       (send dc draw-rounded-rectangle 1 2 (max 0 (- cw 2)) (max 0 (- ch 4)) 6))
      (send dc set-alpha (* (send dc get-alpha) (if disabled? .42 1)))
      (send dc set-text-foreground (theme-color 'text))
      (define show-text? (and has-label? (string? label) (> cw small-width)))

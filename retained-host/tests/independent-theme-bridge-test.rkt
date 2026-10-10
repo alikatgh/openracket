@@ -22,6 +22,8 @@
   (define ns (make-base-namespace))
   (parameterize ([current-namespace ns])
     (namespace-require 'racket/class)
+    (namespace-set-variable-value! 'native-appearance-opted-in? (lambda () #f) #t)
+    (namespace-set-variable-value! 'synchronize-native-appearance! void #t)
     (eval '(define-syntax-rule (string-constant key) (symbol->string 'key)))
     (for ([name '(optional-painter-export color-prefs:white-on-black-color-scheme?
                                          color-prefs:register-color-scheme-entry-change-callback
@@ -40,7 +42,7 @@
                  (lambda () (set! refresh-count (add1 refresh-count))))])
       (namespace-set-variable-value! name proc #t))
     (for ([form (in-list forms)]
-          #:when (memq (definition-name form) '(synchronize-painter! install-painter-bridge!)))
+          #:when (memq (definition-name form) '(synchronize-painter! set-painter-blended! install-painter-bridge!)))
       (eval form))
     ((eval 'install-painter-bridge!)))
   (define (transition! next #:background? [background? #t])

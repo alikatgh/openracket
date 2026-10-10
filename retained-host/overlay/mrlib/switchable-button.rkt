@@ -234,7 +234,8 @@
                                 (if (white-on-black-panel-scheme?) 'dark 'light)
                                 (get-modern-host-theme))])
               (paint-modern-button (get-dc) cw ch label bitmap alternate-bitmap
-                                   has-label? disabled? in? down? (get-small-width))))
+                                   has-label? disabled? in? down? (get-small-width)
+                                   (modern-control-font normal-control-font))))
           (paint-stock-button)))
 
     (define/private (paint-stock-button)

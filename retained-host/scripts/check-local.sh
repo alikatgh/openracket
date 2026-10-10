@@ -9,6 +9,6 @@ python3 scripts/prepare-overlay.py
 python3 tests/patcher-test.py
 python3 tests/independent-patcher-test.py
 python3 performance/test_harness.py
-"$RACO" test tests/source-preservation.rkt tests/paint-test.rkt tool/tests.rkt tool/frame-chrome-tests.rkt tests/independent-appearance-test.rkt tests/independent-paint-test.rkt tests/independent-theme-bridge-test.rkt performance/lifecycle-test.rkt
+"$RACO" test tests/source-preservation.rkt tests/paint-test.rkt tests/font-metrics-test.rkt tool/tests.rkt tool/frame-chrome-tests.rkt tests/independent-appearance-test.rkt tests/independent-paint-test.rkt tests/independent-theme-bridge-test.rkt tool/native-appearance-tests.rkt tests/independent-appearance-controller-test.rkt tests/independent-appearance-integration-test.rkt performance/lifecycle-test.rkt
 "$RACKET" scripts/render-proof.rkt
 "$RACKET" scripts/preflight.rkt

@@ -1,3 +1,13 @@
+# Experimental retained-host polish candidate
+
+This source adds platform-native toolbar font preservation and an explicitly gated
+Cocoa app-local appearance controller to the 1231 diagnostic baseline. It is frozen
+for native testing, not accepted for general use. All historical CI reports below
+refer to their recorded earlier commits, not this new candidate. See
+`POLISH-CANDIDATE.md` and `tool/NATIVE-APPEARANCE.md` for scope and restore behavior.
+Use `OPENRACKET_NATIVE_APPEARANCE=1` only to opt into the separate Cocoa candidate.
+Linux native theme override remains disabled.
+
 # OpenRacket: retained DrRacket9.3 host proof
 
 This is an isolated, reversible modernization experiment. It keeps the real

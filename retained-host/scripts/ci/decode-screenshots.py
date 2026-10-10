@@ -16,7 +16,8 @@ for line in a.log.read_text().splitlines():
         assert active is None, 'Nested or incomplete image blocks'
         label,size,digest=begin.groups()
         plain = label.removesuffix('-failure-diagnostic').removesuffix('-timeout-diagnostic')
-        allowed = {'pristine-stock','stock-fallback','modern-light','modern-dark'}
+        allowed = {'pristine-stock','stock-fallback','modern-light','modern-dark',
+                   'modern-dark-native-appearance-restored'}
         allowed.update(mode+'-'+case for mode in ('pristine-stock','modern-dark')
                        for case in ('stop','input-eof','wxme','check-syntax'))
         assert plain in allowed, 'Unknown screenshot evidence label'

@@ -106,7 +106,8 @@ def run_trial(args, fixture, repetition):
     env['OPENRACKET_BENCH_CONFIG'] = json.dumps({
         'fixture': fixture['path'], 'output': str(output), 'mode': args.mode,
         'edit_position': fixture['edit_position'], 'characters': fixture['characters'],
-        'profile': getattr(args, 'profile', False)})
+        'profile': getattr(args, 'profile', False),
+        'metadata_only': getattr(args, 'metadata_only', False)})
     command = [args.racket, str(ROOT / 'retained-host.rkt')]
     system = platform.system()
     resource_file = directory / 'native-resource.txt'
@@ -157,7 +158,10 @@ def main():
     parser.add_argument('--timeout', type=float, default=60)
     parser.add_argument('--fixture', choices=['all', 'mixed-100k', 'mixed-1mib'], default='all')
     parser.add_argument('--profile', action='store_true', help='Separate attribution-only trial; adds sampling/logging overhead')
+    parser.add_argument('--metadata-only', action='store_true', help='Open fixture and read settings; no latency workload')
     args = parser.parse_args()
+    if args.metadata_only and args.profile:
+        parser.error('--metadata-only and --profile are mutually exclusive')
     if not (1 <= args.repetitions <= 10 and 1 <= args.timeout <= 300):
         parser.error('repetitions must be1..10; timeout must be1..300 seconds')
     args.output = args.output.resolve()
@@ -166,7 +170,8 @@ def main():
     if args.fixture != 'all':
         fixtures = [fixture for fixture in fixtures if fixture['name'] == args.fixture]
     metadata = {'schema_version': 1, 'mode': args.mode,
-                'measurement_kind': 'instrumented_attribution_only' if args.profile else 'ordinary_timing',
+                'measurement_kind': ('metadata_only' if args.metadata_only else
+                                     'instrumented_attribution_only' if args.profile else 'ordinary_timing'),
                 'platform': platform.platform(),
                 'machine': platform.machine(), 'logical_cpus': os.cpu_count(),
                 'runner_os': os.getenv('RUNNER_OS'), 'runner_arch': os.getenv('RUNNER_ARCH'),

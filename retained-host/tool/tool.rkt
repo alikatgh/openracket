@@ -8,7 +8,9 @@
          string-constants
          "appearance-state.rkt"
          "frame-chrome.rkt"
-         "layout.rkt")
+         "layout.rkt"
+         "native-appearance.rkt"
+         "native-appearance-platform.rkt")
 (provide tool@)
 
 (define-logger openracket-appearance)
@@ -16,6 +18,12 @@
 (define state-pref 'openracket:appearance-state)
 (define snapshot-pref 'openracket:appearance-snapshot)
 (define synchronize-painter! void)
+(define set-painter-blended! void)
+(define native-controller #f) ; one app-scoped owner across every retained frame
+(define native-committed? #f)
+(define startup-native-considered? #f)
+(define native-state-write? (make-parameter #f))
+(define native-state-generation 0)
 ;; Weak keys neither keep closed frames alive nor accumulate dead registrations.
 (define toolbar-parents (make-weak-hasheq))
 
@@ -36,6 +44,80 @@
 (define (modern-session?)
   (host-theme-enabled? (getenv "OPENRACKET_HOST_THEME") (getenv "OPENRACKET_UI")))
 
+(define (native-appearance-opted-in?)
+  (and (modern-session?) (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE") "1")))
+
+(define (native-appearance-eligible?)
+  (and (native-appearance-opted-in?) (eq? (preferences:get state-pref) 'applied)))
+
+(define (set-appearance-state! value)
+  ;; Our transactions explicitly manage native ownership. Only external state
+  ;; restoration (stock Preferences Undo/Escape/defaults) needs reconciliation.
+  (parameterize ([native-state-write? #t]) (preferences:set state-pref value)))
+
+(define (begin-native-state-transaction!)
+  (set! native-state-generation (add1 native-state-generation)))
+
+(define (suspend-native-appearance!)
+  ;; Clear before restoring preferences/native state: both synchronous finalizers
+  ;; and already-queued mode notifications must see the inactive gate.
+  (set! native-committed? #f)
+  (set-painter-blended! #f))
+
+(define (deactivate-native-appearance! #:strict? [strict? #f])
+  (suspend-native-appearance!)
+  (when native-controller
+    (define restored (native-appearance-restore! native-controller))
+    (unless (memq (native-appearance-result-status restored) '(restored unchanged))
+      (log-openracket-appearance-warning "Native appearance restore requires retry: ~a" restored)
+      (when strict?
+        (error 'openracket-appearance "Native appearance could not be restored; retry Restore: ~a" restored)))))
+
+(define (current-native-mode)
+  (if (eq? (preferences:get 'framework:white-on-black-mode?) 'platform)
+      'platform
+      (if (color-prefs:white-on-black-color-scheme?) 'dark 'light)))
+
+(define (synchronize-native-appearance!
+         [mode (current-native-mode)])
+  (when native-committed?
+    (cond
+      [(not (native-appearance-eligible?)) (deactivate-native-appearance!)]
+      [else
+       (define applied
+         (if (eq? mode 'platform)
+             (native-appearance-follow-original! native-controller)
+             (native-appearance-set! native-controller mode)))
+       (cond
+         [(eq? (native-appearance-result-status applied) 'following)
+          ;; No app override is active; retain the ordinary safe painter until
+          ;; platform-following blend acceptance is genuinely verified.
+          (set-painter-blended! #f)]
+         [(and (memq (native-appearance-result-status applied) '(applied unchanged))
+               (native-appearance-active? native-controller))
+          (set-painter-blended! #t)]
+         [else
+          (log-openracket-appearance-warning "Native appearance remains unsupported: ~a" applied)
+          (deactivate-native-appearance!)])])))
+
+(define (activate-native-appearance!)
+  (when (native-appearance-eligible?)
+    (unless native-controller
+      (define adapter
+        (make-platform-native-appearance-adapter
+         #:enabled? #t
+         ;; GTK remains a separate native-test candidate. Value restoration does
+         ;; not recover property-source inheritance, so do not enable it here.
+         #:allow-gtk-candidate? #f
+         #:on-unavailable
+         (lambda (reason)
+           (log-openracket-appearance-warning "Native appearance unavailable: ~a" reason))))
+      (when adapter
+        (set! native-controller (make-native-appearance-controller adapter #:enabled? #t))))
+    (when native-controller
+      (set! native-committed? #t)
+      (synchronize-native-appearance!))))
+
 (define (layout-enabled?)
   (and (modern-session?) (preferences:get enabled-pref)))
 
@@ -53,6 +135,8 @@
 (define (install-painter-bridge!)
   (define set-theme! (optional-painter-export 'set-modern-host-theme!))
   (define set-roles! (optional-painter-export 'set-modern-role-labels!))
+  (set! set-painter-blended! (or (optional-painter-export 'set-modern-chrome-blended!) void))
+  (set-painter-blended! #f)
   (when set-roles!
     (set-roles!
      (hash (string-constant check-syntax) 'check
@@ -61,10 +145,11 @@
            (string-constant execute-button-label) 'run
            (string-constant break-button-label) 'stop
            (string-constant break-button-kill-label) 'stop)))
-  (when set-theme!
+  (when (or set-theme! (native-appearance-opted-in?))
     (define sync-queued? #f)
     (define (sync-theme!)
-      (set-theme! (if (color-prefs:white-on-black-color-scheme?) 'dark 'light))
+      (when set-theme! (set-theme! (if (color-prefs:white-on-black-color-scheme?) 'dark 'light)))
+      (synchronize-native-appearance!)
       (refresh-retained-toolbars!))
     (define (schedule-theme-sync!)
       (unless sync-queued?
@@ -84,15 +169,41 @@
      'framework:basic-canvas-background (lambda (background) (schedule-theme-sync!)))
     (preferences:add-callback
      'framework:white-on-black-mode?
-     (lambda (preference incoming-mode) (schedule-theme-sync!)))))
+     (lambda (preference incoming-mode) (schedule-theme-sync!)))
+    (when (native-appearance-opted-in?)
+      (define state-sync-queued? #f)
+      (define pending-state-generation #f)
+      (preferences:add-callback
+       state-pref
+       (lambda (preference incoming-state)
+         (unless (native-state-write?)
+           ;; A newer external write can reuse the queued callback, but must
+           ;; record its own generation after an intervening internal action.
+           (set! pending-state-generation native-state-generation)
+           (unless state-sync-queued?
+             (set! state-sync-queued? #t)
+             (queue-callback
+              (lambda ()
+                (set! state-sync-queued? #f)
+                ;; Framework's Undo Changes/Escape restores its full snapshot.
+                ;; Read final committed values only when no later internal
+                ;; transaction superseded this external state notification.
+                (when (equal? pending-state-generation native-state-generation)
+                  (if (native-appearance-eligible?)
+                      (activate-native-appearance!)
+                      (deactivate-native-appearance!))
+                  (sync-theme!)))))))))))
 
 (define (capture-appearance)
   (for/list ([key (in-list appearance-pref-keys)])
     (cons key (preferences:get key))))
 
-(define (restore-snapshot! snapshot)
+(define (restore-snapshot! snapshot #:native-restore? [native-restore? #t])
+  (begin-native-state-transaction!)
   (dynamic-wind
-    void
+    (if native-restore?
+        (lambda () (deactivate-native-appearance! #:strict? #t))
+        suspend-native-appearance!)
     (lambda ()
       (restore-appearance!
        snapshot preferences:set
@@ -101,7 +212,11 @@
     synchronize-painter!))
 
 (define (apply-appearance!)
+  (begin-native-state-transaction!)
   (define before (capture-appearance))
+  (define native-before? native-committed?)
+  (define native-mode-before
+    (and native-before? (current-native-mode)))
   (define bookkeeping-before
     (for/list ([key (in-list (list snapshot-pref enabled-pref state-pref))])
       (cons key (preferences:get key))))
@@ -112,14 +227,23 @@
                                         (log-openracket-appearance-warning
                                          "Appearance rollback reported an error: ~a"
                                          (exn-message rollback-error)))])
-                       (restore-snapshot! before))
+                       ;; Keep the original owned native baseline during failed
+                       ;; reapply; explicit user Restore is a separate path.
+                       (restore-snapshot! before #:native-restore? #f))
                      (for ([entry (in-list bookkeeping-before)])
                        (with-handlers ([exn:fail?
                                         (lambda (rollback-error)
                                           (log-openracket-appearance-warning
                                            "Appearance state rollback reported an error: ~a"
                                            (exn-message rollback-error)))])
-                         (preferences:set (car entry) (cdr entry))))
+                         (if (eq? (car entry) state-pref)
+                             (set-appearance-state! (cdr entry))
+                             (preferences:set (car entry) (cdr entry)))))
+                     (if native-before?
+                         (begin
+                           (set! native-committed? #t)
+                           (synchronize-native-appearance! native-mode-before))
+                         (deactivate-native-appearance!))
                      (log-openracket-appearance-warning
                       "Appearance was not applied; retained host continues: ~a"
                       (exn-message e))
@@ -149,13 +273,17 @@
     (unless (eq? (preferences:get state-pref) 'applied)
       (preferences:set snapshot-pref before))
     (preferences:set enabled-pref #t)
-    (preferences:set state-pref 'applied)
+    (set-appearance-state! 'applied)
+    (activate-native-appearance!)
     ;; Our transaction is now committed; first-frame painting must not depend
     ;; on whether the queued synchronization event has run yet.
     (synchronize-painter!)
     #t))
 
 (define (initialize-once!)
+  (define resume-saved-native?
+    (and (not startup-native-considered?) (native-appearance-eligible?)))
+  (set! startup-native-considered? #t)
   (when (and (modern-session?) (eq? (preferences:get state-pref) 'fresh))
     ;; Persist only successful initialization. A missing scheme is retryable
     ;; after package setup; a user's later preference changes are never reset.
@@ -164,7 +292,13 @@
                      (lambda (e)
                        (log-openracket-appearance-warning
                         "Nonfatal appearance initialization failure: ~a" (exn-message e)))])
-      (apply-appearance!))))
+      (apply-appearance!)))
+  ;; A previously committed profile starts with its saved editor appearance.
+  ;; Consider its explicit native opt-in once per process, not once per frame.
+  ;; Later restore/failure must never be undone by opening another stock window.
+  (when resume-saved-native?
+    (activate-native-appearance!)
+    (synchronize-painter!)))
 
 (define tool@
   (unit
@@ -213,7 +347,7 @@
                                                  #f '(ok caution)))])
                    (restore-snapshot! (preferences:get snapshot-pref))
                    (preferences:set enabled-pref #f)
-                   (preferences:set state-pref 'restored)))])
+                   (set-appearance-state! 'restored)))])
          (new message% [parent panel]
               [label "Fonts and Colors remain in the standard Preferences tabs."])
          panel))

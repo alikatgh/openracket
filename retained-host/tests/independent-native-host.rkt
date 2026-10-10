@@ -7,6 +7,9 @@
 
 (define checks 0)
 (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+(define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+(define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
+(define native-appearance-result #f)
 (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
 (define follow-on-result #f)
 (define created-frames '())
@@ -144,6 +147,14 @@
         (failure-diagnostics! e)
         (cleanup!)
         (exit 1))])
+  ;; Read-only capture before DrRacket's appearance tool can set an app override.
+  (define native-appearance-baseline
+    (and native-appearance-check?
+         (on-gui
+          (lambda ()
+            (call-with-values
+             (dynamic-require native-appearance-module 'capture-native-appearance-baseline)
+             list)))))
   (on-gui
    (lambda ()
      ;; The first-window callback reads argv later. Do not briefly parameterize
@@ -269,6 +280,18 @@
             (regexp-match? #rx"(^|\n)42(\n|$)" (send interactions get-text)))))
     (assert! #t (format "real Run ~a produces marker and value 42" (add1 iteration))))
 
+  (when native-appearance-check?
+    (when follow-on-case
+      (error 'independent-native-host "Appearance lifecycle requires its own fresh process"))
+    (set! native-appearance-result
+          (on-gui
+           (lambda ()
+             ((dynamic-require native-appearance-module 'run-native-appearance-workflows!)
+              frame (car native-appearance-baseline) (cadr native-appearance-baseline)
+              (lambda (created)
+                (unless (memq created created-frames)
+                  (set! created-frames (cons created created-frames)))))))))
+
   (when follow-on-case
     (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax"))
       (error 'independent-native-host "Unsupported follow-on case ~s" follow-on-case))
@@ -299,6 +322,7 @@
           'ui (or (getenv "OPENRACKET_UI") "modern")
           'theme (or (getenv "OPENRACKET_THEME") "unspecified")
           'genuine_host #t 'repeated_real_run #t 'geometry geometry
+          'native_appearance_lifecycle (or native-appearance-result 'null)
           'follow_on_case (or follow-on-case 'null) 'follow_on_result (or follow-on-result 'null)
           'complete_stock_parity #f 'physical_input_to_photon_measured #f))
   (printf "OPENRACKET_NATIVE_RESULT ~a\n" (jsexpr->string report))

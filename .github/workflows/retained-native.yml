@@ -84,14 +84,17 @@ jobs:
         timeout-minutes: 6
         run: bash retained-host/scripts/ci/run-phase.sh modern
       - name: Verify native Stop, input, WXME and Check Syntax preservation
+        if: ${{ !cancelled() && steps.core_modern.outcome == 'success' }}
         timeout-minutes: 8
         run: bash retained-host/scripts/ci/run-phase.sh followon
-      - name: Diagnose pristine Linux editor settling with unchanged features
-        # One instrumented trial, separate from the existing paired baseline.
-        # A preservation failure still fails CI; core failures skip profiling.
-        if: ${{ !cancelled() && runner.os == 'Linux' && steps.core_stock.outcome == 'success' && steps.core_overlay.outcome == 'success' && steps.core_modern.outcome == 'success' }}
-        timeout-minutes: 3
-        run: bash retained-host/scripts/ci/run-phase.sh profile
+      - name: Verify Cocoa app-local appearance and restoration
+        if: ${{ !cancelled() && runner.os == 'macOS' && steps.core_modern.outcome == 'success' }}
+        timeout-minutes: 4
+        run: bash retained-host/scripts/ci/run-phase.sh native-appearance
+      - name: Record paired pending Run settings metadata
+        if: ${{ !cancelled() && steps.core_modern.outcome == 'success' }}
+        timeout-minutes: 2
+        run: bash retained-host/scripts/ci/run-phase.sh metadata
       - name: Report actual test results
         if: always()
         run: |

@@ -4,7 +4,7 @@ from pathlib import Path
 import hashlib,json,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 files=[]
-for name in ['README.md','src','tool','scripts','tests','overlay','vendor','reports','design','performance']:
+for name in ['README.md','POLISH-CANDIDATE.md','src','tool','scripts','tests','overlay','vendor','reports','design','performance']:
  p=ROOT/name
  for f in ([p] if p.is_file() else p.rglob('*')):
   if f.is_file() and 'compiled' not in f.parts and '__pycache__' not in f.parts:

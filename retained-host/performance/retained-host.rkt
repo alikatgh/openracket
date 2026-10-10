@@ -3,6 +3,7 @@
 (require racket/class racket/list racket/file racket/format racket/runtime-path json)
 
 (define-runtime-path diagnostics-path "diagnostics.rkt")
+(define-runtime-path settings-path "settings.rkt")
 (define started (current-inexact-monotonic-milliseconds))
 (define (now) (current-inexact-monotonic-milliseconds))
 (unless (zero? (vector-length (current-command-line-arguments)))
@@ -16,6 +17,7 @@
 (define edit-pos (hash-ref config 'edit_position))
 (define expected-size (hash-ref config 'characters))
 (define profile-enabled? (hash-ref config 'profile #f))
+(define metadata-only? (hash-ref config 'metadata_only #f))
 (define finish-profile #f)
 (define diagnostic-root-logger (current-logger))
 (define last-heartbeat-time (now))
@@ -30,7 +32,7 @@
 (hash-set! report 'os (~a (system-type 'os)))
 (hash-set! report 'vm (~a (system-type 'vm)))
 (hash-set! report 'status "running")
-(hash-set! report 'measurement_kind (if profile-enabled? "instrumented_attribution_only" "ordinary_timing"))
+(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "ordinary_timing"]))
 (define (persist!)
   (call-with-output-file output #:exists 'truncate/replace
     (lambda (port) (write-json report port) (newline port))))
@@ -181,6 +183,7 @@
   (fence!) (pause .100)
   ;; Exactly one pending heartbeat prevents an unbounded backlog. Queue delay
   ;; and inter-callback gap are both retained to expose coordinated omission.
+  (set! last-heartbeat-time (now))
   (set! heartbeat-thread
         (thread
          (lambda ()
@@ -216,6 +219,21 @@
   (record! 'loaded_characters (send editor last-position))
   (record! 'loaded_filename (~a (send editor get-filename)))
   (record! 'loaded_prefix (send editor get-text 0 (min 128 expected-size)))
+  (define (capture-settings!)
+    (set! phase "metadata_capture")
+    (record! 'selected_language_settings
+             ((dynamic-require settings-path 'capture-language-settings) editor fixture)))
+  (when metadata-only?
+    (capture-settings!)
+    (set! heartbeat-running? #f)
+    (gui-yield (thread-dead-evt heartbeat-thread))
+    (record! 'heartbeat_samples (reverse heartbeat-samples))
+    (record! 'status
+             (if (equal? (hash-ref (hash-ref report 'selected_language_settings) 'status) "complete")
+                 "complete" "failed"))
+    (send editor set-modified #f)
+    (send frame show #f)
+    (exit (if (equal? (hash-ref report 'status) "complete") 0 1)))
   ;; Jump occurs before waiting for coloring to finish, at the first file open.
   (set! phase "first_jump")
   (define near-end (max 0 (- expected-size 2048)))
@@ -237,41 +255,6 @@
   (record! 'initial_lexer_settle initial-settle)
   (unless (hash-ref initial-settle 'complete)
     (error 'initial-lexer-settle "lexer did not become valid within45s; warm timings invalid"))
-  ;; Inspect the selected language settings. Instrumentation is a language-info
-  ;; capability, not a Framework preference; this reads the same effective default
-  ;; that stock module-language.rkt uses, without changing any setting.
-  (record!
-   'selected_language_settings
-   (with-handlers ([exn:fail?
-                    (lambda (e) (hasheq 'status "unavailable" 'error (exn-message e)))])
-     (define config (send editor get-next-settings))
-     (define language
-       ((dynamic-require 'drracket/tool-lib
-                         'drracket:language-configuration:language-settings-language)
-        config))
-     (define settings
-       ((dynamic-require 'drracket/tool-lib
-                         'drracket:language-configuration:language-settings-settings)
-        config))
-     ;; The public annotations accessor's 9.3 result contract mistakenly excludes
-     ;; 'lang-default. The documented vector API preserves that valid sixth field.
-     (define simple-vector
-       ((dynamic-require 'drracket/tool-lib 'drracket:language:simple-settings->vector)
-        settings))
-     (unless (and (vector? simple-vector) (= (vector-length simple-vector) 6))
-       (error 'settings-capture "unexpected stock simple-settings vector"))
-     (define annotations (vector-ref simple-vector 5))
-     (define default-instrumentation
-       ((dynamic-require 'drracket/private/insulated-read-language 'call-read-language)
-        (send editor get-irl) 'drracket:default-instrumentation 'debug))
-     (hasheq 'status "complete"
-             'language_position (~s (send language get-language-position))
-             'serialized_settings (~s (send language marshall-settings settings))
-             'simple_settings_vector (~s simple-vector)
-             'annotations (~s annotations)
-             'language_default_instrumentation (~s default-instrumentation)
-             'effective_annotations
-             (~s (if (eq? annotations 'lang-default) default-instrumentation annotations)))))
   (record! 'memory_after_initial_settle (memory-snapshot))
   (set! phase "warm_typing")
   (define warm-samples
@@ -304,6 +287,8 @@
   (record! 'heartbeat_samples (reverse heartbeat-samples))
   (record! 'memory_after_workload (memory-snapshot))
   (when finish-profile (record! 'diagnostics (finish-profile)))
+  ;; Metadata imports are outside every latency/profile phase.
+  (capture-settings!)
   ;; Explicit collection only after all latency work; do not hide allocation/GC.
   (collect-garbage) (collect-garbage)
   (record! 'memory_after_explicit_gc (memory-snapshot))

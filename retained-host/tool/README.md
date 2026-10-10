@@ -5,6 +5,12 @@ and tools. This is **source and headless-tested work, not a native-GUI-validated
 release**. The current isolated profile lacks the installed GUI dependencies;
 no display is available. See `../reports/THEME-HOOKS.md` and `validation.log`.
 
+The separate polish candidate additionally includes an opt-in app-native
+appearance prototype. See [native capability, restoration and verification
+limits](NATIVE-APPEARANCE.md). Cocoa is the primary candidate; GTK is experimental
+and remains disabled in tool integration. Native execution of this addition is
+not yet validated.
+
 ## Scope
 
 - Paired OpenRacket Light / OpenRacket Dark schemes, registered through the stock

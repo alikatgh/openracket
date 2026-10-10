@@ -141,3 +141,36 @@ and its sixth annotations field. Racket9.3's individual public annotation access
 has a result contract that rejects the valid lang-default value; this read-only
 workaround preserves that value and the complete serialized language settings.
 No original paired baseline file is replaced by later diagnostic results.
+
+## Read-only language metadata probe
+
+Use the same bounded supervisor for a short, separate native probe:
+
+```
+python3 performance/run.py --mode pristine-stock --racket "$STOCK_RACKET" \
+  --output reports/stock-metadata --fixture mixed-100k --repetitions 1 \
+  --timeout 30 --metadata-only
+```
+
+Run separately with the modern runtime/environment to establish paired metadata
+agreement. This opens the fixture and captures settings; it does not wait for the
+full lexer or run the latency workload. Its `measurement_kind` is `metadata_only`.
+Exit 0 requires complete metadata; a partial result preserves all successful fields
+and errors and exits nonzero. Ordinary trial/summary JSON markers are unchanged.
+
+`settings.rkt` uses documented `get-next-settings`, exported language/settings
+accessors, and the six-element `simple-settings->vector` API. The raw annotation
+setting is retained. The default is independently resolved with public
+`read-language` on the immutable fixture's unchanged `#lang` declaration and its
+`drracket:default-instrumentation` info key (stock fallback `debug`). This records
+pending next-Run configuration and reader-default resolution, not current evaluator
+instrumentation. It does not call private `get-irl` or change any settings. Failed
+fields cannot discard other successful metadata.
+
+For subsequent ordinary/profile runs, metadata imports occur after all latency
+sampling and after the profiler stops. The heartbeat's initial timestamp now starts
+with the heartbeat, rather than with process launch. Earlier frozen records remain
+unchanged; their attribution first-open heartbeat ages included startup, and late
+`initial_lexer_settle` profile samples included metadata import work.
+
+Headless metadata checks: `racket performance/settings-test.rkt`.

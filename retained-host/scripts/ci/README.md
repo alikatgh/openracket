@@ -37,19 +37,24 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
    diagnostics. Independent cases continue in fresh processes after a failure;
    only matching successful stock baselines allow the modern comparison. A
    failed or skipped comparison remains explicit and the overall job fails.
-7. After all core compile/host/editor/theme gates pass, run paired native performance probes with identical synthetic fixtures and
-   separate fresh preferences and addon registries. Command/event-loop timing is not input-to-photon
-   timing and CI runner numbers are not representative hardware benchmarks.
-   Measurements can still be collected if a separate preservation case fails;
-   that failure remains in the report and fails the overall job. Diagnostic
-   timings never turn an unverified workflow into an acceptance pass.
+7. On Cocoa only, opt modern light/dark host processes into app-local native
+   appearance. Pristine stock, stock fallback and Linux remain unopted. Run the
+   adapter lifecycle test and a separate real two-frame DrRacket/Preferences
+   Apply/Restore/Undo test. Its final screenshot is explicitly labeled restored.
+   These checks do not change the operating system's appearance preference.
+8. After successful core gates, run two bounded 30-second metadata-only probes
+   with identical 100k synthetic fixtures and separate fresh preferences/addon
+   registries. Compare complete pending-next-Run language settings and fixture
+   reader defaults through documented APIs. This is not a measurement of live
+   evaluator instrumentation. Failures remain explicit and fail the job.
 
-The current follow-up workflow retains the completed paired baseline and runs
-one Linux pristine-stock 1 MiB attribution trial instead of repeating all twelve
-trials. It uses the standard Racket sampler plus existing GC, colorer and online
-expansion logs, unchanged features/settings, a 90-second process timeout and
-bounded diagnostics. Instrumented results carry an overhead warning and are
-not substituted for the ordinary paired timing records.
+This appearance follow-up retains the previous ordinary paired performance
+baseline and single instrumented Linux attribution trial without repeating
+either workload. Command/event-loop timing is not input-to-photon timing, and
+CI runner numbers are not representative hardware benchmarks. Independent
+appearance and metadata checks can run after a preservation failure; that
+failure still remains in the report and fails the overall job. No diagnostic
+data can turn an unverified workflow into an acceptance pass.
 
 Linux uses official Ubuntu Xvfb and Noto CJK font packages on the GitHub runner,
 with equal font coverage for pristine and retained modes. macOS uses

@@ -23,7 +23,9 @@
   (match (parameterize ([read-accept-reader #t]) (call-with-input-file source read))
     [`(module ,_ ,_ (#%module-begin ,forms ...)) forms]))
 (define needed
-  '(enabled-pref state-pref snapshot-pref synchronize-painter! modern-session? layout-enabled?
+  '(enabled-pref state-pref snapshot-pref synchronize-painter! native-controller native-committed?
+                 startup-native-considered? native-state-write? native-state-generation set-appearance-state!
+                 begin-native-state-transaction! set-painter-blended! current-native-mode modern-session? layout-enabled?
                  capture-appearance restore-snapshot! apply-appearance! initialize-once!))
 (define (definition-name form)
   (match form [`(define (,name ,_ ...) ,_ ...) name]
@@ -57,6 +59,12 @@
           [proc (list (lambda (key) (hash-ref prefs key)) put! set-scheme! get-scheme
                       (lambda (_) '("DejaVu Sans Mono")))])
       (namespace-set-variable-value! name proc #t))
+    (for ([name '(native-appearance-eligible? activate-native-appearance!
+                  deactivate-native-appearance! suspend-native-appearance!
+                  synchronize-native-appearance!)])
+      (namespace-set-variable-value! name (make-keyword-procedure (lambda (keys values . args) #f)) #t))
+    (namespace-set-variable-value! 'color-prefs:white-on-black-color-scheme?
+                                   (lambda () (eq? (hash-ref prefs 'framework:white-on-black-mode?) #t)) #t)
     (eval '(define-logger openracket-appearance))
     (for ([form (in-list forms)] #:when (memq (definition-name form) needed)) (eval form)))
   (values prefs (lambda (name . args) (parameterize ([current-namespace ns]) (apply (eval name) args)))))

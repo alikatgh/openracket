@@ -19,7 +19,7 @@ STATE = ROOT/'reports/ci-results.json'
 ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
 PHASE_ROW_START = len(ROWS)
 PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
-assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'followon', 'performance', 'profile'), 'Explicit phase required'
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'native-appearance', 'followon', 'metadata', 'performance', 'profile'), 'Explicit phase required'
 START = time.monotonic()
 
 
@@ -51,6 +51,10 @@ def environment(mode, purpose):
     env['OPENRACKET_UI'] = 'stock' if mode in ('pristine-stock', 'stock-fallback') else 'modern'
     env['OPENRACKET_HOST_THEME'] = '0' if mode in ('pristine-stock', 'stock-fallback') else '1'
     env['OPENRACKET_THEME'] = 'light' if mode == 'modern-light' else 'dark'
+    if platform.system() == 'Darwin' and mode in ('modern-light', 'modern-dark'):
+        env['OPENRACKET_NATIVE_APPEARANCE'] = '1'
+    else:
+        env.pop('OPENRACKET_NATIVE_APPEARANCE', None)
     print(f'PROFILE mode={mode} purpose={purpose} preference-home={env["PLTUSERHOME"]} shared-addon={env.get("PLTADDONDIR")}', flush=True)
     return env
 
@@ -114,9 +118,16 @@ def emit_image(mode, path):
     print(f'OPENRACKET_SCREENSHOT_END {mode}', flush=True)
 
 
-def native_host(mode, case=None):
+def native_host(mode, case=None, appearance_check=False):
+    assert not (case and appearance_check), 'Independent fresh-process tests required'
     label = mode if case is None else mode+'-'+case
-    env = environment(mode, 'host' if case is None else 'followon-'+case)
+    purpose = 'host' if case is None else 'followon-'+case
+    if appearance_check:
+        assert platform.system() == 'Darwin' and mode == 'modern-dark'
+        label, purpose = mode+'-native-appearance-restored', 'native-appearance'
+    env = environment(mode, purpose)
+    if appearance_check:
+        env['OPENRACKET_NATIVE_APPEARANCE_CHECK'] = '1'
     if case is not None:
         assert case in ('stop', 'input-eof', 'wxme', 'check-syntax')
         env['OPENRACKET_NATIVE_CASE'] = case
@@ -194,8 +205,8 @@ def prepare():
         raise RuntimeError('Overlay generation failed')
     command('Python patch integrity', [sys.executable, 'tests/patcher-test.py'])
     command('Independent patch integrity', [sys.executable, 'tests/independent-patcher-test.py'])
-    headless = ['tests/source-preservation.rkt', 'tests/paint-test.rkt', 'tool/tests.rkt', 'performance/lifecycle-test.rkt']
-    headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tool').glob('*-tests.rkt'))]
+    headless = ['tests/source-preservation.rkt', 'tests/paint-test.rkt', 'tests/font-metrics-test.rkt', 'tool/tests.rkt', 'performance/lifecycle-test.rkt', 'performance/settings-test.rkt']
+    headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tool').glob('*-tests.rkt')) if not p.name.endswith('-native-tests.rkt')]
     headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tests').glob('independent-*.rkt')) if 'native' not in p.name]
     command('Headless preservation and renderer', [RACO, 'test'] + headless, environment('pristine-stock', 'headless'))
     command('Performance harness and fixture unit tests', [sys.executable, 'performance/test_harness.py'])
@@ -215,7 +226,7 @@ def overlay():
         raise RuntimeError('Appearance registration failed')
     if not command('Compile real GUI and register appearance metadata', [RACO, 'setup', '--no-docs', '--pkgs', 'gui-lib', 'openracket-appearance'], environment('modern-dark', 'setup'), 360):
         raise RuntimeError('Real GUI compilation failed')
-    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt', 'tests/independent-native-workflows.rkt'], environment('modern-dark', 'setup'), 180):
+    if not command('Compile actual theme tool and DrRacket host', [RACO, 'make', 'tool/tool.rkt', 'tests/independent-native-host.rkt', 'tests/independent-native-toolbar.rkt', 'tests/independent-native-workflows.rkt', 'tests/independent-native-appearance-workflows.rkt', 'tool/native-appearance-native-tests.rkt'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Actual theme/tool compilation failed')
     if not command('Compile retained DrRacket entrypoint', [RACO, 'make', '-l', 'drracket/drracket'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Retained DrRacket compilation failed')
@@ -238,6 +249,10 @@ try:
             widgets(mode)
             native_host(mode)
         command('Verify pristine source unchanged after overlay tests', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'native-appearance':
+        assert platform.system() == 'Darwin', 'Cocoa-only native appearance validation'
+        command('Cocoa app-local appearance adapter lifecycle', [RACKET, 'tool/native-appearance-native-tests.rkt'], environment('modern-dark', 'native-appearance-adapter'), 90)
+        native_host('modern-dark', appearance_check=True)
     elif PHASE == 'followon':
         cases = ('stop', 'input-eof', 'wxme', 'check-syntax')
         baselines = {case: native_host('pristine-stock', case) for case in cases}
@@ -252,6 +267,26 @@ try:
         performance('pristine-stock')
         performance('modern-dark')
         command('Verify pristine source unchanged after measurements', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'metadata':
+        settings = {}
+        for mode in ('pristine-stock', 'modern-dark'):
+            output = ROOT/'reports'/('metadata-'+mode)
+            env = environment(mode, 'metadata')
+            ok = command(mode+' pending Run settings metadata',
+                         [sys.executable, 'performance/run.py', '--mode', mode,
+                          '--racket', env['RACKET'], '--output', str(output),
+                          '--fixture', 'mixed-100k', '--repetitions', '1',
+                          '--timeout', '30', '--metadata-only'], env, 45)
+            path = output/'mixed-100k-01/measurements.json'
+            if ok and path.exists():
+                report = json.loads(path.read_text())
+                selected = report.get('selected_language_settings', {})
+                if report.get('status') == 'complete' and selected.get('status') == 'complete':
+                    settings[mode] = selected
+        equal = (len(settings) == 2 and settings['pristine-stock'] == settings['modern-dark'])
+        record('Paired pending Run language settings equality', equal,
+               'Documented selected configuration and fixture reader default only; live evaluator instrumentation is not measured')
+        command('Verify pristine source unchanged after metadata', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
     elif PHASE == 'profile':
         command('Pristine stock attribution diagnostic (instrumented, not acceptance timing)',
                 [sys.executable, 'performance/run.py', '--mode', 'pristine-stock',
