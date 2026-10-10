@@ -100,7 +100,7 @@
 (with-handlers ([exn:fail?
                  (lambda (e)
                    (set! heartbeat-running? #f)
-                   (when heartbeat-thread (kill-thread heartbeat-thread))
+                   (set! startup-finished? #t)
                    (hash-set! report 'status "failed")
                    (hash-set! report 'error (exn-message e))
                    (hash-set! report 'heartbeat_samples (reverse heartbeat-samples))
@@ -149,8 +149,10 @@
             [(> (- (now) started) 90000) (error 'startup "no shown DrRacket frame after90s")]
             [else (pause .020) (loop)])))
   (set! startup-finished? #t)
-  (kill-thread startup-watcher)
   (record! 'fresh_process_gui_startup_ms (- (now) started))
+  ;; DrRacket manages its own custodian context. Cooperative shutdown plus the
+  ;; read-only death event requires no authority over the monitor's custodian.
+  (gui-yield (thread-dead-evt startup-watcher))
   (record! 'gui_argv_after_startup (vector->list (current-command-line-arguments)))
   (define prefs-get (dynamic-require 'framework 'preferences:get))
   (define settings-keys
@@ -280,7 +282,7 @@
   (set! phase "idle")
   (pause .500)
   (set! heartbeat-running? #f)
-  (kill-thread heartbeat-thread)
+  (gui-yield (thread-dead-evt heartbeat-thread))
   (record! 'heartbeat_samples (reverse heartbeat-samples))
   (record! 'memory_after_workload (memory-snapshot))
   ;; Explicit collection only after all latency work; do not hide allocation/GC.

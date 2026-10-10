@@ -1,7 +1,7 @@
 {
   "scope": "isolated retained-DrRacket 9.3 presentation proof",
-  "state": "Linux and macOS four-mode host/theme tests pass; targeted Stop harness repair pending rerun",
-  "racket_tests_passed": 115,
+  "state": "Benchmark lifecycle and supervisor repairs pass headless checks; native rerun pending",
+  "racket_tests_passed": 120,
   "python_patcher_tests_passed": 12,
   "original_button_methods_audited": 18,
   "changed_button_methods": [
@@ -18,18 +18,18 @@
   "png_sha256": "03737fab4fa5756b1193dc133532a676b4102c9ef993e587b2e278c656d5b3d0",
   "sidebar_implemented": false,
   "blocking_prerequisites": [
-    "Rerun corrected stock Stop lifecycle test then remaining EOF/WXME/Check Syntax tests",
-    "Complete correctness-gated native benchmarks",
-    "Broader debugger/macro/teaching/accessibility coverage remains open"
+    "Verify benchmark startup-watcher cleanup and macOS timeout supervisor repair",
+    "Run macOS preservation cases and paired native benchmarks",
+    "Debugger/Macro Stepper/teaching/accessibility coverage remains open"
   ],
   "original_projects_modified": false,
   "remote_writes": true,
-  "python_performance_tests_passed": 6,
+  "python_performance_tests_passed": 9,
   "portable_launcher_implemented": true,
   "workspace_chrome_implemented": true,
-  "native_ci_status": "third run: both platforms full basic host pass; follow-on Stop readiness assertion failed in pristine stock",
-  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38049557901",
-  "native_ci_commit": "cbf78aa05bb911effd3b011ac1cd1492592e2d0d",
+  "native_ci_status": "fourth run: Linux core and preservation pass, benchmark cleanup fails; macOS stopped at supervisor unit test",
+  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38050213153",
+  "native_ci_commit": "0c8510d768483840d37c19afc4833ddc180a66a0",
   "native_toolbar_tests_per_mode": 14,
   "native_toolbar_modes_passed": 4,
   "native_canvas_status_tests_per_mode": 5,
@@ -45,5 +45,9 @@
   "native_platforms_verified": [
     "Linux",
     "macOS"
-  ]
+  ],
+  "native_preservation_cases_passed_linux": 8,
+  "native_preservation_cases_passed_macos": 0,
+  "check_syntax_graph_equal_stock_modern": true,
+  "stop_lifecycle_equal_stock_modern": true
 }

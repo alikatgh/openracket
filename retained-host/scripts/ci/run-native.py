@@ -194,7 +194,7 @@ def prepare():
         raise RuntimeError('Overlay generation failed')
     command('Python patch integrity', [sys.executable, 'tests/patcher-test.py'])
     command('Independent patch integrity', [sys.executable, 'tests/independent-patcher-test.py'])
-    headless = ['tests/source-preservation.rkt', 'tests/paint-test.rkt', 'tool/tests.rkt']
+    headless = ['tests/source-preservation.rkt', 'tests/paint-test.rkt', 'tool/tests.rkt', 'performance/lifecycle-test.rkt']
     headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tool').glob('*-tests.rkt'))]
     headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tests').glob('independent-*.rkt')) if 'native' not in p.name]
     command('Headless preservation and renderer', [RACO, 'test'] + headless, environment('pristine-stock', 'headless'))

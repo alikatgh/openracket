@@ -3,7 +3,7 @@
 ## Passed locally
 
 - Racket9.3 `raco make src/paint.rkt` succeeds using the existing racket/draw dependency.
-- 115 headless Racket tests pass: rendering states, retained bitmap fallback, compact
+- 120 headless Racket tests pass: rendering states, retained bitmap fallback, compact
   inputs, DC state restoration, full-module presentation-only diff, stock-method
   preservation, theme metadata/contrast/opt-in protection and mock-based mixin contracts.
   These mock checks do not count as native DrRacket tests.
@@ -76,12 +76,32 @@ candidate direct call to an unexported local member. Existing Run completion
 checks now require the real tab to stop, rather than infer that from Run's state.
 These are test-only repairs; the native-tested production code did not change.
 
+## Fourth native run: Linux preservation cases pass
+
+Run [38050213153](https://github.com/alikatgh/openracket/actions/runs/38050213153),
+commit `0c8510d768483840d37c19afc4833ddc180a66a0`, kept the production code
+unchanged and passed all Linux basic/native widget checks plus all eight added
+preservation cases: Stop, Unicode stdin/EOF, WXME image/nested-editor round-trip,
+and Check Syntax in separate pristine-stock and modern-dark processes.
+
+Stock and modern emitted exactly equal normalized Check Syntax binding graphs.
+Their observed Stop state sequences also match, including the actual Stop-to-Kill
+label change and interrupted evaluation cleanup. These exact comparisons are
+stored in `ci-fourth-run.json`; they do not certify the second forced-Kill action.
+
+Benchmark runs failed before workload timing because their startup watcher was
+stopped from a different custodian. The macOS job stopped at a Python supervisor
+unit test that signaled an already-exited process group. The watcher now stops cooperatively without cross-custodian thread killing; the
+Python supervisor verifies whether its own group still has live processes before
+a repeated signal and still fails for live cleanup failures. Nine Python and five
+Racket lifecycle tests pass. These are bounded harness repairs; no production
+change is indicated. Earlier macOS native core passes
+remain valid for unchanged code, but macOS preservation cases did not run here.
+
 ## Remaining native gates
 
-- Rerun corrected Stop then EOF, WXME and Check Syntax cases in pristine/modern
-  processes. They were skipped after the first baseline failure.
-- Run the corrected benchmark harness after correctness gates. No valid latency,
-  memory comparison or speed claim is supported by the earlier timeout records.
+- Verify the watcher/supervisor repairs, then collect valid paired benchmark
+  samples and run the eight preservation cases on macOS. No speed claim yet.
 - Debugger, Macro Stepper, teaching languages, accessibility, IME, Retina,
   complete stock parity and comprehensive visual layout review remain open.
 - Native menus/status/borders remain substantially stock. This is a first
@@ -90,7 +110,7 @@ These are test-only repairs; the native-tested production code did not change.
   evidence comes from the separately authorized public CI.
 
 The portable Racket applier compiles, shell setup/launchers pass syntax and
-check-mode validation, and six performance-harness Python tests pass. The full
+check-mode validation, and nine performance-harness Python tests and five Racket lifecycle tests pass. The full
 portable setup/launch path still needs direct end-to-end validation; CI uses an
 isolated disposable full distribution adapter.
 

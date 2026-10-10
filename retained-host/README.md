@@ -26,7 +26,7 @@ claim yet.
 ## Evidence so far
 
 The source matches both the official Git v9.3 source and the exact official9.3
-release-catalog gui-lib package archive. 115 headless Racket tests and 12 Python patcher tests
+release-catalog gui-lib package archive. 120 headless Racket tests and 12 Python patcher tests
 pass. Theme mixin tests use focused mock contracts and source inspection,
 not a native DrRacket instance. The preservation test compares the entire module and allows only the
 explicitly declared presentation edits; it also checks every original button
@@ -37,9 +37,11 @@ complete DrRacket entrypoint. Both platforms pass the four-mode basic host gate:
 20 checks each for pristine stock/fallback and 28 each for modern light/dark,
 including Unicode loading, undo/redo, two real Run callbacks and live color-mode
 roundtrips. Native toolbar/canvas tests and genuine OS captures also pass.
-A baseline Stop test assumption is repaired for the next run; later workflow and
-performance gates remain incomplete. See
-[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38049557901)
+Linux additionally passes real Stop, stdin/EOF, WXME and Check Syntax preservation
+cases in both stock and modern modes, with identical binding graphs and Stop
+state transitions. macOS preservation and valid performance measurements remain
+incomplete while two benchmark-harness cleanup bugs are repaired. See
+[the latest recorded run](https://github.com/alikatgh/openracket/actions/runs/38050213153)
 and `reports/RESULTS.md` for exact scope and remaining gates.
 
 Local package installation and its authorized retry were cancelled, and the

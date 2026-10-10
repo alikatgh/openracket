@@ -172,7 +172,7 @@ appearance change.
 
 ## Third Linux CI: theme repair confirmed, Stop harness corrected
 
-Run 38049557901, commit c3d12f3313a95f25162a1503be624f3b0617f8c0:
+Run 38049557901, commit cbf78aa05bb911effd3b011ac1cd1492592e2d0d:
 all four genuine host modes passed. Pristine stock and stock-fallback each passed
 20 checks; modern light and dark each passed 28, including real opposite-mode-and-back
 preference transitions. The actual background, mode preference and painter agreed
@@ -194,3 +194,32 @@ the same flag. Completion now requires tab not running in the main host's repeat
 Run checks, the EOF workflow, and Check Syntax's initial Run. Reader validation
 passes; the corrected Stop and remaining workflow cases still need native execution.
 The baseline failure correctly prevented later workflow/performance runs.
+
+## Fourth Linux CI: scoped preservation workflows pass
+
+Run 38050213153, checked-out source commit
+0c8510d768483840d37c19afc4833ddc180a66a0: all four full-host modes pass again,
+and all eight separate preservation processes pass: pristine stock and modern dark
+each complete Stop, input/EOF, WXME and Check Syntax. Actual OS screenshots were
+captured for every case. This audit independently reviewed the log and the modern
+input/EOF and WXME images.
+
+- Stop logs prove both modes have Run enabled while tab running is true. The real
+  command immediately changes Stop to Kill, then normal interruption clears the
+  running state and registered live break target. UNREACHABLE output is absent.
+- The real input port receives café λ through Return, then the EOF bridge produces
+  EOF=#t and evaluation completes.
+- The WXME file retains exact image pixels, nested Unicode editor content, snip
+  identities, and selection across the actual canvas focus/activation/paint hooks.
+- Check Syntax emits the same eight normalized binding edges in both modes,
+  including bump [27,31]→[45,49] and x [32,33]→[38,39]. Source, table and selection
+  remain intact across the hooks.
+
+Third-run macOS logs also confirm all four host modes and light/dark round trips
+pass. Its original 1100-pixel capture exceeded the 1024-pixel display; the fourth
+harness caps screenshot-only dimensions to the actual display. Full fourth-run
+macOS confirmation and usable performance results remain pending. The performance
+harness's monitor-custodian cleanup error is being repaired independently.
+Debugger, Macro Stepper, teaching-language dialog/Step, forced second Kill, physical
+EOF hit-testing, IME, clipboard/drag-and-drop, OS accessibility and broad DPI/font
+coverage are not certified by these scoped passes.

@@ -48,21 +48,49 @@ def native_rss(text, system):
     match = re.search(r'Maximum resident set size \(kbytes\):\s*(\d+)', text)
     return int(match[1]) * 1024 if match else None
 
-def terminate_group(process):
+def live_group_members(pgid):
+    """Read native process state; zombies cannot run or retain GUI work."""
+    result = subprocess.run(['ps', '-axo', 'pid=,pgid=,stat=,uid='],
+                            text=True, capture_output=True, check=True, timeout=3)
+    members = []
+    for line in result.stdout.splitlines():
+        columns = line.split()
+        if len(columns) != 4:
+            continue
+        pid, group, state, uid = columns
+        if int(group) == pgid and not state.startswith('Z'):
+            members.append({'pid': int(pid), 'state': state, 'uid': int(uid)})
+    return members
+
+def signal_group(pgid, sig):
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        os.killpg(pgid, sig)
+        return True
     except ProcessLookupError:
-        return
+        return False
+    except PermissionError:
+        # macOS can report EPERM for an already-exited group. Only treat that as
+        # complete after independently observing no runnable group members.
+        if not live_group_members(pgid):
+            return False
+        raise
+
+def terminate_group(process):
+    signal_group(process.pid, signal.SIGTERM)
     try:
         process.wait(timeout=3)
     except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)
+        signal_group(process.pid, signal.SIGKILL)
         process.wait(timeout=5)
-    # The time wrapper may exit before a descendant. Kill the remaining group.
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
+    # A time wrapper can exit while its descendants survive. Inspect first;
+    # never blindly re-signal an exited group or ignore a live cleanup failure.
+    if live_group_members(process.pid):
+        signal_group(process.pid, signal.SIGKILL)
+    deadline = time.monotonic() + 2
+    while live_group_members(process.pid):
+        if time.monotonic() >= deadline:
+            raise RuntimeError('Timed-out process group still has live members after SIGKILL')
+        time.sleep(.025)
 
 def run_trial(args, fixture, repetition):
     directory = args.output / f'{fixture["name"]}-{repetition:02d}'

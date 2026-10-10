@@ -51,10 +51,49 @@ class HarnessTests(unittest.TestCase):
             self.assertEqual(len(summary['trials']), 2)
             self.assertEqual(len(summary['trials_not_run']), 4)
 
+    def test_cleanup_skips_a_dead_process_group(self):
+        process = mock.Mock(pid=12345)
+        with mock.patch.object(runner, 'live_group_members', return_value=[]), \
+             mock.patch.object(runner.os, 'killpg') as kill:
+            runner.terminate_group(process)
+        self.assertEqual(kill.call_count, 1)
+        self.assertEqual(kill.call_args.args[1], runner.signal.SIGTERM)
+
+    def test_macos_permission_error_requires_no_live_members(self):
+        with mock.patch.object(runner.os, 'killpg', side_effect=PermissionError), \
+             mock.patch.object(runner, 'live_group_members', return_value=[]):
+            self.assertFalse(runner.signal_group(12345, runner.signal.SIGKILL))
+        with mock.patch.object(runner.os, 'killpg', side_effect=PermissionError), \
+             mock.patch.object(runner, 'live_group_members', return_value=[{'pid': 1}]):
+            with self.assertRaises(PermissionError):
+                runner.signal_group(12345, runner.signal.SIGKILL)
+
     def test_native_resource_units(self):
         self.assertEqual(native_rss('Maximum resident set size (kbytes): 42\n', 'Linux'), 43008)
         self.assertEqual(native_rss('  123456  maximum resident set size\n', 'Darwin'), 123456)
         self.assertIsNone(native_rss('', 'Linux'))
+
+    def test_stubborn_descendant_is_really_terminated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            group_file = root / 'process-group.txt'
+            executable = root / 'fake-racket'
+            executable.write_text(
+                '#!/usr/bin/env python3\nimport os, signal, time\n'
+                'if os.fork() == 0:\n'
+                '    signal.signal(signal.SIGTERM, signal.SIG_IGN)\n'
+                f'    open({str(group_file)!r}, "w").write(str(os.getpgrp()))\n'
+                '    time.sleep(30)\n'
+                'else:\n    time.sleep(30)\n')
+            executable.chmod(0o755)
+            fixture = write_fixtures(root / 'fixtures')[0]
+            args = types.SimpleNamespace(output=root, mode='test-only',
+                                         racket=str(executable), timeout=.3)
+            with contextlib.redirect_stdout(io.StringIO()):
+                report = run_trial(args, fixture, 1)
+            self.assertEqual(report['status'], 'timeout')
+            self.assertTrue(group_file.exists())
+            self.assertEqual(runner.live_group_members(int(group_file.read_text())), [])
 
     def test_timeout_is_recorded_and_process_group_terminated(self):
         with tempfile.TemporaryDirectory() as directory:

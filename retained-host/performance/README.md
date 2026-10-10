@@ -102,3 +102,13 @@ The repaired harness records actual GUI argv, the loaded filename/prefix, and an
 shown startup dialog's title/child labels/editor text. It never dismisses an
 unrecognized dialog. `diagnose-startup.rkt` is a separate, bounded read-only legacy
 launch reproduction, not part of the latency workload or a performance sample.
+
+Run38050213153 reached the repaired benchmark, but no workload timings were usable:
+DrRacket's custodian context rejected an attempt to kill the startup monitor. Monitor
+shutdown now uses a cooperative flag and a thread-death event; no stock custodian
+or security setting is changed. The macOS timeout supervisor also exposed an exited
+process-group signaling race. Cleanup now checks native live group membership,
+still kills surviving descendants, and fails on a genuine permission/cleanup error.
+Headless regressions include a different-custodian monitor and a descendant that
+ignores SIGTERM. Run `raco test performance/lifecycle-test.rkt` in addition to the
+Python tests. These repairs still require the next native benchmark run.
