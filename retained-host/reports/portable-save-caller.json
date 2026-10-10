@@ -1,0 +1,16 @@
+{
+  "original_sha256": "8667ce69410f8d9abc5f3097c63bcf587d006aee4681733cb6697707a43ca466",
+  "combined_sha256": "67386ec887090c40b896762129699077a077de491c346b883bfca43a638f825f",
+  "allowed_changes": [
+    ";; Native-only correctness caller. PREPARED, NOT EXECUTED LOCALLY.",
+    "(memq mode '(stock candidate-off candidate-on))",
+    "\"OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS\"\n               \"OPENRACKET_HOST_THEME\" \"OPENRACKET_THEME\" \"OPENRACKET_UI\"",
+    "  (define flag (getenv \"OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD\"))",
+    "\"532a707597787d6e61d420f815ee14f6a2ed1ccd342070271da5268056bd61de\")",
+    "       (define verify? (pref-get 'framework:verify-change-format))",
+    "\"native stock-default save/copy/WXME/autosave artifact reload\"",
+    "'other_experiments \"absent\""
+  ],
+  "save_fixture_bytes_unchanged": true,
+  "native_combined_run": false
+}

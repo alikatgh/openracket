@@ -1,0 +1,76 @@
+--- passing-autosave-1448
++++ portable-combined-save
+@@ -1,5 +1,6 @@
+ #lang racket/base
+-;; Native-only correctness caller. PREPARED, NOT EXECUTED LOCALLY.
++;; Combined installed appearance/autosave gate derived from passing 1448 caller.
++;; This combined caller remains unexecuted until its separate native gate.
+ ;; Contract: racket independent-native-autosave-host.rkt stock|candidate-off|candidate-on
+ ;; Supply a fresh PLTUSERHOME and a separate actual full Racket 9.3 runtime per arm.
+ ;; Candidate-on alone sets OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD=1. Other
+@@ -110,7 +111,7 @@
+                      (diagnostics e))
+                    (set! completed? #t)
+                    (exit 1))])
+-  (assert! (memq mode '(stock candidate-off candidate-on)) "One mode argument is required")
++  (assert! (memq mode '(candidate-off candidate-on)) "One mode argument is required")
+   (assert! (equal? (version) "9.3") "Exact official Racket 9.3 runtime required")
+   (define profile-env (getenv "PLTUSERHOME"))
+   (assert! (and profile-env (complete-path? (string->path profile-env))) "Absolute fresh PLTUSERHOME required")
+@@ -123,15 +124,18 @@
+   (assert! (not (file-exists? prefs-file)) "Fresh profile must not already contain a preferences file")
+   (call-with-output-file (build-path profile "independent-native-autosave.claim") #:exists 'error
+     (lambda (out) (fprintf out "~s\n" mode)))
+-  (for ([key '("OPENRACKET_ALL_STRING_FAST_PATH" "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS"
+-               "OPENRACKET_HOST_THEME" "OPENRACKET_THEME" "OPENRACKET_UI")])
++  (for ([key '("OPENRACKET_ALL_STRING_FAST_PATH" "OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS")])
+     (assert! (not (getenv key)) (format "Unrelated experiment environment must be absent: ~a" key)))
++  (for ([entry '(("OPENRACKET_UI" . "modern") ("OPENRACKET_HOST_THEME" . "1")
++                 ("OPENRACKET_THEME" . "dark") ("OPENRACKET_NATIVE_APPEARANCE" . "1"))])
++    (assert! (equal? (getenv (car entry)) (cdr entry))
++             (format "Combined appearance environment mismatch: ~a" (car entry))))
+   (define flag (getenv "OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD"))
+   (assert! (equal? flag (if (eq? mode 'candidate-on) "1" #f)) "Mode and save-scan environment disagree")
+   (emit "OPENRACKET_AUTOSAVE_ENVIRONMENT"
+         (hash 'mode (symbol->string mode) 'runtime (version) 'os (symbol->string (system-type))
+               'profile (path->string profile) 'preferences_file (path->string prefs-file)
+-              'save_guard_environment (or flag 'null) 'other_experiments "absent"))
++              'save_guard_environment (or flag 'null) 'other_experiments "scan and color budget absent; retained appearance active"))
+   (source! "text-misc.rkt" '("framework" "private")
+            (if (eq? mode 'stock)
+                "7f95100d31c510ae1b29ddf01c6801d34ba709880b0dfc953ccd895a5bb06638"
+@@ -149,7 +153,9 @@
+   (source! "unit.rkt" '("drracket" "private")
+            "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5")
+   (source! "switchable-button.rkt" '("mrlib")
+-           "532a707597787d6e61d420f815ee14f6a2ed1ccd342070271da5268056bd61de")
++           "d80e67b0285da13291d5650b56de4a616db5a217e63c51a6cf95c040603add31")
++  (source! "openracket-paint.rkt" '("mrlib" "private")
++           "38c8f8197ed6f08373b4768a053abf1ff09cc1ff0e475e6d3d72a237775fa354")
+   (set! before (on-gui get-top-level-windows))
+   (on-gui
+    (lambda ()
+@@ -178,6 +184,14 @@
+        (assert! (equal? selected? (case mode [(stock) 'absent] [(candidate-off) #f] [else #t]))
+                 "Actual loaded activation export must match mode")
+        (define pref-get (dynamic-require 'framework 'preferences:get))
++       (assert! (eq? (pref-get 'openracket:appearance-state) 'applied)
++                "Combined host appearance must actually be applied")
++       (define scheme-name (dynamic-require 'framework 'color-prefs:get-current-color-scheme-name))
++       (assert! (and (eq? (scheme-name #:wob? #f) '|OpenRacket Light|)
++                     (eq? (scheme-name #:wob? #t) '|OpenRacket Dark|))
++                "Both installed OpenRacket schemes must be selected")
++       (define painter-mode (dynamic-require 'mrlib/private/openracket-paint 'get-modern-host-theme))
++       (assert! (eq? (painter-mode) 'dark) "Combined toolbar must match the dark editor")
+        (define verify? (pref-get 'framework:verify-change-format))
+        (emit "OPENRACKET_AUTOSAVE_ACTIVATION"
+              (hash 'mode (symbol->string mode) 'loaded_guard (if (eq? selected? 'absent) "absent" selected?)
+@@ -225,7 +239,7 @@
+   (for ([dir (in-list result-dirs)])
+     (assert! (directory-exists? dir) "Fixture evidence directory must exist"))
+   (emit "OPENRACKET_AUTOSAVE_CORRECTNESS"
+-        (hash 'status "passed" 'scope "native stock-default save/copy/WXME/autosave artifact reload"
++        (hash 'status "passed" 'scope "combined modern host: stock-default save/copy/WXME/autosave artifact reload"
+               'mode (symbol->string mode) 'checks checks 'directories (map path->string result-dirs)
+               'native_write_failure_retry_cases 4
+               'sources source-evidence 'verification_enabled_dialogs "unrun"

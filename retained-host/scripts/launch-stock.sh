@@ -6,5 +6,5 @@ cd "$ROOT"
 # and keep stock-comparison preferences separate from the modern profile.
 export PLTUSERHOME="$ROOT/profile-stock-preferences"
 export OPENRACKET_UI=stock
-unset OPENRACKET_HOST_THEME
-exec "$RACKET" -A "$ADDON" -l drracket -- "$@"
+unset OPENRACKET_HOST_THEME OPENRACKET_NATIVE_APPEARANCE OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD
+exec "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l drracket -- "$@"

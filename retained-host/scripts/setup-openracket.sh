@@ -23,6 +23,7 @@ case "$gui" in
     ;;
 esac
 run_racket scripts/apply-overlay.rkt
+run_racket scripts/apply-autosave.rkt
 run_raco pkg install --scope user --batch --no-setup --deps fail --skip-installed \
   --link --name openracket-appearance "$ROOT/tool"
 # Register the tool/info-based palettes and compile only the local tool. No docs,

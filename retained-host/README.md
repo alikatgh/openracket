@@ -1,3 +1,15 @@
+# Runnable retained DrRacket candidate
+
+Start with [PORTABLE-CANDIDATE.md](PORTABLE-CANDIDATE.md) for the current Mac-first
+installation, measured autosave scope, opt-outs and remaining native acceptance
+gates. This tree is based on the tested polish 1316 source plus the exact measured
+autosave guard. Windows remains untested.
+
+The earlier proof documentation follows as historical context; its unrun notes
+refer to the earlier stage, not the completed native runs cited above.
+
+---
+
 # Experimental retained-host polish candidate
 
 This source adds platform-native toolbar font preservation and an explicitly gated
