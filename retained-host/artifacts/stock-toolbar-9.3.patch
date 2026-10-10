@@ -1,0 +1,60 @@
+--- gui-lib/mrlib/switchable-button.rkt
++++ gui-lib/mrlib/switchable-button.rkt
+@@ -2,13 +2,14 @@
+ (require racket/gui/base
+          racket/contract
+          racket/class
+-         "private/panel-wob.rkt")
++         "private/panel-wob.rkt"
++         "private/openracket-paint.rkt")
+ 
+ (provide switchable-button%)
+-(define gap 4) ;; space between the text and the icon
+-(define margin 2)
+-(define w-circle-space 6)
+-(define h-circle-space 6)
++(define gap (if (modern-ui?) 6 4)) ;; space between the text and the icon
++(define margin (if (modern-ui?) 4 2))
++(define w-circle-space (if (modern-ui?) 10 6))
++(define h-circle-space (if (modern-ui?) 8 6))
+ 
+ ;; extra space outside the bitmap,
+ ;; but inside the mouse highlighting (on the right)
+@@ -224,7 +225,19 @@
+                 (when float-window
+                   (send float-window show #f))]))])))
+ 
++    ;; OpenRacket presentation seam: retain all stock state and callbacks.
+     (define/override (on-paint)
++      (if (modern-ui?)
++          (let-values ([(cw ch) (get-client-size)])
++            (parameterize ([current-modern-theme
++                            (if (eq? (get-modern-host-theme) 'auto)
++                                (if (white-on-black-panel-scheme?) 'dark 'light)
++                                (get-modern-host-theme))])
++              (paint-modern-button (get-dc) cw ch label bitmap alternate-bitmap
++                                   has-label? disabled? in? down? (get-small-width))))
++          (paint-stock-button)))
++
++    (define/private (paint-stock-button)
+       (define dc (get-dc))
+       (define-values (cw ch) (get-client-size))
+       (define alpha (send dc get-alpha))
+@@ -319,7 +332,7 @@
+ 
+     (define/private (update-sizes)
+       (define dc (get-dc))
+-      (define-values (tw th _1 _2) (send dc get-text-extent label normal-control-font))
++      (define-values (tw th _1 _2) (send dc get-text-extent label (modern-control-font normal-control-font)))
+       (define h
+         (inexact->exact
+          (floor
+@@ -342,7 +355,7 @@
+ 
+     (define/public (get-large-width)
+       (define dc (get-dc))
+-      (define-values (tw th _1 _2) (send dc get-text-extent label normal-control-font))
++      (define-values (tw th _1 _2) (send dc get-text-extent label (modern-control-font normal-control-font)))
+       (inexact->exact
+        (floor
+         (+ (+ tw gap (send bitmap get-width) rhs-pad)

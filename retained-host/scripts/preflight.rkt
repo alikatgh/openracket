@@ -1,0 +1,16 @@
+#lang racket/base
+(require json racket/file racket/list setup/dirs)
+(define modules '(racket/gui/base drracket/drracket mrlib/switchable-button
+                 drracket/tool macro-debugger/stepper stepper/stepper-tool))
+(define (resolve m)
+  (with-handlers ([exn:fail? (lambda (e) (hash 'module (symbol->string m)
+                                             'available #f 'error (exn-message e)))])
+    (define p (resolved-module-path-name ((current-module-name-resolver) m #f #f #f)))
+    (hash 'module (symbol->string m) 'available (file-exists? p) 'path (path->string p))))
+(write-json (hash 'racket_version (version)
+                  'platform (symbol->string (system-type 'os))
+                  'display (or (getenv "DISPLAY") 'null)
+                  'wayland_display (or (getenv "WAYLAND_DISPLAY") 'null)
+                  'module_checks (map resolve modules)
+                  'native_window_started #f))
+(newline)

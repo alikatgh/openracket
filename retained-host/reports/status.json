@@ -1,0 +1,29 @@
+{
+  "scope": "isolated retained-DrRacket 9.3 presentation proof",
+  "state": "first native-CI source candidate; local headless checks pass",
+  "racket_tests_passed": 103,
+  "python_patcher_tests_passed": 12,
+  "original_button_methods_audited": 18,
+  "changed_button_methods": [
+    "on-paint",
+    "update-sizes",
+    "get-large-width"
+  ],
+  "original_event_callback_logic_changed": false,
+  "complete_native_host_compiled": false,
+  "native_window_started": false,
+  "native_stock_workflow_parity_verified": false,
+  "application_performance_measured": false,
+  "toolbar_component_png": "artifacts/toolbar-paint-proof.png",
+  "png_sha256": "03737fab4fa5756b1193dc133532a676b4102c9ef993e587b2e278c656d5b3d0",
+  "sidebar_implemented": false,
+  "blocking_prerequisites": [
+    "Complete stock dependencies and working native graphical session in the authorized CI environment; local package retries cancelled and local display unavailable"
+  ],
+  "original_projects_modified": false,
+  "remote_writes": false,
+  "python_performance_tests_passed": 4,
+  "portable_launcher_implemented": true,
+  "workspace_chrome_implemented": true,
+  "native_ci_status": "pending"
+}

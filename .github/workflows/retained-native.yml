@@ -1,0 +1,73 @@
+name: Retained DrRacket native checks (public free runners)
+
+'on':
+  push:
+    branches: ['prototype/retained-drracket']
+    paths:
+      - 'retained-host/**'
+      - '.github/workflows/retained-native.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retained-drracket-native
+  cancel-in-progress: false
+
+jobs:
+  native:
+    # These conditions are evaluated before allocating a runner.
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/prototype/retained-drracket'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }} # Standard free public runners only. No larger runners.
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recheck repository is public
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 \
+            https://api.github.com/repos/alikatgh/openracket |
+            python3 -c 'import json,sys; r=json.load(sys.stdin); assert r.get("full_name")=="alikatgh/openracket" and r.get("private") is False and r.get("visibility")=="public", "Public repository required"'
+      - name: Check out exact tested commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # official v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Install Linux native display dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb xauth imagemagick libgtk-3-0t64
+      - name: Install checksum-pinned full official Racket 9.3
+        run: bash retained-host/scripts/ci/install-full-racket.sh
+      - name: Test stock and retained native host on Linux
+        if: runner.os == 'Linux'
+        timeout-minutes: 20
+        run: xvfb-run -a -s '-screen 0 1280x900x24 -nolisten tcp' python3 retained-host/scripts/ci/run-native.py
+      - name: Test stock and retained native host on macOS
+        if: runner.os == 'macOS'
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-native.py
+      - name: Report actual test results
+        if: always()
+        run: |
+          if test -f retained-host/reports/ci-summary.md; then
+            cat retained-host/reports/ci-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Setup failed before native tests; no GUI validation is claimed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'No Actions artifacts, caches, releases, packages, or other paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"

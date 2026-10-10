@@ -1,0 +1,2 @@
+raco test: (file "tool/frame-chrome-tests.rkt")
+15 tests passed

@@ -1,0 +1,3 @@
+raco test: (file "tests/independent-appearance-test.rkt")
+raco test: (file "tests/independent-paint-test.rkt")
+30 tests passed

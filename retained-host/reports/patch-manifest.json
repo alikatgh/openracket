@@ -1,0 +1,22 @@
+{
+  "racket": "9.3",
+  "source": "/workspace/shared/openracket-drracket-host/vendor/switchable-button-v9.3.rkt",
+  "upstream_sha256": "532a707597787d6e61d420f815ee14f6a2ed1ccd342070271da5268056bd61de",
+  "patched_sha256": "8d5740ab51ccfc165e81f16273181d71bd69b25d1926cfc900359ac93d24c033",
+  "painter_sha256": "8f0c034cfdcf4278a3a7168bd93039bfc238b099a845b21263e355b5348f9b67",
+  "added_import": "private/openracket-paint.rkt",
+  "changed_methods": [
+    "on-paint",
+    "update-sizes",
+    "get-large-width"
+  ],
+  "added_method": "paint-stock-button",
+  "changed_constants": [
+    "gap",
+    "margin",
+    "w-circle-space",
+    "h-circle-space"
+  ],
+  "event_and_callback_changes": false,
+  "native_window_run": false
+}

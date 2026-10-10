@@ -1,0 +1,42 @@
+GUI-free module compilation:
+exit=0
+Headless contract tests:
+raco test: (file "/workspace/shared/openracket-drracket-host/tool/tests.rkt")
+9 tests passed
+exit=0
+Full GUI tool compilation (expected unavailable dependency):
+/workspace/shared/openracket-drracket-host/tool/tool.rkt:4:9: cannot open module file
+  module path: racket/gui/base
+  path: /workspace/shared/racket-toolchain/racket/collects/racket/gui/base.rkt
+  system error: no such file or directory; rkt_err=3
+  compilation context...:
+   /workspace/shared/openracket-drracket-host/tool/tool.rkt
+  location...:
+   /workspace/shared/openracket-drracket-host/tool/tool.rkt:4:9
+  context...:
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:717:0: compile-zo*
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:647:0: compile-zo*/cross-compile
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:461:15
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:447:12: build
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:418:0: maybe-compile-zo
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:221:0: compile-root
+   /workspace/shared/racket-toolchain/racket/collects/compiler/private/cm-minimal.rkt:109:4
+   /workspace/shared/openracket-drracket-host/profile/.local/share/racket/9.3/pkgs/compiler-lib/compiler/commands/make.rkt:69:0
+   body of "/workspace/shared/openracket-drracket-host/profile/.local/share/racket/9.3/pkgs/compiler-lib/compiler/commands/make.rkt"
+   /workspace/shared/racket-toolchain/racket/collects/raco/raco.rkt:41:0
+   body of "/workspace/shared/racket-toolchain/racket/collects/raco/raco.rkt"
+   body of "/workspace/shared/racket-toolchain/racket/collects/raco/main.rkt"
+exit=1
+GUI-free module compilation after rollback fix:
+exit=0
+Headless contract and rollback tests:
+raco test: (file "/workspace/shared/openracket-drracket-host/tool/tests.rkt")
+12 tests passed
+exit=0
+Full GUI compilation remains blocked at missing racket/gui/base; no repeat dependency installation or native launch.
+Freeze validation including final workspace integration:
+compile_exit=0
+raco test: (file "/workspace/shared/openracket-drracket-host/tool/tests.rkt")
+raco test: (file "/workspace/shared/openracket-drracket-host/tool/frame-chrome-tests.rkt")
+28 tests passed
+test_exit=0
