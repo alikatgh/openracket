@@ -128,7 +128,8 @@ try:
         command('Compile complete candidate DrRacket entrypoint',[SCAN/'bin/raco','make','-l','drracket/drracket'],arm='candidate',timeout=180)
     elif PHASE=='correctness':
         verify('stock');verify('candidate')
-        command('Native editor preservation cases with asserted private activation',[SCAN/'bin/racket',EXP/'tests/independent-native-fastpath-test.rkt'],arm='candidate',purpose='native-editors',timeout=60)
+        command('Native editor preservation cases with asserted private activation',[SCAN/'bin/racket',EXP/'tests/independent-native-fastpath-test.rkt'],arm='candidate',purpose='native-editors',timeout=60,required=False)
+        lexer_results=[]
         for arm in ('stock','candidate'):
             env=environment(arm,'native-lexer')
             env.update(OPENRACKET_LEXER_OUTPUT=str(REPORTS/(arm+'-lexer.json')),OPENRACKET_LEXER_MODE=arm)
@@ -137,8 +138,11 @@ try:
             try: result=proc.wait(timeout=60)
             except subprocess.TimeoutExpired: terminate_group(proc);result=124
             record(arm+' actual retained-editor lexer outcomes',result==0,'exit='+str(result));print('::endgroup::',flush=True)
-            if result: raise RuntimeError('Native lexer arm failed')
-        command('Exact native lexer/token/style/parenthesis equivalence',[sys.executable,EXP/'tests/compare-native-lexer.py',REPORTS/'stock-lexer.json',REPORTS/'candidate-lexer.json'])
+            lexer_results.append(result==0)
+        if all(lexer_results):
+            command('Exact native lexer/token/style/parenthesis equivalence',[sys.executable,EXP/'tests/compare-native-lexer.py',REPORTS/'stock-lexer.json',REPORTS/'candidate-lexer.json'],required=False)
+        else:
+            record('Exact native lexer/token/style/parenthesis equivalence',False,'Not compared: at least one independent arm failed; timing remains blocked')
         verify('stock');verify('candidate')
     elif PHASE=='performance':
         for pair in (1,2,3):

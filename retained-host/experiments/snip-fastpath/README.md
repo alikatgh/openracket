@@ -12,9 +12,10 @@ When this existing cache is stably true, a stock editor's
 walks when the stock colorer opens another editor-backed input port.
 
 The candidate returns false only when the cache is already true, no mutation
-callback is pending, no uncertain callback exit occurred, and the argument has
-the original valid shape. Unknown/false cache states and invalid arguments use
-the exact inherited method. It does not rescan an unknown cache or add virtual
+callback is pending, no uncertain callback exit occurred, and the argument is
+false or an owned exact native string snip. Every detached/custom/subclass/rich
+argument is delegated, including stock's detached-snip contract exception.
+Unknown/false cache states and invalid arguments use the exact inherited method. It does not rescan an unknown cache or add virtual
 calls while deciding whether to use the shortcut.
 
 ## Narrow extension boundary

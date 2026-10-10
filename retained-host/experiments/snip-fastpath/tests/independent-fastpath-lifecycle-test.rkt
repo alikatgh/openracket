@@ -11,8 +11,11 @@
 (define snip%
   (class object%
     (super-new)
-    (field [following #f])
+    (field [following #f] [owner #f])
     (define/public (next) following)
+    (define/public (get-owner) owner)
+    (define/public (get-admin) owner)
+    (define/public (set-owner! value) (set! owner value))
     (define/public (link! s) (set! following s))
     (define/public (get-count) 1)))
 (define string-snip% (class snip% (super-new)))
@@ -29,8 +32,10 @@
     (define/public (fail-first! flag) (set! first-fails? flag))
     (define/public (all-snips) contents)
     (define/private (replace! values)
+      (for ([s (in-list contents)] #:unless (memq s values)) (send s set-owner! #f))
       (set! contents values)
       (for ([s (in-list contents)] [n (in-list (if (null? contents) '() (append (cdr contents) '(#f))))])
+        (send s set-owner! this)
         (send s link! n)))
     ;; Model an allowed custom snip merge performed by a style change, which
     ;; changes the native linked list without insert/delete notifications.
@@ -46,6 +51,9 @@
       (set! delegations (add1 delegations))
       (unless (or (not value) (is-a? value snip%))
         (raise-argument-error 'find-next-non-string-snip "(or/c #f snip%)" value))
+      ;; Match the pinned native owner comparison: #f is not an object.
+      (when (and value (not (send value get-owner)))
+        (raise-argument-error 'object=? "object?" #f))
       (define tail (if value (let ([found (memq value contents)]) (and found (cdr found))) contents))
       (and tail (for/or ([s (in-list tail)]) (and (not (is-a? s string-snip%)) s))))
     (define/pubment (on-insert start len) (inner (void) on-insert start len))
@@ -130,17 +138,25 @@
 
 (test-case "stable text fast path preserves reflective arity and invalid argument errors"
   (define t (fixture))
+  (define empty (fixture))
+  (for ([detached (in-list (list (new snip%) (new string-snip%)))])
+    (check-exn exn:fail:contract?
+               (lambda () (send empty find-next-non-string-snip detached))))
   (define s (new string-snip%)) (send t insert! s)
-  (for ([value (in-list (list #f s (new snip%) (new string-snip%)))])
-    (check-false (send t find-next-non-string-snip value)))
+  (check-false (send t find-next-non-string-snip #f))
   (check-equal? (send t get-delegations) 0)
+  (check-false (send t find-next-non-string-snip s))
+  (for ([detached (in-list (list (new snip%) (new string-snip%)))])
+    (check-exn exn:fail:contract?
+               (lambda () (send t find-next-non-string-snip detached))))
+  (check-equal? (send t get-delegations) 2)
   (for ([n '(0 1 2)])
     (check-equal? (object-method-arity-includes? t 'find-next-non-string-snip n) (= n 1)))
   (check-exn exn:fail:contract:arity? (lambda () (send t find-next-non-string-snip)))
   (check-exn exn:fail:contract:arity? (lambda () (send t find-next-non-string-snip #f #f)))
   (for ([value '(42 "snip" #(snip))])
     (check-exn exn:fail:contract? (lambda () (send t find-next-non-string-snip value))))
-  (check-equal? (send t get-delegations) 3))
+  (check-equal? (send t get-delegations) 5))
 
 (test-case "default-off delegates even a known all-string buffer"
   (define t (fixture #f)) (send t insert! (new string-snip%))

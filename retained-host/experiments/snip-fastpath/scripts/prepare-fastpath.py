@@ -87,9 +87,16 @@ helpers='''
                  openracket-fast-path-safe?
                  (null? openracket-mutations-pending)
                  (eq? all-string-snips-state #t)
-                 ;; Keep the exact one-argument arity. Invalid values still go
-                 ;; through the original method's type-contract path.
-                 (or (not snip) (is-a? snip snip%)))
+                 ;; Keep the exact arity and stock detached-snip contract.
+                 ;; Only an exact native string snip has the known field-only
+                 ;; get-admin method. Subclasses/custom/invalid arguments always
+                 ;; delegate, without invoking an additional virtual callback.
+                 ;; A detached native snip delegates too: stock object=? raises
+                 ;; for its #f admin, even when this editor is empty.
+                 (or (not snip)
+                     (and (is-a? snip string-snip%)
+                          (eq? (object-interface snip) (class->interface string-snip%))
+                          (send snip get-admin))))
             #f
             (super find-next-non-string-snip snip)))
 '''

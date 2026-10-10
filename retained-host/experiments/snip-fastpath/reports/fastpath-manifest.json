@@ -15,7 +15,7 @@
     }
   },
   "helper_module": "drracket/private/openracket-all-string-snips.rkt",
-  "helper_sha256": "674c25bc4ed09ca0a8159162a944adb9fa985ec29407cfa4c2f83386c3a31c0b",
+  "helper_sha256": "873d8f2ec457074fd983ccfe92b0f016587513211f2f92edfb751f991b4faa47",
   "opt_in_environment": "OPENRACKET_ALL_STRING_FAST_PATH=1",
   "scope": "one private stock DrRacket definitions composition; generic Framework mixin is unchanged",
   "default_off": "uses exact stock text:all-string-snips-mixin object",

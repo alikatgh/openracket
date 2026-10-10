@@ -22,6 +22,13 @@ editor behavior or a speedup.
   method, without introducing virtual `find-first-snip` calls or extra scans.
 - One-argument reflective arity remains unchanged; invalid argument values still
   reach the original contract path. String-snip subclasses match stock behavior.
+- Native stock checks snip ownership with `object=?` before its empty-buffer
+  check. Detached snips therefore raise a contract error, which must not become
+  a false result. Argument eligibility now requires `#f` or an exact native
+  string snip with a nonfalse stock `get-admin` field value. All detached,
+  custom, subclass and invalid arguments use the original method. The actual
+  editor-backed port starts from an owned string snip; the native counted test
+  proves that argument still takes the shortcut.
 - A custom string subclass can return a rich snip from `merge-with`; native
   selection/style operations can perform that merge without insertion/deletion
   hooks, leaving the original all-string cache at `#t`. The shortcut is therefore
@@ -57,5 +64,11 @@ then checks a required native custom-string-to-rich merge, Unicode streaming por
 foreign/detached/custom/string-subclass snips, image/nested specials, the actual pre-after-insert modified callback, reentrant
 mutation and callback exceptions, undo/redo, WXME payloads and outer/generic
 method dispatch. Serialization comparisons preserve text and rich bytes without
-requiring incidental string-snip segmentation. The file has passed a reader check
-only; none of these fourteen native cases is counted as a passing test yet.
+requiring incidental string-snip segmentation. The first Linux native run
+(38057531854) compiled the complete private helper/DrRacket and passed 13 of 14
+cases, including the actual custom merge and fast-hit checks. The detached-snip
+case exposed both the initial test assumption and the shortcut contract defect
+above; timing was skipped. Revised assertions compare original/candidate return
+values and contract/arity exception categories for owned, foreign, detached and
+released snips, including empty editors. The repaired native file has passed a
+reader check and awaits its new native run.

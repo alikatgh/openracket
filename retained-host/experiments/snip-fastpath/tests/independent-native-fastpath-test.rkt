@@ -124,6 +124,7 @@
               (check-eq? (object-interface s) (class->interface string-snip%)))
             (set! calls 0)
             (check-false (send editor find-next-non-string-snip #f))
+            (check-false (send editor find-next-non-string-snip (send editor find-first-snip)))
             (define plain-calls calls)
             (define rich (new custom-snip%))
             (append! editor rich)
@@ -131,7 +132,7 @@
             (check-eq? (send editor find-next-non-string-snip #f) rich)
             (check-equal? calls 1 "Rich content reaches the actual lower method")
             plain-calls))
-        (check-equal? counts '(1 0)))))
+        (check-equal? counts '(2 0)))))
    (test-case "custom string merge can make rich content without insertion hooks"
      (on-gui
       (lambda ()
@@ -184,21 +185,55 @@
    (test-case "foreign/detached snips, arity and invalid types preserve stock contracts"
      (on-gui
       (lambda ()
-        (for ([base% (in-list classes)])
-          (define editor (new base%)) (send editor insert "abc λ")
-          (define foreign-editor (new text%))
-          (define foreign (new custom-snip%)) (send foreign-editor insert foreign)
-          (for ([s (in-list (list foreign (new custom-snip%) (new string-child%)))])
-            (check-false (send editor find-next-non-string-snip s)))
-          (send foreign release-from-owner)
-          (check-false (send foreign get-admin))
-          (check-false (send editor find-next-non-string-snip foreign))
-          (for ([n '(0 1 2)])
-            (check-equal? (object-method-arity-includes? editor 'find-next-non-string-snip n) (= n 1)))
-          (check-exn exn:fail:contract:arity? (lambda () (send editor find-next-non-string-snip)))
-          (check-exn exn:fail:contract:arity? (lambda () (send editor find-next-non-string-snip #f #f)))
-          (for ([v '(1 "snip" #(snip))])
-            (check-exn exn:fail:contract? (lambda () (send editor find-next-non-string-snip v))))))))
+        (define (outcome thunk)
+          (with-handlers ([exn:fail?
+                           (lambda (e)
+                             (cond [(exn:fail:contract:arity? e) '(error arity)]
+                                   [(exn:fail:contract? e) '(error contract)]
+                                   [else (raise e)]))])
+            (list 'value (thunk))))
+        (define results
+          (for/list ([base% (in-list classes)])
+            (define editor (new base%)) (send editor insert "abc λ")
+            (define foreign-editor (new text%))
+            (define foreign (new custom-snip%)) (send foreign-editor insert foreign)
+            (define foreign-string (make-object string-snip% "foreign"))
+            (append! foreign-editor foreign-string)
+            (define starts
+              (list #f (send editor find-first-snip) foreign foreign-string
+                    (new custom-snip%) (new string-child%) (make-object string-snip% "detached")))
+            (define start-results
+              (for/list ([s (in-list starts)])
+                (outcome (lambda () (send editor find-next-non-string-snip s)))))
+            (define empty-editor (new base%))
+            (define empty-results
+              (for/list ([s (in-list starts)])
+                (outcome (lambda () (send empty-editor find-next-non-string-snip s)))))
+            (check-equal? empty-results start-results
+                          "Stock checks detached admin even before its empty-editor shortcut")
+            (send foreign release-from-owner)
+            (check-false (send foreign get-admin))
+            (define released-result
+              (outcome (lambda () (send editor find-next-non-string-snip foreign))))
+            (for ([n '(0 1 2)])
+              (check-equal? (object-method-arity-includes? editor 'find-next-non-string-snip n) (= n 1)))
+            (define invalid-results
+              (append
+               (list (outcome (lambda () (send editor find-next-non-string-snip)))
+                     (outcome (lambda () (send editor find-next-non-string-snip #f #f))))
+               (for/list ([v '(1 "snip" #(snip))])
+                 (outcome (lambda () (send editor find-next-non-string-snip v))))))
+            (list start-results released-result invalid-results)))
+        ;; The pinned native implementation calls object=? on the snip admin.
+        ;; An unowned/released snip has #f admin and raises a contract error.
+        ;; Preserve that actual outcome instead of normalizing it to #f.
+        (check-equal? (car results)
+                      '(((value #f) (value #f) (value #f) (value #f)
+                         (error contract) (error contract) (error contract))
+                        (error contract)
+                        ((error arity) (error arity) (error contract) (error contract) (error contract))))
+        (check-equal? (cadr results) (car results)
+                      "Candidate preserves every original value or exception category"))))
    (test-case "custom and string-subclass snips preserve exact suffix queries"
      (on-gui
       (lambda ()
