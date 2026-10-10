@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="OpenRacket explores a modern, focused DrRacket experience: familiar controls, the original tool host, and performance work grounded in measurement. An open-source development preview.">
+  <meta name="theme-color" content="#f4f1e9">
+  <meta property="og:title" content="OpenRacket — A fresh perspective on familiar ground.">
+  <meta property="og:description" content="A quieter workspace for Racket. Explore the design and the open-source work toward a modern DrRacket experience.">
+  <meta property="og:type" content="website">
+  <title>OpenRacket — A fresh perspective on familiar ground.</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#" aria-label="OpenRacket home">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M13 7C5 15 5 25 13 33M27 7c8 8 8 18 0 26M24 10 16 30"/></svg>
+      <span>OpenRacket</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#workspace">The design</a>
+      <a href="#development">Development</a>
+      <a class="nav-source" href="https://github.com/alikatgh/openracket">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> An open-source work in progress</div>
+      <div class="hero-grid">
+        <h1 id="hero-title">Familiar ground.<br><em>Fresh perspective.</em></h1>
+        <div class="hero-aside">
+          <p>A calmer, more modern home for your Racket ideas. Built around the DrRacket workflow you already know.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/alikatgh/openracket">Explore the source <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href="#workspace">Take a closer look <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-footnote"><span>Racket at the center.</span><span>The details, reconsidered.</span><span class="edition">Development preview / 2026</span></div>
+    </section>
+
+    <section id="workspace" class="workspace-section" aria-labelledby="workspace-title">
+      <div class="workspace-top wrap">
+        <h2 id="workspace-title" class="eyebrow">01 / A little more room to think</h2>
+        <div class="theme-controls" role="group" aria-label="Design preview color theme" hidden>
+          <button type="button" data-theme-choice="light" aria-pressed="true"><span aria-hidden="true">☼</span> Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false"><span aria-hidden="true">◐</span> Dark</button>
+        </div>
+      </div>
+      <div class="workspace-stage wrap">
+        <div class="editor" data-preview-theme="light" role="group" aria-label="Conceptual OpenRacket interface illustration">
+          <div class="editor-titlebar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>small-ideas.rkt <span class="title-separator">/</span> OpenRacket</span><span class="title-spacer" aria-hidden="true"></span></div>
+          <div class="editor-toolbar" role="group" aria-label="Illustrated toolbar; these are not application controls">
+            <div class="file-tools"><span class="file-name"><svg viewBox="0 0 16 18" aria-hidden="true"><path d="M3 1h6l4 4v12H3zM9 1v5h4"/></svg> small-ideas.rkt <span aria-hidden="true">⌄</span></span><span class="definition-selector">Definitions <span aria-hidden="true">⌄</span></span></div>
+            <div class="tool-items"><span>Check Syntax</span><span>Debug</span><span>Macro Stepper</span><span class="illustrated-run"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 1 8 5-8 5z"/></svg> Run</span><span class="illustrated-stop"><span aria-hidden="true">■</span> Stop</span></div>
+          </div>
+          <div class="definitions-pane">
+            <div class="pane-label"><span>Definitions</span><span>small ideas, composed</span></div>
+            <div class="code-block" role="img" aria-label="Example Racket code: a square function is mapped over the numbers 1, 2, 3, 4 and 5.">
+              <div><span class="line-number" aria-hidden="true">1</span><code><span class="syntax-language">#lang</span> racket</code></div>
+              <div><span class="line-number" aria-hidden="true">2</span><code> </code></div>
+              <div><span class="line-number" aria-hidden="true">3</span><code><span class="syntax-comment">; Start with something small.</span></code></div>
+              <div><span class="line-number" aria-hidden="true">4</span><code>(<span class="syntax-keyword">define</span> (<span class="syntax-function">square</span> x)</code></div>
+              <div><span class="line-number" aria-hidden="true">5</span><code>  (* x x))</code></div>
+              <div><span class="line-number" aria-hidden="true">6</span><code> </code></div>
+              <div><span class="line-number" aria-hidden="true">7</span><code>(<span class="syntax-keyword">define</span> numbers '(<span class="syntax-number">1 2 3 4 5</span>))</code></div>
+              <div><span class="line-number" aria-hidden="true">8</span><code>(map square numbers)<span class="illustrated-caret" aria-hidden="true"></span></code></div>
+              <div><span class="line-number" aria-hidden="true">9</span><code> </code></div>
+            </div>
+            <span class="focus-rail" aria-hidden="true"></span>
+          </div>
+          <div class="pane-divider" aria-hidden="true"><span></span></div>
+          <div class="interactions-pane">
+            <div class="pane-label"><span>Interactions</span><span>space to explore</span></div>
+            <div class="interaction-code"><code>'(1 4 9 16 25)</code><code><span class="prompt">&gt;</span> (square <span class="syntax-number">12</span>)</code><code><span class="syntax-number">144</span></code><code><span class="prompt">&gt;</span> <span class="interaction-caret" aria-hidden="true"></span></code></div>
+          </div>
+          <div class="editor-status"><span><span class="status-dot" aria-hidden="true"></span> Racket</span><span>Ln 8, Col 21 <span class="status-divider">│</span> UTF-8</span></div>
+        </div>
+        <div class="preview-caption"><p><span class="caption-mark" aria-hidden="true">↳</span> Interface design study. An illustration, not a running app or screenshot.</p><p class="theme-hint" hidden>Try the color modes <span aria-hidden="true">↑</span></p></div>
+        <p class="sr-only" id="preview-announcement" role="status" aria-live="polite"></p>
+      </div>
+      <div class="workspace-notes wrap">
+        <div><span class="note-index">A</span><p><strong>Everything in its place.</strong> Definitions above. Interactions below. Familiar controls within reach.</p></div>
+        <div><span class="note-index">B</span><p><strong>Less visual noise.</strong> Considered spacing, clear focus, and light and dark palettes.</p></div>
+        <div><span class="note-index">C</span><p><strong>Still unmistakably Racket.</strong> A design direction that starts with the way you work.</p></div>
+      </div>
+    </section>
+
+    <section class="principles wrap section-space" aria-labelledby="principles-title">
+      <div class="section-intro"><p class="eyebrow">02 / The idea</p><h2 id="principles-title">Keep the substance.<br>Refine the surface.</h2><p>DrRacket is more than an editor. OpenRacket’s direction is to modernize the experience while keeping the machinery that makes it useful.</p></div>
+      <div class="principle-list">
+        <article><span class="principle-number">01</span><div><h3>Familiar by design</h3><p>The same two-pane rhythm. The same places to look for Run, Check Syntax, Debug, and Macro Stepper. A modern appearance should build on your muscle memory.</p></div><svg class="principle-art" viewBox="0 0 88 88" aria-hidden="true"><rect x="8" y="13" width="72" height="62" rx="3"/><path d="M8 25h72M8 55h72M20 36h27M20 43h38M20 64h19"/></svg></article>
+        <article><span class="principle-number">02</span><div><h3>Depth worth preserving</h3><p>The current experiment retains DrRacket 9.3’s own host, editors, and tool callbacks. Stock functionality is the goal; native workflow checks are how we earn that claim.</p></div><svg class="principle-art" viewBox="0 0 88 88" aria-hidden="true"><path d="m44 12 32 16-32 16L12 28zM12 43l32 16 32-16M12 58l32 16 32-16"/></svg></article>
+        <article><span class="principle-number">03</span><div><h3>Faster, with evidence</h3><p>Responsiveness matters. The plan is to measure complete workflows, identify bottlenecks, and improve them without dropping tools, instrumentation, or behavior.</p></div><svg class="principle-art" viewBox="0 0 88 88" aria-hidden="true"><path d="M13 69V19M13 69h62M22 57l13-11 12 5 19-26M57 25h9v9"/><circle cx="35" cy="46" r="3"/><circle cx="47" cy="51" r="3"/></svg></article>
+      </div>
+    </section>
+
+    <section class="architecture-section" aria-labelledby="architecture-title">
+      <div class="architecture wrap section-space">
+        <div class="architecture-copy"><p class="eyebrow">03 / Under the surface</p><h2 id="architecture-title">A new layer.<br>A trusted foundation.</h2><p>The retained-host experiment changes presentation at carefully chosen seams. The original editor objects and tool machinery stay underneath.</p><a class="text-link" href="https://github.com/alikatgh/openracket/tree/prototype/retained-drracket/retained-host">Read the retained-host approach <span aria-hidden="true">↗</span></a></div>
+        <div class="architecture-diagram" role="group" aria-label="Architecture: OpenRacket presentation over the DrRacket 9.3 host and Racket runtime">
+          <div class="architecture-layer top-layer"><span class="layer-symbol" aria-hidden="true">( / )</span><div><h3>OpenRacket presentation</h3><p>Toolbar · palette · spacing · focus</p></div><span class="layer-label">REFINE</span></div>
+          <div class="layer-connection" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="architecture-layer"><span class="layer-symbol" aria-hidden="true">{ }</span><div><h3>DrRacket 9.3 host</h3><p>Editors · tools · interactions</p></div><span class="layer-label">RETAIN</span></div>
+          <div class="layer-connection" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="architecture-layer base-layer"><span class="layer-symbol" aria-hidden="true">λ</span><div><h3>Racket runtime</h3><p>The language at the heart of it</p></div><span class="layer-label">BUILD ON</span></div>
+          <p class="diagram-caption">Architecture direction. Compatibility remains subject to testing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="development" class="development wrap section-space" aria-labelledby="development-title">
+      <div class="development-heading"><div><p class="eyebrow">04 / Out in the open</p><h2 id="development-title">Good work takes proof.</h2></div><span class="preview-badge">Development preview</span></div>
+      <p class="development-lead">This is an evolving project. Here’s what you’ll find in the repository, and what still needs to be established.</p>
+      <ol class="development-track">
+        <li><span class="track-dot current" aria-hidden="true"></span><p class="track-state">Explore now</p><h3>The source and the experiment</h3><p>The main branch holds the earlier Rust editor preview. A separate retained-host branch explores modernizing the original DrRacket environment.</p><a href="https://github.com/alikatgh/openracket/tree/prototype/retained-drracket">Retained-host branch <span aria-hidden="true">↗</span></a></li>
+        <li><span class="track-dot" aria-hidden="true"></span><p class="track-state">Validation work</p><h3>The complete workflow</h3><p>Native Linux and macOS behavior, stock tools, rich documents, and platform integration need direct testing before full compatibility can be claimed.</p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/NATIVE-ACCEPTANCE.md">Acceptance criteria <span aria-hidden="true">↗</span></a></li>
+        <li><span class="track-dot" aria-hidden="true"></span><p class="track-state">Measurement work</p><h3>Performance that holds up</h3><p>Compare startup, editing, analysis, and tool workflows on the same system with the same settings. No speed multiplier is claimed.</p><a href="https://github.com/alikatgh/openracket/tree/prototype/retained-drracket/retained-host/performance">Measurement approach <span aria-hidden="true">↗</span></a></li>
+      </ol>
+      <div class="project-faq">
+        <details><summary>Can I download a finished app?<span aria-hidden="true">+</span></summary><div><p>OpenRacket is a source-level development preview. There is no finished, supported application release offered here. The repository documents the earlier Rust preview, while the retained-host branch has its own experimental setup instructions.</p><a href="https://github.com/alikatgh/openracket#readme">Read the repository guide <span aria-hidden="true">↗</span></a></div></details>
+        <details><summary>Is this a complete DrRacket replacement?<span aria-hidden="true">+</span></summary><div><p>Not yet. Full stock functionality is the goal. The current direction keeps DrRacket’s own host and tools rather than recreating each feature, but that architecture still needs end-to-end native verification. The earlier Rust preview has documented feature gaps.</p></div></details>
+        <details><summary>How can I help?<span aria-hidden="true">+</span></summary><div><p>Explore the source, read the known limitations, and share a reproducible issue with your platform, Racket version, and the steps you tried. Useful areas include native behavior, accessibility, tool compatibility, and repeatable performance measurements.</p><a href="https://github.com/alikatgh/openracket/issues">View project issues <span aria-hidden="true">↗</span></a></div></details>
+      </div>
+    </section>
+
+    <section class="closing-section" aria-labelledby="closing-title"><div class="closing wrap"><svg class="closing-mark" viewBox="0 0 120 120" aria-hidden="true"><path d="M39 16C10 44 10 76 39 104M81 16c29 28 29 60 0 88M72 23 48 97"/></svg><div><p class="eyebrow">Small ideas. Open possibilities.</p><h2 id="closing-title">Come look under<br>the parentheses.</h2></div><a class="button button-paper" href="https://github.com/alikatgh/openracket">Open on GitHub <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+
+  <footer class="site-footer wrap"><a class="brand footer-brand" href="#">OpenRacket<span aria-hidden="true">↟</span></a><p>An independent, open-source experiment.<br>Not an official Racket or DrRacket release.</p><nav aria-label="Footer navigation"><a href="https://github.com/alikatgh/openracket">Source</a><a href="https://github.com/alikatgh/openracket/blob/main/LICENSE">License</a><a href="https://docs.racket-lang.org/drracket/">DrRacket docs <span aria-hidden="true">↗</span></a></nav></footer>
+</body>
+</html>

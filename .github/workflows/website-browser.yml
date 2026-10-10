@@ -1,0 +1,84 @@
+name: Website browser checks (public free runner)
+
+'on':
+  push:
+    branches: ['website/openracket']
+    paths:
+      - 'website/**'
+      - '.github/workflows/website-browser.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openracket-website-browser
+  cancel-in-progress: false
+
+jobs:
+  browser:
+    # Evaluated before allocation. Never use paid/private/larger runners here.
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/website/openracket'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recheck exact public repository
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # official v9.0.0
+        with:
+          debug: false
+          retries: 0
+          script: |
+            try {
+              const { data: repo } = await github.rest.repos.get({owner: 'alikatgh', repo: 'openracket'});
+              core.info(JSON.stringify({full_name: repo.full_name, private: repo.private, visibility: repo.visibility}));
+              if (repo.full_name !== 'alikatgh/openracket' || repo.private !== false || repo.visibility !== 'public') {
+                core.setFailed('Public repository required; browser checks were not started.');
+              }
+            } catch (error) {
+              const headers = error.response?.headers || {};
+              core.info(JSON.stringify({status: error.status, message: error.response?.data?.message,
+                rate_limit_remaining: headers['x-ratelimit-remaining'], rate_limit_reset: headers['x-ratelimit-reset']}));
+              core.setFailed('Public repository metadata check failed; browser checks were not started.');
+            }
+      - name: Check out exact tested commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # official v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Install exact official browser-test packages
+        timeout-minutes: 3
+        working-directory: website/qa
+        run: |
+          node --version
+          npm --version
+          npm install --ignore-scripts --package-lock=false --no-audit --no-fund --cache "$RUNNER_TEMP/openracket-npm"
+          node -e 'console.log("playwright=" + require("playwright/package.json").version + "; axe-core=" + require("axe-core/package.json").version)'
+      - name: Install test Chromium and system dependencies
+        timeout-minutes: 5
+        working-directory: website/qa
+        run: ./node_modules/.bin/playwright install --with-deps --only-shell chromium
+      - name: Browser behavior and accessibility checks
+        timeout-minutes: 4
+        run: node website/qa/browser-check.mjs
+      - name: Emit bounded real-browser PNG evidence in logs
+        if: always()
+        run: python3 website/qa/emit-screenshots.py "$RUNNER_TEMP/openracket-website-evidence"
+      - name: Report actual test results
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/openracket-website-evidence/summary.md"; then
+            cat "$RUNNER_TEMP/openracket-website-evidence/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Setup failed before browser tests; no browser validation is claimed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'No deployments, Actions artifacts, caches, releases, packages, or other paid-storage outputs were uploaded.' >> "$GITHUB_STEP_SUMMARY"
