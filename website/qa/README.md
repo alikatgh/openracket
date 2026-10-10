@@ -17,12 +17,12 @@ only on the disposable runner's loopback interface. Website external resource
 requests are blocked and reported as failures.
 
 The real Chromium checks cover desktop and mobile-emulated layouts, horizontal
-overflow, local assets and anchor destinations, interaction behavior, keyboard
+overflow, local assets and anchor destinations, plain informational structure, readable typography, section navigation, keyboard
 focus and selected WCAG rules. External link syntax and destinations are inspected;
 this is not a claim that all external services are available. Automated checks
 do not replace manual screen-reader or real-device testing.
 
-PNG evidence is limited to six viewport screenshots, at most 350 KiB each and
+PNG evidence is limited to five viewport screenshots, at most 350 KiB each and
 1,500 KiB combined. Indexed 3,072-character base64 chunks, byte lengths and SHA-256
 hashes are written to ordinary job logs. Decode retrieved completed-job logs with:
 

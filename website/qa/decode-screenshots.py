@@ -15,7 +15,7 @@ for line in a.log.read_text().splitlines():
     if begin:
         assert active is None, 'Nested or incomplete image blocks'
         label,size,digest=begin.groups()
-        assert label in ('desktop-light','desktop-dark','mobile-light','mobile-faq','mobile-demo','desktop-overview')
+        assert label in ('desktop','desktop-dark','desktop-lower','mobile','mobile-lower')
         assert 1024<=int(size)<=350*1024
         active=(label,int(size),digest,[])
     elif data:

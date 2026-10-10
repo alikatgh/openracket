@@ -2,7 +2,7 @@
 """Bounded screenshot evidence in ordinary free job logs, no artifact storage."""
 import base64, hashlib, pathlib, struct, sys
 root = pathlib.Path(sys.argv[1])
-labels = ('desktop-light', 'desktop-dark', 'mobile-light', 'mobile-faq', 'mobile-demo', 'desktop-overview')
+labels = ('desktop', 'desktop-dark', 'desktop-lower', 'mobile', 'mobile-lower')
 total = 0
 for label in labels:
     path = root / (label + '.png')

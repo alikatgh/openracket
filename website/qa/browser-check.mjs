@@ -72,7 +72,7 @@ try {
     return `${result.passes.length} axe rules passed; zero selected WCAG violations`;
   }
   await check('Initial real-browser render', async () => {
-    await go(); assert.match(await page.title(), /OpenRacket/i); assert.equal(await page.locator('h1').count(), 1); assert.equal(await page.locator('main').count(), 1); assert.ok((await page.locator('body').innerText()).length > 1000); return await shot('desktop-light');
+    await go(); assert.match(await page.title(), /OpenRacket/i); assert.equal(await page.locator('h1').count(), 1); assert.equal(await page.locator('main').count(), 1); assert.ok((await page.locator('body').innerText()).length > 1000); return await shot('desktop');
   });
   await check('Local assets and anchor link integrity', async () => {
     const anchors = await page.locator('a').evaluateAll(elements => elements.map(a => ({ href: a.getAttribute('href'), text: a.textContent.trim(), target: a.target, rel: a.rel, brand: a.classList.contains('brand') })));
@@ -87,7 +87,7 @@ try {
     const broken = await page.locator('img').evaluateAll(imgs => imgs.filter(img => !img.complete || img.naturalWidth === 0).map(img => img.src));
     assert.deepEqual(broken, []); assert.deepEqual(requests, []); return `${anchors.length} links and all image/local asset requests valid; external destination syntax checked only`;
   });
-  await check('Desktop light accessibility', () => axe('desktop-light'));
+  await check('Desktop accessibility', () => axe('desktop'));
   await check('Responsive horizontal overflow', async () => {
     const widths = [1440, 1280, 1024, 768, 390, 360, 320];
     for (const width of widths) {

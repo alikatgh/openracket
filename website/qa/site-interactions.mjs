@@ -1,11 +1,35 @@
-/** Contract tests for this static design-study website, not a Racket evaluator. */
+/** Contract checks for the plain project-information page. */
 export async function testSiteInteractions({ page, context, check, go, shot, axe, assert, base }) {
-  const preview = page.locator('.editor[data-preview-theme]');
-  const light = page.locator('[data-theme-choice="light"]');
-  const dark = page.locator('[data-theme-choice="dark"]');
   const scrollTo = async selector => page.locator(selector).evaluate(el => window.scrollTo({ top: el.getBoundingClientRect().top + scrollY - 20, behavior: 'instant' }));
-  await check('Skip link and visible keyboard focus', async () => {
+  await check('Plain informational content contract', async () => {
     await page.setViewportSize({ width: 1440, height: 1050 });
+    await go();
+    assert.equal((await page.locator('h1').innerText()).trim(), 'OpenRacket');
+    const body = await page.locator('body').innerText();
+    assert.doesNotMatch(body, /Fresh perspective|Familiar ground|Come look under|Small ideas\. Open possibilities|Good work takes proof|A calmer, more modern home|Explore the source/i);
+    assert.equal(await page.locator('.editor,.hero,.theme-controls,.closing-section,button,input,textarea,svg,img,canvas').count(), 0, 'Plain informational page must not retain the former decorative interface or widgets');
+    assert.equal(await page.locator('script[src]').count(), 0, 'Production page should have no JavaScript dependency');
+    assert.ok(await page.locator('main h2').count() >= 4);
+    return 'Project name, factual sections and ordinary links; no slogans, decorative artwork, mock app or JavaScript controls';
+  });
+  await check('Readable typography and focused content width', async () => {
+    const values = await page.evaluate(() => ({ h1: parseFloat(getComputedStyle(document.querySelector('h1')).fontSize), body: parseFloat(getComputedStyle(document.body).fontSize), paragraphs: [...document.querySelectorAll('main p')].map(el => ({ size: parseFloat(getComputedStyle(el).fontSize), width: el.getBoundingClientRect().width })) }));
+    assert.ok(values.h1 <= 40 && values.h1 >= 24, JSON.stringify(values));
+    assert.ok(values.body >= 15);
+    assert.ok(values.paragraphs.length >= 5);
+    assert.ok(values.paragraphs.every(p => p.size >= 15 && p.width <= 960), JSON.stringify(values));
+    return 'Main text is at least 15px, title is compact, and reading columns stay below 960px';
+  });
+  await check('System dark preference and accessibility', async () => {
+    const light = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    assert.notEqual(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), light);
+    await shot('desktop-dark');
+    const result = await axe('desktop-dark');
+    await page.emulateMedia({ colorScheme: 'light' });
+    return result;
+  });
+  await check('Skip link and visible keyboard focus', async () => {
     await go();
     await page.keyboard.press('Tab');
     assert.equal(await page.locator('.skip-link').evaluate(el => el === document.activeElement), true);
@@ -14,129 +38,72 @@ export async function testSiteInteractions({ page, context, check, go, shot, axe
     await page.keyboard.press('Enter');
     assert.equal(new URL(page.url()).hash, '#main');
     await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => !!document.activeElement.closest('main')), true, 'Skip navigation did not move keyboard navigation into main');
-    const linkFocus = await page.evaluate(() => ({ width: parseFloat(getComputedStyle(document.activeElement).outlineWidth), style: getComputedStyle(document.activeElement).outlineStyle }));
-    assert.ok(linkFocus.width >= 2 && linkFocus.style !== 'none');
-    return 'Skip link is visible on focus and moves keyboard sequence into main; focused links have visible outline';
-  });
-  await check('Anchor navigation and browser history', async () => {
-    await go();
-    await page.locator('.hero-actions a[href="#workspace"]').click();
-    assert.equal(new URL(page.url()).hash, '#workspace');
-    await page.goBack();
-    assert.equal(new URL(page.url()).hash, '');
-    await page.goForward();
-    assert.equal(new URL(page.url()).hash, '#workspace');
-    await page.locator('.site-header a[href="#development"]').click();
-    assert.equal(new URL(page.url()).hash, '#development');
-    await page.locator('.footer-brand').click();
-    assert.equal(new URL(page.url()).hash, '');
-    return 'Design/development/home links and Back/Forward maintain expected fragment history';
-  });
-  await check('Preview theme controls, repeated clicks and announcements', async () => {
-    await go();
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'light');
-    assert.equal(await light.isVisible(), true);
-    assert.equal(await light.getAttribute('aria-pressed'), 'true');
-    assert.equal(await dark.getAttribute('aria-pressed'), 'false');
-    const bodyBackground = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
-    const lightBackground = await preview.evaluate(el => getComputedStyle(el).backgroundColor);
-    await dark.focus();
-    await page.keyboard.press('Enter');
-    await page.waitForTimeout(250);
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'dark');
-    assert.equal(await dark.getAttribute('aria-pressed'), 'true');
-    assert.equal(await light.getAttribute('aria-pressed'), 'false');
-    assert.match(await page.locator('#preview-announcement').innerText(), /Dark interface design preview selected\./);
-    assert.notEqual(await preview.evaluate(el => getComputedStyle(el).backgroundColor), lightBackground);
-    assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), bodyBackground, 'Theme should change illustration only');
-    for (let i = 0; i < 3; i++) await dark.click();
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'dark');
-    for (let i = 0; i < 3; i++) await light.click();
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'light');
-    await dark.click();
-    await page.waitForTimeout(250);
-    await scrollTo('#workspace');
-    await shot('desktop-dark');
-    return 'Keyboard, light/dark ARIA state, live announcement and repeated clicks work; page theme is unchanged';
-  });
-  await check('Desktop dark-preview accessibility', () => axe('desktop-dark'));
-  await check('Theme defaults and illustration honesty', async () => {
-    await page.reload({ waitUntil: 'networkidle' });
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'light');
-    assert.equal(await light.getAttribute('aria-pressed'), 'true');
-    assert.equal(await preview.locator('button,input,textarea,[contenteditable="true"]').count(), 0);
-    assert.match(await page.locator('.preview-caption').innerText(), /illustration, not a running app or screenshot/i);
-    assert.match(await page.locator('.editor-toolbar').getAttribute('aria-label'), /not application controls/);
-    return 'Reload restores default light preview; illustrated toolbar is noninteractive and clearly disclosed';
-  });
-  await check('FAQ keyboard and repeated disclosure behavior', async () => {
-    const details = page.locator('.project-faq details');
-    assert.equal(await details.count(), 3);
-    for (let i = 0; i < await details.count(); i++) {
-      const item = details.nth(i), summary = item.locator('summary');
-      assert.equal(await item.getAttribute('open'), null);
-      await summary.focus();
-      await page.keyboard.press('Enter');
-      assert.notEqual(await item.getAttribute('open'), null);
-      assert.equal(await item.locator('div').isVisible(), true);
-      await page.keyboard.press('Space');
-      assert.equal(await item.getAttribute('open'), null);
-      await summary.click(); await summary.click();
-      assert.equal(await item.getAttribute('open'), null);
+    assert.equal(await page.evaluate(() => !!document.activeElement.closest('main')), true);
+    for (let i = 0; i < 6; i++) {
+      const focused = await page.evaluate(() => ({ tag: document.activeElement.tagName, outline: getComputedStyle(document.activeElement).outlineStyle, width: parseFloat(getComputedStyle(document.activeElement).outlineWidth) }));
+      assert.equal(focused.tag, 'A'); assert.ok(focused.width >= 2 && focused.outline !== 'none');
+      await page.keyboard.press('Tab');
     }
-    return 'All three native disclosures open/close using Enter, Space and repeated pointer activation';
+    return 'Skip link enters main; six subsequent documentation links are keyboard reachable with visible focus';
   });
-  await check('Mobile visible navigation and theme preview', async () => {
+  await check('Section navigation and browser history', async () => {
+    await go();
+    const links = page.locator('nav a[href^="#"]');
+    assert.ok(await links.count() >= 3);
+    const first = await links.first().getAttribute('href');
+    await links.first().click(); assert.equal(new URL(page.url()).hash, first);
+    await page.goBack(); assert.equal(new URL(page.url()).hash, '');
+    await page.goForward(); assert.equal(new URL(page.url()).hash, first);
+    for (let i = 0; i < await links.count(); i++) {
+      const href = await links.nth(i).getAttribute('href');
+      await links.nth(i).click(); assert.equal(new URL(page.url()).hash, href);
+    }
+    return `${await links.count()} section links and Back/Forward preserve fragment navigation`;
+  });
+  await check('Mobile documentation readability', async () => {
     await page.setViewportSize({ width: 390, height: 950 });
     await go();
-    assert.equal(await page.locator('.site-header .nav-source').isVisible(), true);
-    assert.equal(await page.locator('.site-header a[href="#development"]').isVisible(), true);
-    await shot('mobile-light');
-    await dark.click();
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'dark');
-    await light.click();
-    assert.equal(await preview.getAttribute('data-preview-theme'), 'light');
-    await scrollTo('#workspace');
-    await shot('mobile-demo');
-    await page.locator('.project-faq details').first().locator('summary').click();
-    await scrollTo('.project-faq');
-    await shot('mobile-faq');
-    assert.equal(await page.locator('.project-faq details').first().locator('div').isVisible(), true);
-    return '390px navigation stays available; theme and FAQ work without a mobile-menu dependency';
+    await shot('mobile');
+    const dimensions = await page.evaluate(() => ({ width: innerWidth, scroll: document.documentElement.scrollWidth, text: [...document.querySelectorAll('main p,main li')].map(el => ({ size: parseFloat(getComputedStyle(el).fontSize), left: el.getBoundingClientRect().left, right: el.getBoundingClientRect().right })) }));
+    assert.ok(dimensions.scroll <= dimensions.width + 1);
+    assert.ok(dimensions.text.every(x => x.size >= 15 && x.left >= 0 && x.right <= dimensions.width + 1));
+    const sections = page.locator('main section[id]');
+    assert.ok(await sections.count() >= 4);
+    const id = await sections.nth(Math.max(0, (await sections.count()) - 2)).getAttribute('id');
+    await scrollTo('#' + id); await shot('mobile-lower');
+    return '390px viewport has readable full-width text, natural wrapping and no clipped paragraphs';
   });
-  await check('Mobile accessibility with open FAQ', () => axe('mobile-light'));
-  await check('Reduced-motion preference honored', async () => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    const reduced = await page.evaluate(() => ({ matches: matchMedia('(prefers-reduced-motion: reduce)').matches, scroll: getComputedStyle(document.documentElement).scrollBehavior, moving: [...document.querySelectorAll('*')].filter(el => { const s = getComputedStyle(el); return s.transitionDuration.split(',').some(d => parseFloat(d) > 0) || s.animationDuration.split(',').some(d => parseFloat(d) > 0); }).map(el => el.className).slice(0, 5) }));
-    assert.equal(reduced.matches, true); assert.equal(reduced.scroll, 'auto'); assert.deepEqual(reduced.moving, []);
-    await page.locator('.button-primary').hover();
-    assert.equal(await page.locator('.button-primary').evaluate(el => getComputedStyle(el).transform), 'none');
-    return 'No smooth scrolling, nonzero transitions/animations or hover movement with reduced motion';
+  await check('Mobile accessibility', () => axe('mobile'));
+  await check('Reduced motion and forced-colors usability', async () => {
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    const media = await page.evaluate(() => ({ reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, forced: matchMedia('(forced-colors: active)').matches, scroll: getComputedStyle(document.documentElement).scrollBehavior, moving: [...document.querySelectorAll('*')].filter(el => { const s = getComputedStyle(el); return s.transitionDuration.split(',').some(d => parseFloat(d) > 0) || s.animationDuration.split(',').some(d => parseFloat(d) > 0); }).map(el => el.tagName) }));
+    assert.equal(media.reduced, true); assert.equal(media.forced, true); assert.equal(media.scroll, 'auto'); assert.deepEqual(media.moving, []);
+    assert.equal(await page.locator('h1').isVisible(), true);
+    assert.equal(await page.locator('nav a').first().isVisible(), true);
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'none' });
+    return 'Text and ordinary navigation remain available in forced colors; no motion or smooth scrolling';
   });
   await check('Subdirectory serving and lower-page render', async () => {
     await page.setViewportSize({ width: 1440, height: 1050 });
     await go('/website/');
-    assert.equal(await light.isVisible(), true);
-    const styled = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
-    assert.equal(styled, 'rgb(244, 241, 233)');
-    await scrollTo('.architecture-section');
-    await shot('desktop-overview');
-    return 'Relative CSS/JS/assets work under /website/ and lower-page architecture/development render';
+    const sections = page.locator('main section[id]');
+    const id = await sections.nth(Math.max(0, (await sections.count()) - 3)).getAttribute('id');
+    await scrollTo('#' + id); await shot('desktop-lower');
+    assert.ok((await page.locator('h1').innerText()).includes('OpenRacket'));
+    const width = await page.locator('main').evaluate(el => el.getBoundingClientRect().width);
+    assert.ok(width <= 960, `Stylesheet not applied under subdirectory: ${width}px`);
+    return 'Relative stylesheet works under /website/; lower documentation sections render without clipping';
   });
-  await check('No-JavaScript content and native FAQs', async () => {
+  await check('No-JavaScript documentation', async () => {
+    await go(); const expected = await page.locator('main').innerText();
     const nojs = await context.browser().newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 950 } });
     try {
       await nojs.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort('blockedbyclient'));
-      const p = await nojs.newPage();
-      await p.goto(base + '/', { waitUntil: 'networkidle' });
-      assert.equal(await p.locator('h1').count(), 1);
-      assert.equal(await p.locator('.theme-controls').isVisible(), false);
-      assert.equal(await p.locator('.editor').getAttribute('data-preview-theme'), 'light');
-      await p.locator('.project-faq summary').first().click();
-      assert.notEqual(await p.locator('.project-faq details').first().getAttribute('open'), null);
-      assert.ok((await p.locator('body').innerText()).length > 1000);
+      const p = await nojs.newPage(); await p.goto(base + '/', { waitUntil: 'networkidle' });
+      assert.equal(await p.locator('main').innerText(), expected);
+      const link = p.locator('nav a[href^="#"]').first(); const href = await link.getAttribute('href');
+      await link.click(); assert.equal(new URL(p.url()).hash, href);
     } finally { await nojs.close(); }
-    return 'Core content, source links and native disclosures remain usable without JavaScript';
+    return 'All information and section navigation remain identical with JavaScript disabled';
   });
 }
