@@ -1,0 +1,68 @@
+{
+  "run_url": "https://github.com/alikatgh/openracket/actions/runs/38047260644",
+  "commit": "e859f18a489761cdc3f1263cb51bbc0f9d306780",
+  "overall_result": "failed: bounded native harness repairs required",
+  "linux_platform": "GitHub standard ubuntu-24.04, official full Racket 9.3",
+  "linux_results": [
+    "CI guard and runtime paths: PASS Exact public prototype branch; ephemeral full distribution",
+    "Generate exact-version source overlay: PASS exit=0",
+    "Python patch integrity: PASS exit=0",
+    "Independent patch integrity: PASS exit=0",
+    "Headless preservation and renderer: PASS exit=0",
+    "Performance harness and fixture unit tests: PASS exit=0",
+    "pristine-stock actual profile separation: PASS exit=0",
+    "pristine-stock native toolbar behavior: PASS exit=0",
+    "pristine-stock genuine host/editor assertions: FAIL exit=1; ready=False",
+    "pristine-stock OS screenshot capture: FAIL Native host never became ready",
+    "pristine-stock paired native performance: FAIL exit=1",
+    "Apply exact-SHA disposable overlay: PASS exit=0",
+    "Register appearance tool locally: PASS exit=0",
+    "Compile real GUI and register appearance metadata: PASS exit=0",
+    "Compile actual theme tool and DrRacket host: PASS exit=0",
+    "Compile retained DrRacket entrypoint: PASS exit=0",
+    "stock-fallback actual profile separation: PASS exit=0",
+    "stock-fallback native toolbar behavior: PASS exit=0",
+    "stock-fallback genuine host/editor assertions: FAIL exit=1; ready=False",
+    "stock-fallback OS screenshot capture: FAIL Native host never became ready",
+    "modern-light actual profile separation: PASS exit=0",
+    "modern-light native toolbar behavior: PASS exit=0",
+    "modern-light native canvas and status preservation: PASS exit=0",
+    "modern-light genuine host/editor assertions: FAIL exit=1; ready=False",
+    "modern-light OS screenshot capture: FAIL Native host never became ready",
+    "modern-dark actual profile separation: PASS exit=0",
+    "modern-dark native toolbar behavior: PASS exit=0",
+    "modern-dark native canvas and status preservation: PASS exit=0",
+    "modern-dark genuine host/editor assertions: FAIL exit=1; ready=False",
+    "modern-dark OS screenshot capture: FAIL Native host never became ready",
+    "modern-dark paired native performance: FAIL exit=1"
+  ],
+  "native_toolbar_tests_per_mode": 14,
+  "native_toolbar_modes": [
+    "pristine-stock",
+    "stock-fallback",
+    "modern-light",
+    "modern-dark"
+  ],
+  "native_canvas_status_tests_per_mode": 5,
+  "native_canvas_status_modes": [
+    "modern-light",
+    "modern-dark"
+  ],
+  "genuine_host_partial_checks": [
+    "registered DrRacket frame class",
+    "registered definitions editor class",
+    "registered interactions editor class",
+    "registered definitions canvas class",
+    "registered interactions canvas class",
+    "definitions canvas/editor identity",
+    "interactions canvas/editor identity"
+  ],
+  "host_remaining_failure": "All four modes stopped at Unicode fixture equality, before real Run assertions or screenshot readiness.",
+  "performance_result": "All 12 trials timed out in a stock startup dialog; no latency/speed conclusion is valid.",
+  "macos_result": "Public-repository metadata precheck returned HTTP 403 before checkout; native checks did not run.",
+  "log_sha256": {
+    "linux.log": "0ed61aa706e1cb3f13c0abf236080010552e43d46e42b7504d99a79fa1c457c7",
+    "macos.log": "8f7c559a0d472eb42b5911b93caaa588aba3f62c2c472a4cf52031a80c46a04d"
+  },
+  "repair_scope": "Only harness startup/file-open sequencing and CI staging/guard. Production source remains unchanged."
+}

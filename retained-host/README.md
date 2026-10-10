@@ -32,11 +32,17 @@ not a native DrRacket instance. The preservation test compares the entire module
 explicitly declared presentation edits; it also checks every original button
 method and original painter fallback.
 
-The original full-package installation and its single newly authorized retry
-were cancelled before committing. No further local installation is running. The GUI module could not
-yet be compiled/loaded as a complete native host. No native display is available.
-The original shared runtime, original package profile, frozen Rust core,
-`openracket-next`, and GPUI spike were not modified.
+The first native Linux CI run compiled the patched GUI, actual appearance tool
+and complete DrRacket entrypoint. All 14 toolbar tests passed in each of four
+modes; five native canvas/status tests passed in both modern modes. Genuine stock
+frames and editors started. Later fixture/startup test failures still block full
+Run/undo/redo, screenshots and performance verification. See
+[the exact run](https://github.com/alikatgh/openracket/actions/runs/38047260644)
+and `reports/RESULTS.md`; macOS tests did not run because of a CI precheck failure.
+
+Local package installation and its authorized retry were cancelled, and the
+local display is unavailable. The original shared runtime and package profile,
+frozen Rust core, `openracket-next`, and GPUI spike were not modified.
 
 ## Prepare and run the actual retained host
 
@@ -52,8 +58,9 @@ If a full official distribution supplies gui-lib outside the proof profile,
 setup copies that complete installed package into the private profile first.
 It never patches the original distribution. An unavailable native display is
 still a blocker for launch. These launch/setup paths are implemented and locally
-syntax/compile-checked; full actual GUI module and window validation is pending
-native CI, not claimed complete.
+syntax/compile-checked. Native CI compiled the real modules with a disposable
+full-distribution adapter; the portable setup/launch path itself still needs an
+end-to-end run.
 
 The launcher calls the original DrRacket entry point. There is no alternate
 interpreter, editor buffer, or replacement Run/Stop action. Pass file paths to
@@ -87,7 +94,7 @@ Key files:
 - `scripts/setup-openracket.sh` / `launch-openracket.sh`: real retained-host setup and launch
 - `tests/source-preservation.rkt`: full module/behavior preservation checks
 - `tests/paint-test.rkt`: renderer state, fallback, compact and DC-state checks
-- `tests/native-toolbar-test.rkt`: real-widget test, not run without display
+- `tests/native-toolbar-test.rkt`: real-widget test, passed in native Linux CI
 - `reports/NATIVE-ACCEPTANCE.md`: open dynamic and performance gates
 - `performance/`: reproducible identical-instrumentation native comparison harness
 - `design/WORKSPACE-DESIGN.md`: supported retained-canvas/status refinements

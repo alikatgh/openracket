@@ -1,6 +1,6 @@
 {
   "scope": "isolated retained-DrRacket 9.3 presentation proof",
-  "state": "first native-CI source candidate; local headless checks pass",
+  "state": "Linux native compile and widget checks pass; host fixture and performance harness repairs awaiting CI",
   "racket_tests_passed": 103,
   "python_patcher_tests_passed": 12,
   "original_button_methods_audited": 18,
@@ -10,20 +10,28 @@
     "get-large-width"
   ],
   "original_event_callback_logic_changed": false,
-  "complete_native_host_compiled": false,
-  "native_window_started": false,
+  "complete_native_host_compiled": true,
+  "native_window_started": true,
   "native_stock_workflow_parity_verified": false,
   "application_performance_measured": false,
   "toolbar_component_png": "artifacts/toolbar-paint-proof.png",
   "png_sha256": "03737fab4fa5756b1193dc133532a676b4102c9ef993e587b2e278c656d5b3d0",
   "sidebar_implemented": false,
   "blocking_prerequisites": [
-    "Complete stock dependencies and working native graphical session in the authorized CI environment; local package retries cancelled and local display unavailable"
+    "Rerun repaired native startup/fixture harness for Run, screenshots and performance",
+    "macOS CI must pass its public-repository precheck before platform validation"
   ],
   "original_projects_modified": false,
-  "remote_writes": false,
-  "python_performance_tests_passed": 4,
+  "remote_writes": true,
+  "python_performance_tests_passed": 6,
   "portable_launcher_implemented": true,
   "workspace_chrome_implemented": true,
-  "native_ci_status": "pending"
+  "native_ci_status": "first run: Linux partial pass; corrected integration harness pending",
+  "native_ci_run_url": "https://github.com/alikatgh/openracket/actions/runs/38047260644",
+  "native_ci_commit": "e859f18a489761cdc3f1263cb51bbc0f9d306780",
+  "native_toolbar_tests_per_mode": 14,
+  "native_toolbar_modes_passed": 4,
+  "native_canvas_status_tests_per_mode": 5,
+  "native_canvas_status_modes_passed": 2,
+  "remote_write_scope": "Source published by authorized CI worker on prototype/retained-drracket; main unchanged"
 }

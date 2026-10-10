@@ -1,19 +1,19 @@
-# Native acceptance gate (not yet run)
+# Native acceptance gate (partially run)
 
 A component bitmap is not evidence that a DrRacket window launched, that a native
-layout works, or that stock workflows pass. This list remains open.
+layout works, or that stock workflows pass. First Linux CI compiled the real host
+and passed the native toolbar/canvas tests; later fixture assertions failed. The
+remaining dynamic gates below stay open. See `ci-first-run.json`.
 
-## Exact prerequisites
+## Environment status
 
-1. Complete the official DrRacket9.3 package transaction in the isolated profile.
-   The first attempt was cancelled before committing installed packages. Sources
-   cached before cancellation were only inspected; they were not used to bypass
-   the cancelled install.
-2. Use a permitted native graphical session. DISPLAY and WAYLAND_DISPLAY are
-   absent. A separate normal-permission dummy-Xorg check could not create its
-   local listening sockets, and no escalation/alternate display route was used.
-3. On macOS, repeat with official stock9.3 on the same OS, display scale and
-   settings as the supplied reference. Linux cannot pass the macOS gate.
+1. The official full Racket 9.3 distribution installed in the authorized Linux
+   CI environment. Local package transactions remain cancelled and untouched.
+2. Linux CI provides a permitted native display. The separate local display
+   attempt could not create sockets and remains blocked without retry.
+3. macOS CI must get past its public-repository metadata precheck, then use the
+   official stock 9.3 distribution on the same OS/display scale/settings as the
+   supplied reference. Linux cannot pass the macOS gate.
 
 ## Ordered checks
 

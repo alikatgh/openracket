@@ -17,23 +17,44 @@
   painter called by the real source patch; it contains no fabricated application
   screenshot or replacement evaluator.
 
+## Passed in the first real native Linux run
+
+Run [38047260644](https://github.com/alikatgh/openracket/actions/runs/38047260644),
+commit `e859f18a489761cdc3f1263cb51bbc0f9d306780`, used the complete official
+Racket 9.3 distribution on standard Ubuntu 24.04 CI.
+
+- The patched GUI, appearance tool and complete `drracket/drracket` entrypoint
+  compiled. Tool registration and metadata setup passed.
+- 14 native toolbar tests passed in each of pristine stock, stock fallback,
+  modern light and modern dark modes.
+- Five native canvas/status preservation tests passed in each modern mode.
+- Genuine registered DrRacket frames, definitions/interactions editors and
+  canvases started in all four modes; their editor identities were preserved.
+
+The entire CI run failed later checks. These are partial native passes, not
+complete workflow parity. Exact stage results are in `ci-first-run.json`.
+
 ## Not yet passed / not run
 
-- Complete stock DrRacket installation: cancelled before package registry commit.
-  A newly authorized single retry was also cancelled. Subsequent local work uses
-  existing headless dependencies and read-only source inspection. Public native CI
-  is a separately authorized route; its results are pending.
-- Full theme tool compilation was attempted and stops at missing racket/gui/base
-  before GUI startup. The painter and GUI-free theme modules compile.
-- Tool registration, native button event tests, full DrRacket launch, main-window
-  before/after, debugger/macro/teaching workflows: not run.
-- Native display: not available. A separately attempted dummy-Xorg display could
-  not open local sockets. No display permission escalation or alternate route used.
-- macOS behavior, Retina/IME/accessibility, native menus/dialogs, complete stock
-  parity and actual application performance: not tested.
+- All four real-host harness runs stopped at Unicode fixture equality. The queued
+  stock startup callback consumed arguments after the test's temporary parameter
+  scope ended. The test now starts normally and opens its fixture through the
+  existing frame method; the repair needs native rerun. Run/undo/redo assertions
+  after that failure have not passed, and no application screenshot was captured.
+- All 12 performance trials timed out in a stock startup dialog. There are no
+  valid application speed or latency results. The benchmark startup harness is
+  being corrected without changing stock instrumentation, tools or limits.
+- macOS failed its public-repository metadata precheck with HTTP 403 before
+  checkout; no macOS native tests ran.
+- Debugger, Macro Stepper, teaching languages, WXME, accessibility, IME, Retina,
+  complete stock parity and comprehensive visual layout review remain open.
+- Local full-package installation and its authorized retry were cancelled before
+  package registry commit. The local native display cannot open sockets and was
+  not retried. Native evidence above comes only from the separately authorized CI.
 
 The portable Racket applier compiles, shell setup/launchers pass syntax and
-check-mode validation, and four performance-harness Python tests pass. First native
-CI must validate full GUI module compilation and actual DrRacket launch.
+check-mode validation, and six performance-harness Python tests pass. The full
+portable setup/launch path still needs direct end-to-end validation; CI uses an
+isolated disposable full distribution adapter.
 
 `reports/NATIVE-ACCEPTANCE.md` is the explicit remaining acceptance gate.

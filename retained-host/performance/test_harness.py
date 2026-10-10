@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 import types
 import unittest
+from unittest import mock
+import run as runner
 from fixtures import generate, write_fixtures
 from run import native_rss, quantiles, run_trial
 
@@ -25,6 +27,29 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(quantiles([]), {'n': 0})
         self.assertEqual(quantiles([4, 1, 3, 2]),
                          {'n': 4, 'median': 2.5, 'p95': 4, 'p99': 4, 'max': 4})
+
+    def test_arguments_cleared_before_gui_eventspace(self):
+        source = (Path(__file__).parent / 'retained-host.rkt').read_text()
+        clear = source.index('(current-command-line-arguments #())')
+        create_gui = source.index("(dynamic-require 'racket/gui/base")
+        self.assertLess(clear, create_gui)
+        self.assertNotIn('(parameterize ([current-command-line-arguments', source)
+
+    def test_repeated_startup_failure_skips_remaining_trials(self):
+        with tempfile.TemporaryDirectory() as directory:
+            argv = ['run.py', '--mode', 'test-only', '--output', directory,
+                    '--repetitions', '3']
+            def fake_trial(args, fixture, repetition):
+                return {'status': 'timeout', 'fixture_metadata': fixture,
+                        'repetition': repetition, 'native_max_rss_bytes': None,
+                        'process_wall_ms': 10}
+            with mock.patch.object(runner, 'run_trial', side_effect=fake_trial) as call, \
+                 mock.patch('sys.argv', argv), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(runner.main(), 1)
+            self.assertEqual(call.call_count, 2)
+            summary = json.loads((Path(directory) / 'summary.json').read_text())
+            self.assertEqual(len(summary['trials']), 2)
+            self.assertEqual(len(summary['trials_not_run']), 4)
 
     def test_native_resource_units(self):
         self.assertEqual(native_rss('Maximum resident set size (kbytes): 42\n', 'Linux'), 43008)

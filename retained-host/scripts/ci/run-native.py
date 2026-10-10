@@ -15,12 +15,16 @@ TEMP = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
 RACKET, RACO = os.environ['RACKET'], os.environ['RACO']
 REPORT = ROOT/'reports/ci-summary.md'
 REPORT.parent.mkdir(exist_ok=True)
-ROWS = []
+STATE = ROOT/'reports/ci-results.json'
+ROWS = json.loads(STATE.read_text()) if STATE.exists() else []
+PHASE = sys.argv[1] if len(sys.argv) == 2 else ''
+assert PHASE in ('prepare', 'stock', 'overlay', 'modern', 'performance'), 'Explicit phase required'
 START = time.monotonic()
 
 
 def record(name, ok, detail=''):
     ROWS.append((name, bool(ok), detail))
+    STATE.write_text(json.dumps(ROWS, indent=2)+'\n')
     print(f'OPENRACKET_RESULT {name}: {"PASS" if ok else "FAIL"} {detail}', flush=True)
     summary = ['# Retained DrRacket native validation', '',
                f'Commit: {os.environ.get("GITHUB_SHA", "unknown")}',
@@ -38,6 +42,10 @@ def record(name, ok, detail=''):
 def environment(mode, purpose):
     env = os.environ.copy()
     env['PLTUSERHOME'] = str(TEMP/f'openracket-{mode}-{purpose}')
+    if mode == 'pristine-stock':
+        env['PLTADDONDIR'] = os.environ['OPENRACKET_CI_STOCK_ADDON']
+        env['RACKET'] = os.environ['OPENRACKET_CI_STOCK_RACKET']
+        env['RACO'] = str(pathlib.Path(env['RACKET']).with_name('raco'))
     pathlib.Path(env['PLTUSERHOME']).mkdir(exist_ok=True)
     env['OPENRACKET_UI'] = 'stock' if mode in ('pristine-stock', 'stock-fallback') else 'modern'
     env['OPENRACKET_HOST_THEME'] = '0' if mode in ('pristine-stock', 'stock-fallback') else '1'
@@ -127,14 +135,22 @@ def native_host(mode):
         try:
             result = proc.wait(timeout=max(1, deadline-time.monotonic()))
         except subprocess.TimeoutExpired:
+            if not ready.exists():
+                ready.write_text(json.dumps({'status': 'timeout-diagnostic', 'reported_by': 'CI watchdog', 'geometry': {}}))
+                try:
+                    captured, capture_detail = capture(screenshot, ready)
+                except (OSError, subprocess.TimeoutExpired) as error:
+                    capture_detail = str(error)
             os.killpg(proc.pid, signal.SIGKILL)
             proc.wait()
             result = 124
     print(logfile.read_text(), flush=True)
-    record(mode + ' genuine host/editor assertions', result == 0 and ready.exists(), f'exit={result}; ready={ready.exists()}')
-    if result == 0 and ready.exists() and captured:
-        emit_image(mode, screenshot)
-        record(mode + ' OS screenshot capture', True, capture_detail)
+    passed = result == 0 and ready.exists() and json.loads(ready.read_text()).get('status') == 'passed'
+    record(mode + ' genuine host/editor assertions', passed, f'exit={result}; report-status={json.loads(ready.read_text()).get("status") if ready.exists() else "absent"}')
+    if ready.exists() and captured:
+        label = mode if passed else mode+('-timeout-diagnostic' if result == 124 else '-failure-diagnostic')
+        emit_image(label, screenshot)
+        record(label + ' OS screenshot capture', True, capture_detail)
     else:
         record(mode + ' OS screenshot capture', False, capture_detail)
     print('::endgroup::', flush=True)
@@ -160,27 +176,34 @@ def performance(mode):
     # Populated with the frozen independent performance runner before publication.
     script = ROOT/'performance/run.py'
     if script.exists():
-        command(mode + ' paired native performance', [sys.executable, str(script), '--mode', mode, '--racket', RACKET, '--output', str(ROOT/'reports'/('performance-'+mode)), '--repetitions', '3', '--timeout', '60'], environment(mode, 'performance'), 420)
+        command(mode + ' paired native performance', [sys.executable, str(script), '--mode', mode, '--racket', os.environ['OPENRACKET_CI_STOCK_RACKET'] if mode == 'pristine-stock' else RACKET, '--output', str(ROOT/'reports'/('performance-'+mode)), '--repetitions', '3', '--timeout', '60'], environment(mode, 'performance'), 420)
 
 
-record('CI guard and runtime paths', True, 'Exact public prototype branch; ephemeral full distribution')
-try:
+def prepare():
+    record('CI guard and runtime paths', True, 'Exact public prototype branch; ephemeral full distribution')
+    if not command('Record pristine runtime source hashes', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'baseline']):
+        raise RuntimeError('Pristine runtime baseline failed')
     if not command('Generate exact-version source overlay', [sys.executable, 'scripts/prepare-overlay.py']):
         raise RuntimeError('Overlay generation failed')
     command('Python patch integrity', [sys.executable, 'tests/patcher-test.py'])
-    if (ROOT/'tests/independent-patcher-test.py').exists():
-        command('Independent patch integrity', [sys.executable, 'tests/independent-patcher-test.py'])
+    command('Independent patch integrity', [sys.executable, 'tests/independent-patcher-test.py'])
     headless = ['tests/source-preservation.rkt', 'tests/paint-test.rkt', 'tool/tests.rkt']
     headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tool').glob('*-tests.rkt'))]
     headless += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'tests').glob('independent-*.rkt')) if 'native' not in p.name]
     command('Headless preservation and renderer', [RACO, 'test'] + headless, environment('pristine-stock', 'headless'))
     command('Performance harness and fixture unit tests', [sys.executable, 'performance/test_harness.py'])
-    widgets('pristine-stock')
-    native_host('pristine-stock')
-    performance('pristine-stock')
+
+
+def overlay():
+    global RACKET, RACO
+    if not command('Copy pristine runtime for presentation overlay', [sys.executable, 'scripts/ci/copy-pristine-runtime.py'], timeout=180):
+        raise RuntimeError('Disposable runtime copy failed')
+    pristine = pathlib.Path(os.environ['OPENRACKET_CI_INSTALL'])
+    modern = pristine.with_name(pristine.name+'-modern')
+    RACKET, RACO = str(modern/'bin/racket'), str(modern/'bin/raco')
+    os.environ.update(RACKET=RACKET, RACO=RACO, OPENRACKET_CI_INSTALL=str(modern))
     if not command('Apply exact-SHA disposable overlay', [sys.executable, 'scripts/ci/apply-disposable-overlay.py']):
         raise RuntimeError('Overlay apply failed')
-    # No catalogs or dependency downloads: all dependencies are in the full distribution.
     if not command('Register appearance tool locally', [RACO, 'pkg', 'install', '--scope', 'user', '--deps', 'fail', '--no-setup', '--link', '--name', 'openracket-appearance', str(ROOT/'tool')], environment('modern-dark', 'setup')):
         raise RuntimeError('Appearance registration failed')
     if not command('Compile real GUI and register appearance metadata', [RACO, 'setup', '--no-docs', '--pkgs', 'gui-lib', 'openracket-appearance'], environment('modern-dark', 'setup'), 360):
@@ -189,18 +212,35 @@ try:
         raise RuntimeError('Actual theme/tool compilation failed')
     if not command('Compile retained DrRacket entrypoint', [RACO, 'make', '-l', 'drracket/drracket'], environment('modern-dark', 'setup'), 180):
         raise RuntimeError('Retained DrRacket compilation failed')
-    for mode in ('stock-fallback', 'modern-light', 'modern-dark'):
-        widgets(mode)
-        native_host(mode)
-        if mode == 'modern-dark':
-            performance(mode)
+    if not command('Verify actual runtime isolation and unchanged pristine hashes', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare']):
+        raise RuntimeError('Runtime copies are not isolated')
+
+
+try:
+    if PHASE == 'prepare':
+        prepare()
+    elif PHASE == 'stock':
+        command('Prepare synthetic legacy startup diagnostic fixture', [sys.executable, 'performance/fixtures.py', 'reports/startup-diagnostic-fixtures'])
+        command('Record legacy startup dialog (observation only)', [RACKET, 'performance/diagnose-startup.rkt', str(ROOT/'reports/startup-diagnostic-fixtures/mixed-100k.rkt'), str(ROOT/'reports/legacy-startup-diagnostic.json'), 'pristine-stock', '49938', '100000'], environment('pristine-stock', 'legacy-diagnostic'), 20)
+        widgets('pristine-stock')
+        native_host('pristine-stock')
+    elif PHASE == 'overlay':
+        overlay()
+    elif PHASE == 'modern':
+        for mode in ('stock-fallback', 'modern-light', 'modern-dark'):
+            widgets(mode)
+            native_host(mode)
+        command('Verify pristine source unchanged after overlay tests', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
+    elif PHASE == 'performance':
+        performance('pristine-stock')
+        performance('modern-dark')
+        command('Verify pristine source unchanged after measurements', [sys.executable, 'scripts/ci/verify-runtime-isolation.py', 'compare'])
 except Exception as error:
-    record('Native validation orchestration', False, str(error))
+    record(PHASE + ' validation orchestration', False, str(error))
     raise
 finally:
     print('Results: ' + str(REPORT), flush=True)
 
-# Capture is best-effort: a missing native OS capture is disclosed, never called
-# native visual validation, but does not turn passing behavioral checks red.
+# A denied/unavailable OS capture is disclosed and does not mask test failures.
 failures = [n for n, ok, _ in ROWS if not ok and not n.endswith('OS screenshot capture')]
 sys.exit(1 if failures else 0)

@@ -5,11 +5,11 @@ this retained-host prototype or its workflow on `prototype/retained-drracket`.
 It never runs on `main`, arbitrary branches, pull requests, forks, or a private
 repository. Job-level owner, branch, visibility and event guards are evaluated
 before runner allocation; a live unauthenticated public-repository check is also
-made before checkout.
+made before checkout using the official GitHub client and the job’s existing read-only authentication. No custom credentials are created or saved.
 
 Only `ubuntu-24.04` and `macos-15` standard hosted runners are selected. GitHub
 states that standard hosted runners are free and unlimited for public repos;
-larger runners are not free. This workflow never uses larger runners. Runtime
+larger runners are not free. This workflow never uses larger runners. Correctness phases are separate, fail-fast workflow steps. Runtime
 is bounded by a 30-minute job timeout, subprocess timeouts and one concurrency
 group. There is no schedule, recursion, workflow dispatch, paid service or AI API.
 
@@ -25,14 +25,14 @@ uploaded; logs and job summaries do not count toward GitHub artifact storage.
    storage, verified against the official release page's SHA-256. This includes
    DrRacket and its normal GUI, rich editor, evaluator and bundled tools.
 2. Run source-preservation, patch-integrity, renderer and theme tests.
-3. Run actual stock `switchable-button%` behavior tests and genuine DrRacket
+3. Observe the previous launch-argument failure once, without clicking or dismissing a dialog, and record actual native window labels and editor contents. Then run actual stock `switchable-button%` behavior tests and genuine DrRacket
    frame/editor startup checks before modifying the disposable distribution.
-4. Apply the exact-SHA presentation overlay only to that disposable runtime;
+4. Keep the pristine runtime untouched and create a distinct local copy (no hardlinks) for the overlay. Verify actual mrlib, framework and drracket paths resolve inside their respective copies and verify pristine source hashes before/after. Apply the exact-SHA presentation overlay only to the modern copy;
    register and compile the retained appearance tool with existing dependencies.
 5. Repeat native widget/host checks with the stock-painter fallback and modern
    light/dark appearances, using fresh preference directories.
-6. Run paired native performance probes with identical synthetic fixtures and
-   separate fresh preferences. Command/event-loop timing is not input-to-photon
+6. Only after all correctness gates pass, run paired native performance probes with identical synthetic fixtures and
+   separate fresh preferences and addon registries. Command/event-loop timing is not input-to-photon
    timing and CI runner numbers are not representative hardware benchmarks.
 
 Linux uses the official Ubuntu Xvfb package on the GitHub runner. macOS uses
@@ -43,7 +43,9 @@ removed to make the tests pass.
 When the OS can capture the synthetic test window, bounded lossless PNG data
 (up to 300 KiB per image) is written between explicitly indexed job-log markers.
 The receiver verifies all chunks, byte count and SHA-256 before decoding. These
-are OS screenshots, never component drawings. If capture is denied/unavailable,
+are OS screenshots, never component drawings. Failures can produce separately
+labeled failure/timeout diagnostic screenshots; those never count as passing
+visual validation. If capture is denied/unavailable,
 that limitation is reported without changing OS privacy settings. Successful
 behavioral checks alone do not imply visual review or full feature parity.
 

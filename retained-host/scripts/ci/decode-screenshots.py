@@ -15,7 +15,7 @@ for line in a.log.read_text().splitlines():
     if begin:
         assert active is None, 'Nested or incomplete image blocks'
         label,size,digest=begin.groups()
-        assert label in ('pristine-stock','stock-fallback','modern-light','modern-dark')
+        assert label.removesuffix('-failure-diagnostic').removesuffix('-timeout-diagnostic') in ('pristine-stock','stock-fallback','modern-light','modern-dark')
         assert 1024<=int(size)<=300*1024
         active=(label,int(size),digest,[])
     elif data:

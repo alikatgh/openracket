@@ -23,7 +23,8 @@ Exactly matching SHA-256s and file sizes are included in every record. This init
 fixture does not cover pathological long lines, WXME, Unicode shaping or all tools.
 
 The supervisor terminates a timed-out trial's process group, records partial results
-and failure, then continues remaining trials. It never quietly omits a timeout.
+and failure, then continues remaining trials. After two consecutive pre-GUI startup failures it
+stops that mode and explicitly marks the remaining trials as not run. It never quietly omits a timeout.
 Each trial emits its complete JSON between `OPENRACKET_PERFORMANCE_TRIAL_JSON_BEGIN`
 and `_END`; mode summaries use the analogous `SUMMARY` markers. No artifact upload
 or cache upload is performed by this harness.
@@ -66,8 +67,9 @@ claims, and the80 key events within a trial are not80 independent app startups.
 
 Compare the same runner job/hardware, OS, Racket release, fixture hash, display size
 and scale, installed tools, memory limit, default instrumentation, coloring,
-online compilation and overview settings. The report reads these preferences but
-does not change them. Appearance/font/layout differences are intentional; they
+online compilation and overview settings. The report reads these preferences and the actual selected language settings but
+does not change them. Instrumentation is resolved through the stock language-info
+API and serialized language settings, not a nonexistent instrumentation preference. Appearance/font/layout differences are intentional; they
 may affect the number of visible lines. No Run, Check Syntax, debugger, macro or
 teaching-tool performance is measured here. Their correctness gate remains separate.
 The pristine stock comparison is mandatory: stock-painter fallback in a patched
@@ -84,3 +86,19 @@ is not a retained-DrRacket baseline.
 
 These checks validate generation, statistics, memory units, timeout reporting and
 Racket expansion only. They do not prove that native DrRacket APIs ran successfully.
+
+## First native diagnostic run
+
+Run38047260644 (commit e859f18) compiled the native GUI and tools but produced no
+performance samples: all twelve stock/modern trials were blocked before GUI
+readiness. Stock queues its initial-frame callback and only then reads launch
+arguments; a temporary parameterization had already ended, exposing benchmark
+arguments as filenames and opening an ordinary missing-file dialog. The repaired
+harness sends configuration through OPENRACKET_BENCH_CONFIG with no process
+arguments, creates the actual frame, then uses its normal change-to-file method. This
+is a harness repair; the first run cannot support a speed/regression claim.
+
+The repaired harness records actual GUI argv, the loaded filename/prefix, and any
+shown startup dialog's title/child labels/editor text. It never dismisses an
+unrecognized dialog. `diagnose-startup.rkt` is a separate, bounded read-only legacy
+launch reproduction, not part of the latency workload or a performance sample.

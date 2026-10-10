@@ -49,6 +49,63 @@
 
 (define before (on-gui get-top-level-windows))
 
+(define (bounded-text value [limit 600])
+  (define text (if (string? value) value (format "~a" value)))
+  (substring text 0 (min limit (string-length text))))
+(define (window-geometry window)
+  (define-values (width height) (send window get-size))
+  (hash 'x (send window get-x) 'y (send window get-y) 'width width 'height height))
+(define (publish-ready! report marker)
+  (when (getenv "OPENRACKET_READY_FILE")
+    (call-with-output-file (getenv "OPENRACKET_READY_FILE") #:exists 'truncate
+      (lambda (out) (write-json report out) (newline out))))
+  (displayln marker)
+  (flush-output))
+(define (wait-for-capture!)
+  (define capture-done (getenv "OPENRACKET_CAPTURE_DONE"))
+  (define deadline (+ (current-inexact-monotonic-milliseconds) (if capture-done 20000 1000)))
+  (let loop ()
+    (unless (or (and capture-done (file-exists? capture-done))
+                (>= (current-inexact-monotonic-milliseconds) deadline))
+      (yield (alarm-evt (+ (current-inexact-milliseconds) 50)))
+      (loop))))
+(define (failure-diagnostics! exception)
+  ;; Bounded synthetic-test window evidence. Never dismiss or answer a dialog.
+  (with-handlers ([exn? (lambda (e)
+                         (eprintf "OPENRACKET_DIAGNOSTIC_FAILURE ~a\n" (exn-message e)))])
+    (define report
+      (on-gui
+       (lambda ()
+         (define windows
+           (filter (lambda (window) (not (memq window before))) (get-top-level-windows)))
+         (define (labels node depth)
+           (append
+            (if (object-method-arity-includes? node 'get-label 0)
+                (list (bounded-text (send node get-label) 300)) '())
+            (if (and (positive? depth) (object-method-arity-includes? node 'get-children 0))
+                (append-map (lambda (child) (labels child (sub1 depth)))
+                            (take (send node get-children) (min 15 (length (send node get-children)))))
+                '())))
+         (define (describe window)
+           (define basic
+             (hash 'title (bounded-text (send window get-label))
+                   'shown (send window is-shown?) 'geometry (window-geometry window)
+                   'labels (take (labels window 3) (min 30 (length (labels window 3))))))
+           (if (object-method-arity-includes? window 'get-definitions-text 0)
+               (let ([editor (send window get-definitions-text)])
+                 (hash-set* basic 'editor_filename (bounded-text (send editor get-filename))
+                            'editor_characters (send editor last-position)
+                            'editor_excerpt (bounded-text (send editor get-text) 1000)))
+               basic))
+         (define descriptions (map describe (take windows (min 8 (length windows)))))
+         (hash 'status "failed" 'failure_diagnostic #t 'checks checks
+               'error (bounded-text (exn-message exception) 1000)
+               'windows descriptions
+               'geometry (if (pair? descriptions) (hash-ref (car descriptions) 'geometry) (hash))))))
+    (printf "OPENRACKET_NATIVE_FAILURE_DIAGNOSTIC ~a\n" (jsexpr->string report))
+    (publish-ready! report "OPENRACKET_NATIVE_FAILURE_READY")
+    (wait-for-capture!)))
+
 (define (cleanup!)
   ;; Only frames created by this launch are hidden; never touch a preexisting frame.
   (with-handlers ([exn? (lambda (_) (void))])
@@ -61,12 +118,17 @@
     ([exn?
       (lambda (e)
         (eprintf "OPENRACKET_NATIVE_FAILURE ~a\n" (exn-message e))
+        (failure-diagnostics! e)
         (cleanup!)
         (exit 1))])
   (on-gui
    (lambda ()
-     (parameterize ([current-command-line-arguments (vector (path->string fixture))])
-       (dynamic-require 'drracket/drracket #f))))
+     ;; The first-window callback reads argv later. Do not briefly parameterize
+     ;; it during module load, then let benchmark/test arguments leak back in.
+     (current-command-line-arguments #())
+     (displayln "OPENRACKET_NATIVE_STAGE loading-stock-entrypoint")
+     (flush-output)
+     (dynamic-require 'drracket/drracket #f)))
 
   ;; Stock 9.3 queues its first ordinary frame as a low-priority callback.
   (define frame
@@ -79,6 +141,23 @@
               (send window is-shown?)
               window)))))
   (set! created-frames (list frame))
+  (on-gui
+   (lambda ()
+     (define initial-editor (send frame get-definitions-text))
+     (printf "OPENRACKET_NATIVE_INITIAL_EDITOR filename=~s characters=~a excerpt=~s\n"
+             (send initial-editor get-filename) (send initial-editor last-position)
+             (bounded-text (send initial-editor get-text)))
+     ;; Use the normal, documented retained frame file-open route after startup.
+     (send frame change-to-file fixture)
+     (define opened-editor (send frame get-definitions-text))
+     (printf "OPENRACKET_NATIVE_OPENED_EDITOR filename=~s characters=~a excerpt=~s\n"
+             (send opened-editor get-filename) (send opened-editor last-position)
+             (bounded-text (send opened-editor get-text)))
+     (flush-output)
+     (assert! (and (send opened-editor get-filename)
+                   (equal? (simplify-path (send opened-editor get-filename))
+                           (simplify-path fixture)))
+              "documented file-open route selects the exact fixture")))
   (define definitions (on-gui (lambda () (send frame get-definitions-text))))
   (define interactions (on-gui (lambda () (send frame get-interactions-text))))
   (define run-button (on-gui (lambda () (send frame get-execute-button))))
@@ -167,10 +246,7 @@
   (define geometry
     (on-gui
      (lambda ()
-       (define x (send frame get-x))
-       (define y (send frame get-y))
-       (define-values (width height) (send frame get-size))
-       (hash 'x x 'y y 'width width 'height height))))
+       (window-geometry frame))))
   (define report
     (hash 'status "passed" 'checks checks 'racket (version)
           'ui (or (getenv "OPENRACKET_UI") "modern")
@@ -178,19 +254,8 @@
           'genuine_host #t 'repeated_real_run #t 'geometry geometry
           'complete_stock_parity #f 'physical_input_to_photon_measured #f))
   (printf "OPENRACKET_NATIVE_RESULT ~a\n" (jsexpr->string report))
-  (when (getenv "OPENRACKET_READY_FILE")
-    (call-with-output-file (getenv "OPENRACKET_READY_FILE") #:exists 'truncate
-      (lambda (out) (write-json report out) (newline out))))
-  (displayln "OPENRACKET_NATIVE_READY")
-  (flush-output)
-
-  ;; Screenshot coordination only. Timeout bounds a missing capture agent.
-  (define capture-done (getenv "OPENRACKET_CAPTURE_DONE"))
-  (define capture-deadline (+ (current-inexact-monotonic-milliseconds) (if capture-done 20000 3000)))
-  (let loop ()
-    (unless (or (and capture-done (file-exists? capture-done))
-                (>= (current-inexact-monotonic-milliseconds) capture-deadline))
-      (yield (alarm-evt (+ (current-inexact-milliseconds) 50)))
-      (loop)))
+  (publish-ready! report "OPENRACKET_NATIVE_READY")
+  ;; Screenshot coordination only, bounded even if no capture agent responds.
+  (wait-for-capture!)
   (cleanup!)
   (exit 0))

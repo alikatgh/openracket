@@ -1,6 +1,6 @@
 # Independent retained-host audit
 
-Date: 2026-10-10. Scope: local source/headless audit plus native test preparation.
+Date: 2026-10-10. Scope: local source/headless audit and first authorized native CI review.
 This report does not certify full DrRacket parity, native rendering, or performance.
 No denied local display operation was retried. No package installation was performed
 by this audit. All adverse patcher inputs were tested in temporary copies.
@@ -52,7 +52,9 @@ by this audit. All adverse patcher inputs were tested in temporary copies.
 - `tests/independent-patcher-test.py`: 9 temporary-copy tests, including exact apply /
   revert, altered upstream/overlay/painter/vendor, unrelated destination refusal,
   missing target, target-symlink escape and profile-root symlink refusal. All 9 pass.
-- Both independent native harnesses passed reader syntax checks only locally.
+- Both independent native harnesses passed reader syntax checks locally. Native
+  compilation and scoped widget checks subsequently passed on Linux CI; the host
+  harness reached seven class/identity assertions before its fixture check failed.
 
 The first painter run emitted Fontconfig cache-writability warnings while its eight
 assertions passed. The final isolated-cache run passes all 30 independent Racket
@@ -79,8 +81,9 @@ screenshot-completion file before hiding only its own created frame and exiting.
 
 CI must use fresh preferences for each mode and the same official 9.3 runtime.
 The harness does not change evaluation instrumentation, memory limits, tool discovery,
-or language implementation. Native execution is pending; a harness existing or parsing
-is not a native pass. The separate performance owner maintains paired performance
+or language implementation. First native compile/widget results and the host harness
+repair are recorded below. The revised host integration workflows still require a
+native rerun. The separate performance owner maintains paired performance
 fixtures and instrumentation, with no timing claim in this report.
 
 ## Authoritative sources inspected
@@ -95,9 +98,35 @@ fixtures and instrumentation, with no timing claim in this report.
 
 ## Remaining acceptance scope
 
-Native compilation and execution; exact screenshots in both themes; larger system
+Remaining full-host integration execution and exact screenshots in both themes; larger system
 fonts and DPI; IME/accessibility; tooltip and right-click modal lifecycle; Stop/Kill,
 Check Syntax, Debug, Macro Stepper, teaching languages, snips and rich documents;
 multiple windows/tabs and third-party plugins; built-in preferences restore/reapply;
 paired stock-versus-overlay native responsiveness and memory measurement. Source
 preservation is valuable evidence but does not substitute for these workflows.
+
+## First authorized native CI result and harness repair
+
+Run 38047260644, frozen commit e859f18a489761cdc3f1263cb51bbc0f9d306780:
+Linux compiled the actual GUI, theme tool and DrRacket entry point. All 14 combined
+native toolbar tests passed in pristine stock, patched-stock, modern light and
+modern dark. All 5 native canvas/status tests passed in both modern modes. These
+results came from the official full 9.3 runtime on the authorized public runner.
+
+The full-host harness failed after its first seven class/identity assertions in
+all four modes, including pristine stock, at exact fixture-content comparison.
+The first harness did not print actual editor contents, so those bytes cannot be
+recovered from this run. Source review identified a test-startup scope error:
+stock `private/main.rkt` reads command-line arguments in a later queued first-frame
+callback, after the harness's temporary parameterization had ended. The same
+pattern exposed the performance harness's benchmark arguments to stock's file-open
+callback, producing a missing-file dialog and no usable latency measurements.
+
+The revised host harness uses ordinary blank startup followed by the public
+`frame.change-to-file` route. It logs initial/opened filenames and bounded editor
+text, checks the exact target filename, and retains the strict Unicode comparison.
+Failures now publish bounded window labels/editor excerpts and geometry before
+cleanup, with a screenshot-capture window explicitly marked as failure diagnostics.
+This is a harness-only repair; production toolbar/theme behavior was not changed.
+A native rerun is still required for file-open, undo/redo, Run, theme activation and
+screenshots. No full parity or performance claim follows from the first run.

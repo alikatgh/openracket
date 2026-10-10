@@ -41,5 +41,6 @@ racket="$root/bin/racket"
 [[ $("$racket" -e "(display (system-type 'vm))") == chez-scheme ]]
 "$racket" -e '(require setup/dirs) (printf "Full Racket ~a CS; drracket source: ~a\n" (version) (collection-file-path "drracket.rkt" "drracket"))'
 printf 'RACKET=%s\nRACO=%s\nOPENRACKET_CI_INSTALL=%s\nPLTADDONDIR=%s\n' "$racket" "$root/bin/raco" "$root" "$RUNNER_TEMP/openracket-addon" >> "$GITHUB_ENV"
+printf 'OPENRACKET_CI_STOCK_RACKET=%s\nOPENRACKET_CI_STOCK_ADDON=%s\n' "$racket" "$RUNNER_TEMP/openracket-stock-addon" >> "$GITHUB_ENV"
 printf '%s\n' "$root/bin" >> "$GITHUB_PATH"
 echo 'Verified official full Racket9.3 installer and version. All stock packages retained.'

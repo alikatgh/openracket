@@ -29,7 +29,7 @@ def summarize(report):
     out = {key: report[key] for key in (
         'mode', 'status', 'error', 'fresh_process_gui_startup_ms', 'first_open',
         'first_jump', 'first_edit', 'initial_lexer_settle', 'final_lexer_settle',
-        'preserved_settings', 'loaded_characters', 'memory_before_open',
+        'preserved_settings', 'selected_language_settings', 'loaded_characters', 'memory_before_open',
         'memory_after_workload', 'memory_after_explicit_gc') if key in report}
     for key in ('warm_editor_key_samples', 'warm_jump_samples'):
         out[key] = {metric: quantiles([row[metric] for row in report.get(key, [])])
@@ -75,8 +75,10 @@ def run_trial(args, fixture, repetition):
     env['XDG_CONFIG_HOME'] = str(home / '.config')
     env['XDG_CACHE_HOME'] = str(home / '.cache')
     # PLTADDONDIR, active package set and OpenRacket mode remain caller-controlled.
-    command = [args.racket, str(ROOT / 'retained-host.rkt'), fixture['path'], str(output),
-               args.mode, str(fixture['edit_position']), str(fixture['characters'])]
+    env['OPENRACKET_BENCH_CONFIG'] = json.dumps({
+        'fixture': fixture['path'], 'output': str(output), 'mode': args.mode,
+        'edit_position': fixture['edit_position'], 'characters': fixture['characters']})
+    command = [args.racket, str(ROOT / 'retained-host.rkt')]
     system = platform.system()
     resource_file = directory / 'native-resource.txt'
     if Path('/usr/bin/time').exists() and system == 'Linux':
@@ -136,9 +138,26 @@ def main():
                 'github_sha': os.getenv('GITHUB_SHA'), 'repetitions': args.repetitions,
                 'per_trial_timeout_seconds': args.timeout,
                 'measurement_warning': 'Synthetic editor events and event-loop fences; not physical input-to-photon. Fresh process, not cold filesystem cache. Stock settings unchanged.'}
-    reports = [run_trial(args, fixture, repetition)
-               for repetition in range(1, args.repetitions + 1) for fixture in fixtures]
-    aggregate = dict(metadata, trials=[summarize(report) | {
+    plan = [(fixture, repetition)
+            for repetition in range(1, args.repetitions + 1) for fixture in fixtures]
+    reports, skipped = [], []
+    consecutive_startup_failures = 0
+    fail_fast_reason = None
+    for index, (fixture, repetition) in enumerate(plan):
+        report = run_trial(args, fixture, repetition)
+        reports.append(report)
+        if report['status'] != 'complete' and 'fresh_process_gui_startup_ms' not in report:
+            consecutive_startup_failures += 1
+        else:
+            consecutive_startup_failures = 0
+        if consecutive_startup_failures >= 2:
+            fail_fast_reason = 'Two consecutive trials failed before GUI readiness; remaining trials were not run.'
+            skipped = [{'fixture': row['name'], 'repetition': rep, 'status': 'not_run',
+                        'reason': fail_fast_reason} for row, rep in plan[index + 1:]]
+            print('OPENRACKET_PERFORMANCE_FAIL_FAST ' + fail_fast_reason, flush=True)
+            break
+    aggregate = dict(metadata, fail_fast_reason=fail_fast_reason, trials_not_run=skipped,
+                     trials=[summarize(report) | {
         'fixture': report['fixture_metadata']['name'], 'repetition': report['repetition'],
         'native_max_rss_bytes': report['native_max_rss_bytes'],
         'process_wall_ms': report['process_wall_ms']} for report in reports])
@@ -146,7 +165,7 @@ def main():
     print('OPENRACKET_PERFORMANCE_SUMMARY_JSON_BEGIN', flush=True)
     print(json.dumps(aggregate, separators=(',', ':')), flush=True)
     print('OPENRACKET_PERFORMANCE_SUMMARY_JSON_END', flush=True)
-    return 0 if all(report['status'] == 'complete' for report in reports) else 1
+    return 0 if not skipped and all(report['status'] == 'complete' for report in reports) else 1
 
 if __name__ == '__main__':
     sys.exit(main())
