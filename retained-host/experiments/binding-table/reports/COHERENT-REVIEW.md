@@ -1,3 +1,13 @@
+# Current revision: 2026-10-11 10:23 UTC test-only Mac fixture repair
+
+Run 38131119786 applied the candidate to its canonical independent runtime and verified source pins, then failed one Python source test because its TemporaryDirectory path retained the macOS /var alias. No native semantics, helper preflight or timing ran. The complete original 26,838-entry runtime witness passed.
+
+Only executable source change from the 1007 freeze is tests/source-test.py: the fixture caller now resolves its temporary root, and a deterministic ancestor-alias test verifies root/source alias refusal, canonical apply/idempotence/revert, refusal even after application, and resolved outside-root refusal. The production applier guard is unchanged. Candidate GUI, native Racket fixtures, all 32 performance package files and trace code are byte-identical.
+
+The owner passed 174 configured portable tests with TMPDIR intentionally routed through a symlink alias (25 production-source/applier, 89 telemetry, 25 native source/comparator and 35 trace-wrapper). Integration and performance reviews independently reran the 25 changed source tests. Neighboring identity-sensitive temporary roots are already canonical; JSON-only read/write fixtures do not invoke runtime confinement. Native execution remains required. See path-repair.diff, path-repair-delta.json and path-alias-portable-tests.log. Earlier validation below records the prior preparation, not a native pass.
+
+Historical 1007 preparation follows:
+
 # Coherent binding experiment review
 
 2026-10-11. Source-only integration: 24 production/applier checks, 25 native-host source/comparator cases, 35 stock-worker wrapper cases, 37 preserved upstream comparator cases and 89 telemetry cases pass (210 total), plus exact native-host and trace-wrapper reproduction. Native Racket compilation/execution, GUI graph/navigation and measured performance remain pending.

@@ -11,7 +11,7 @@ assert os.environ.get('GITHUB_REPOSITORY')=='alikatgh/openracket'
 assert os.environ.get('GITHUB_REF')=='refs/heads/prototype/retained-drracket'
 assert sys.argv[1:] in (['prepare'],['helpers'],['correctness'],['telemetry'],['verify'])
 TELEMETRY=EXP/'performance'
-PRODUCTION_PIN='e8edf79d54dd0b6440e4108b65edbab47e5ab07be9d5a23572969323878736ee'
+PRODUCTION_PIN='a996d0794b8792502478f39bb4cd610328550a1be3e45fc2e2a09758172bfe44'
 TELEMETRY_PIN='feea9575931d78f2abfa487b65efa8c453ec9b974f65c1346d13a26a2cef9b71'
 PHASE=sys.argv[1];REPORTS=ROOT/'reports/binding-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 STATE=REPORTS/'results.json';ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)

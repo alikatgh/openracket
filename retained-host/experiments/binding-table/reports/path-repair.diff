@@ -1,0 +1,52 @@
+--- freeze-1007/tests/source-test.py
++++ test-only-repair/tests/source-test.py
+@@ -127,7 +127,10 @@
+ class ApplyTests(unittest.TestCase):
+     def setUp(self):
+         self.temp=tempfile.TemporaryDirectory()
+-        self.root=Path(self.temp.name)/'runtime'; self.root.mkdir()
++        # macOS may return /var/... although /var aliases /private/var.
++        # Fixture callers must supply canonical paths; the applier must keep
++        # rejecting aliases rather than relaxing its production path checks.
++        self.root=Path(self.temp.name).resolve()/'runtime'; self.root.mkdir()
+         self.target=self.root/'pkgs/drracket-core-lib/drracket/private/syncheck/gui.rkt'
+         self.target.parent.mkdir(parents=True)
+         for f in ['gui.rkt','intf.rkt','local-member-names.rkt']:
+@@ -141,6 +144,37 @@
+         self.assertTrue(self.apply(revert=True)['changed'])
+         self.assertEqual(self.target.read_bytes(),(ROOT/'vendor/gui.rkt').read_bytes())
+         self.assertFalse(self.apply(revert=True)['changed'])
++    def test_parent_alias_refused_but_resolved_apply_and_revert_succeed(self):
++        # Portable reproduction of a /var -> /private/var-style ancestor alias.
++        alias=self.root.parent/'temporary-parent-alias'
++        alias.symlink_to(self.root.parent, target_is_directory=True)
++        alias_root=alias/self.root.name
++        alias_target=alias_root/self.target.relative_to(self.root)
++        with self.assertRaisesRegex(ValueError, 'Symlinked runtime root refused'):
++            applier.apply(alias_root,alias_target,disposable=True)
++        with self.assertRaisesRegex(ValueError, 'Symlinked runtime/source path refused'):
++            applier.apply(self.root,alias_target,disposable=True)
++        canonical_root=alias_root.resolve()
++        canonical_target=alias_target.resolve()
++        self.assertEqual(canonical_root,self.root)
++        self.assertEqual(canonical_target,self.target)
++        self.assertTrue(applier.apply(canonical_root,canonical_target,disposable=True)['changed'])
++        self.assertFalse(applier.apply(canonical_root,canonical_target,disposable=True)['changed'])
++        # Idempotence must not make the noncanonical input acceptable.
++        with self.assertRaisesRegex(ValueError, 'Symlinked runtime root refused'):
++            applier.apply(alias_root,alias_target,disposable=True)
++        self.assertTrue(applier.apply(canonical_root,canonical_target,
++                                      disposable=True,revert=True)['changed'])
++        self.assertFalse(applier.apply(canonical_root,canonical_target,
++                                       disposable=True,revert=True)['changed'])
++        self.assertEqual(self.target.read_bytes(),(ROOT/'vendor/gui.rkt').read_bytes())
++        # Resolving an alias is not permission to escape the selected runtime.
++        outside=self.root.parent/'outside'/self.target.relative_to(self.root)
++        outside.parent.mkdir(parents=True)
++        outside.write_bytes((ROOT/'vendor/gui.rkt').read_bytes())
++        alias_outside=alias/outside.relative_to(self.root.parent)
++        with self.assertRaisesRegex(ValueError, 'inside the independent runtime'):
++            applier.apply(canonical_root,alias_outside.resolve(),disposable=True)
+     def test_ack_required(self):
+         with self.assertRaises(ValueError): applier.apply(self.root,self.target)
+     def test_wrong_preimage(self):

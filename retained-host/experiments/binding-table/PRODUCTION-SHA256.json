@@ -11,7 +11,7 @@
   "tests/bindings-differential.rkt": "b08b92e0d1f72a5e52319e8c7c75be8ceed768b4adc8fc9967cc56b091c04da6",
   "tests/generated/candidate.rkt": "b7452e138cf460eea0ed07dc9b7c5b8b02c71e3f4fd14ff196367acfe3bd6eb9",
   "tests/generated/stock.rkt": "2882e57b38dc5231c3361828851ec48ebcb2d8ecc88329bc88019b68ff9924aa",
-  "tests/source-test.py": "391f5bd2bf269beaceaeb10772b1a0a97388cafdb3c84df48e01d1d2dc1c203d",
+  "tests/source-test.py": "20ebe4a1fe0ce0a46da9011c22305e5b01b45025d0ff958e2eafed18ba784811",
   "vendor/class-internal.rkt": "1dbb533328bb46add290422c1e2fc6c1040d1f8e6d75b06f546734a294bb342f",
   "vendor/gui.rkt": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e",
   "vendor/intf.rkt": "2d1d0b56a3d44a2c394c1e44758acaa5b4dc73d258c33d0d21c2cea9b2fc4327",

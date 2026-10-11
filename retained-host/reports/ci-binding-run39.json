@@ -1,0 +1,92 @@
+{
+  "run_id": 38131119786,
+  "url": "https://github.com/alikatgh/openracket/actions/runs/38131119786",
+  "commit": "de9b300a9005e4733aeb62095a9a6832ddfba05d",
+  "conclusion": "failure",
+  "log_sha256": "579d15c45149ac981b8f8295aff800eaac40e3ebdaa6efb08d07157c9cfa676d",
+  "artifact_count": 0,
+  "scope": "Actual canonical-path candidate installation and source verification passed. A noncanonical temporary path in one Python applier test was correctly refused. Native compilation, native correctness, helper preflight and measurements did not run. Original26838-file runtime witness passed.",
+  "rows": [
+    {
+      "name": "Reviewed frozen telemetry source hashes",
+      "passed": true,
+      "detail": "feea9575931d78f2abfa487b65efa8c453ec9b974f65c1346d13a26a2cef9b71"
+    },
+    {
+      "name": "Reviewed frozen binding-table source hashes",
+      "passed": true,
+      "detail": "86"
+    },
+    {
+      "name": "CI stage and native-gate contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "CI isolation contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict binding matrix rejection tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless binding-table and diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-control runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-candidate runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding-table-only application",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding source and installer refusal tests",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "prepare orchestration",
+      "passed": false,
+      "detail": "Pinned binding source and installer refusal tests failed"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "source_test_traceback": "ERROR: test_apply_idempotence_and_revert (__main__.ApplyTests.test_apply_idempotence_and_revert)\n----------------------------------------------------------------------\nTraceback (most recent call last):\nFile \"/Users/runner/work/openracket/openracket/retained-host/experiments/binding-table/tests/source-test.py\", line 139, in test_apply_idempotence_and_revert\nself.assertTrue(self.apply()['changed']); self.assertFalse(self.apply()['changed'])\n~~~~~~~~~~^^\nFile \"/Users/runner/work/openracket/openracket/retained-host/experiments/binding-table/tests/source-test.py\", line 136, in apply\ndef apply(self,**kw): return applier.apply(self.root,self.target,disposable=True,**kw)\n~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFile \"/Users/runner/work/openracket/openracket/retained-host/experiments/binding-table/scripts/apply.py\", line 37, in apply\nraise ValueError(\"Symlinked runtime root refused; supply its canonical path\")\nValueError: Symlinked runtime root refused; supply its canonical path\n\n----------------------------------------------------------------------"
+}

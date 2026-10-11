@@ -1,0 +1,15 @@
+{
+  "base_freeze": "openracket-binding-experiment-freeze-20261011-1007",
+  "repair_tree": "openracket-binding-test-path-repair-20261011-1021",
+  "changed_baseline_files": [
+    "tests/source-test.py"
+  ],
+  "source_test_before_sha256": "391f5bd2bf269beaceaeb10772b1a0a97388cafdb3c84df48e01d1d2dc1c203d",
+  "source_test_after_sha256": "20ebe4a1fe0ce0a46da9011c22305e5b01b45025d0ff958e2eafed18ba784811",
+  "production_gui_sha256": "1ba5b93e748091888e2f61b1518fe625a86d5b771e471f11204461e9ace02025",
+  "production_and_telemetry_unchanged": true,
+  "source_tests": 25,
+  "aliased_tempdir_portable_tests": 174,
+  "native_racket_executed": false,
+  "coherent_manifest_regenerated": false
+}
