@@ -67,6 +67,16 @@ class SourceTests(unittest.TestCase):
         self.assertIn("(not (link-exists? boundary))", text)
         self.assertIn("(not (link-exists? next))", text)
 
+    def test_known_directory_identity_is_canonical_without_relaxing_containment(self):
+        text = HELPER.read_text()
+        self.assertIn("(define (physical-directory p) (path->directory-path (physical p)))", text)
+        self.assertIn("(define root (physical-directory source-root))", text)
+        self.assertIn("(path? base) (equal? (physical-directory base) root)", text)
+        self.assertIn("(relative-path? relative)", text)
+        self.assertIn("(not (memq 'up (explode-path relative)))", text)
+        self.assertIn("(check-false (equal? physical-profile-base root))", text)
+        self.assertIn("(check-not-false (member profile (profile-aliases)))", text)
+
     def test_launchers_never_write_or_reapply_memory_preference(self):
         for name in ("launch-openracket.sh", "launch-stock.sh"):
             text = (ROOT / "scripts" / name).read_text()

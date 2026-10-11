@@ -1,0 +1,268 @@
+{
+  "run_id": 38113445332,
+  "commit": "8e2bed70d040f7090fde987f89868287a8ab21f5",
+  "conclusion": "success",
+  "log_sha256": "89882a20ae8ccfb29afe32c1129670028a26a27d0048dc916a1a20a9afff1fa4",
+  "results": [
+    {
+      "name": "Frozen diagnostic source hashes",
+      "passed": true,
+      "detail": "44b6c593c61eb752b7da04eece27245f127d9c448dff576b52751f354e0c7e56"
+    },
+    {
+      "name": "Read-only outcome-aware control validator tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Observer control adapter contract tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Readable evidence transport unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dedicated independent stock diagnostic clone",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All native preflight gates; no skipped Racket tests accepted",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pinned diagnostic insertions and actual clone compilation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Generate unchanged deterministic fixture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Read-only exact helper native path observations (not an installer pass)",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Path probe kept profile absent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Actual native edited-snapshot request and registry capture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Fresh-process actual request replay with phase observation off",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Fresh-process actual request replay with phase observation on",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Outcome-aware same-capacity observer control validation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded phase-control-ci/acceptance.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime unchanged after diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-off/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay-on/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded phase-control-ci/acceptance.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ]
+}

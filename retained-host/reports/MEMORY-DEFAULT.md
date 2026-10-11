@@ -1,8 +1,9 @@
 # Isolated preview memory-default implementation
 
-Status: source/shell checks pass locally. The first native Mac attempt compiled
-the helper but failed at its path guard before setup; the narrow repair below
-awaits a native rerun. This source is not a new native-accepted build. No UI, toolbar, tool,
+Status: source/shell checks pass locally. Two native Mac attempts compiled the
+helper but failed at its path guard before setup. A subsequent read-only native
+probe established the directory-identity mismatch described below; the bounded
+repair awaits its native gate. This source is not a new native-accepted build. No UI, toolbar, tool,
 evaluator, Run/Stop, lexer, autosave, or background-analysis implementation changed.
 
 ## First native failure and narrow path repair
@@ -26,6 +27,44 @@ It also retains actual root-alias acceptance and descendant-symlink rejection
 tests. Local source/shell checks pass; no local Racket executable is available
 to execute the repaired native gate. The first run reported both runtime hash
 snapshots unchanged. Frozen source 0352 and its original evidence are unchanged.
+
+## Native path evidence and canonical-directory repair
+
+The first repair still failed self, trailing-self and ordinary child assertions in
+[run 38111315091](https://github.com/alikatgh/openracket/actions/runs/38111315091).
+Before another installation attempt, the read-only path probe in
+[run 38113445332](https://github.com/alikatgh/openracket/actions/runs/38113445332)
+inspected the exact frozen helper's module bindings on Racket 9.3 macOS. It did
+not run the helper's main entry point or any preference operations.
+
+The recorded values establish the cause:
+
+- Physical root was `/Users/runner/work/_temp/Memory Path Probe/`, syntactically
+  directory-valued, with a trailing separator.
+- The physical result of the profile's split base was
+  `/Users/runner/work/_temp/Memory Path Probe`, without the trailing separator.
+- Raw `equal?` was false while `explode-path` component equality was true. The
+  profile-name predicate was true, but every alias failed the raw parent/root
+  comparison, so `profile-aliases` was empty.
+- The profile was absent before loading, after loading and after the entire
+  probe. The diagnostic completed with `profile-remained-absent`.
+
+The repair applies `path->directory-path` after physical resolution only for
+known directory identity: root construction and the alias candidate's parent
+comparison. It does not substitute component-prefix containment. The relative
+path, upward-escape, profile-boundary and descendant-symlink checks are unchanged.
+Six added RackUnit assertions reproduce the exact unequal-representation case,
+verify canonical equality and require the profile alias to be retained before
+the existing containment cases. The existing actual root-alias acceptance and
+descendant-link refusal tests remain.
+
+Historical diagnostic SHA-256 remains
+`629ea9d3d7dc89ad400581368aa7b9fb3143ed1e01adde2aa769bf3d05bd0a3c`;
+the probed frozen helper was
+`1883f58635262ff7d328525f62434a87b774926bf142fc7201c53e003fadc33d`.
+The diagnostic and frozen source 0412 are unchanged. Eleven local source/shell
+checks pass. The 26 RackUnit assertions and 20 native helper/profile tests require
+the next native run; they have not been executed locally.
 
 ## Safety contract
 

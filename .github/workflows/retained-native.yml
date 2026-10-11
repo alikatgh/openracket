@@ -1,4 +1,4 @@
-name: Mac same-capacity phase observer control (public free runner)
+name: Mac preview fresh-profile capacity and portable launch (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 25
+    timeout-minutes: 55
     defaults:
       run:
         shell: bash
@@ -60,43 +60,38 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Native preflight and pinned independent diagnostic clone
-        id: probe_prepare
+      - name: Verify source, runtime isolation and native profile safety tests
+        id: portable_prepare
         timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-phase-control.py prepare
-      - name: Read-only actual native profile path semantics probe
+        run: python3 retained-host/scripts/ci/run-portable.py prepare
+      - name: Actual portable installation and fresh 256 MiB initialization
+        id: portable_install
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-portable.py install
+      - name: Actual modern, autosave opt-out and stock launchers
+        id: portable_launch
+        timeout-minutes: 6
+        run: python3 retained-host/scripts/ci/run-portable.py launch
+      - name: Restore, explicit settings, repeated setup and stock isolation
+        if: success() && steps.portable_launch.outcome == 'success'
+        timeout-minutes: 23
+        run: python3 retained-host/scripts/ci/run-portable.py memory
+      - name: Combined save and recovery regression in fresh stock128 profiles
+        if: always() && steps.portable_install.outcome == 'success'
+        timeout-minutes: 8
+        run: python3 retained-host/scripts/ci/run-portable.py save
+      - name: Verify both original runtime trees including bytecode unchanged
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 2
-        run: python3 retained-host/scripts/ci/run-phase-control.py path-probe
-      - name: Capture one actual completed 256 MiB GUI request
-        if: always() && steps.probe_prepare.outcome == 'success'
-        id: probe_capture
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-phase-control.py capture
-      - name: Fresh-process replay with phase observer off
-        if: always() && steps.probe_capture.outcome == 'success'
-        timeout-minutes: 3
-        run: python3 retained-host/scripts/ci/run-phase-control.py off
-      - name: Fresh-process replay with phase observer on
-        if: always() && steps.probe_capture.outcome == 'success'
-        timeout-minutes: 3
-        run: python3 retained-host/scripts/ci/run-phase-control.py on
-      - name: Validate control identity, outcomes and cleanup independently
-        if: always() && steps.probe_prepare.outcome == 'success'
-        timeout-minutes: 2
-        run: python3 retained-host/scripts/ci/run-phase-control.py accept
-      - name: Verify original full runtime including bytecode unchanged
-        if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-phase-control.py verify
-      - name: Report observer-control outcomes and explicit limits
+        timeout-minutes: 7
+        run: python3 retained-host/scripts/ci/run-portable.py verify
+      - name: Report actual portable outcomes and remaining limits
         if: always()
         run: |
-          if test -f retained-host/reports/phase-control-ci/summary.md; then
-            cat retained-host/reports/phase-control-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/portable-ci/summary.md; then
+            cat retained-host/reports/portable-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Preparation failed before native diagnostic evidence was available.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Preparation failed before a portable installation result was available.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'Same actual captured request, stock settings and 256 MiB limit. One fresh process per observer-off/on arm. Observation validity and actual handler-results or OOM outcomes remain separate.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The earlier completed-phase acceptance failure remains recorded. This diagnostic control does not establish a product speedup or CPU/allocation ownership.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'No artifact/cache/release/package upload or paid runner. Prior application installation and broader release gates remain separate.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only newly reserved preview profiles receive 256 MiB. Existing profiles, explicit settings and the separate stock launcher are checked through actual setup and GUI readback.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Capacity evidence comes from the separate nine-trial stock matrix. This installer gate does not claim a broad speedup or repeat the diagnostic profiling.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Earlier Stop and broader release gates remain recorded. No artifact/cache/release/package upload or paid runner.' >> "$GITHUB_STEP_SUMMARY"

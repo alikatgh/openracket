@@ -30,7 +30,10 @@
     (if (link-exists? next)
         (physical (path->complete-path (resolve-path next) (path-only next)) (add1 depth))
         next)))
-(define root (physical source-root))
+;; Directory identity needs one representation: the native probe showed root's
+;; trailing separator survives '..', while physical(split-path base) drops it.
+(define (physical-directory p) (path->directory-path (physical p)))
+(define root (physical-directory source-root))
 (define profile (build-path root "profile"))
 (define addon (build-path profile ".local/share/racket"))
 (define marker (build-path profile marker-name))
@@ -42,7 +45,7 @@
              ;; split-path retains a directory's last name; file-name-from-path
              ;; returns #f for a syntactically directory-valued profile path.
              #:when (and (equal? name (string->path "profile"))
-                         (path? base) (equal? (physical base) root)))
+                         (path? base) (equal? (physical-directory base) root)))
     path))
 (define (confined p)
   (define target (simplify-path (path->complete-path p) #f))
@@ -284,6 +287,17 @@
 
 (module+ test
   (require rackunit)
+  ;; Exact native-probe regression: these paths name the same directory but raw
+  ;; equal? rejects its trailing-separator variation. Canonicalize only directory
+  ;; identity, leaving lexical containment and descendant-link checks unchanged.
+  (define-values (profile-base profile-name profile-directory?) (split-path profile))
+  (define physical-profile-base (physical profile-base))
+  (check-false (equal? physical-profile-base root))
+  (check-equal? (explode-path physical-profile-base) (explode-path root))
+  (check-equal? (physical-directory profile-base) root)
+  (check-equal? (physical-directory (path->directory-path profile-base)) root)
+  (check-equal? (physical-directory source-root) root)
+  (check-not-false (member profile (profile-aliases)))
   ;; These path contracts run without profile creation or preference writes.
   ;; In particular, self must be accepted before reserve can create the profile.
   (check-not-exn (lambda () (confined profile)))
