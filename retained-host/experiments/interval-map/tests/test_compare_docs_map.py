@@ -294,6 +294,32 @@ class HostSourceTests(unittest.TestCase):
         self.assertEqual(prepare.derive(source), derived)
         self.assertEqual(hashlib.sha256(derived).hexdigest(), gate.HOST)
 
+    def test_exact_behavioral_guard_repair_scope(self):
+        source = (HERE / "interval-docs-postflight.rkt").read_bytes()
+        new_require = b'syntax/modresolve "rackunit-failure-propagation.rkt")'
+        new_guard = b'  (assert-rackunit-failure-propagation!)'
+        self.assertEqual(source.count(new_require), 1)
+        self.assertEqual(source.count(new_guard), 1)
+        restored = source.replace(new_require, b'syntax/modresolve)').replace(
+            new_guard, b'  (require! (eq? (current-check-handler) raise) "RackUnit handler must raise")')
+        self.assertEqual(hashlib.sha256(restored).hexdigest(),
+                         "ec70384afcbbcf6203a3b86e7ad72cde0363d25ab50d66cde44f03c52de22696")
+
+    def test_native_regression_uses_exact_behavioral_helper(self):
+        helper = (HERE / "rackunit-failure-propagation.rkt").read_text()
+        regression = (HERE / "rackunit-failure-propagation-test.rkt").read_text()
+        self.assertEqual(helper.count('(check-true #f '), 1)
+        self.assertIn('(with-handlers ([exn:test:check? (lambda (_) #t)])', helper)
+        self.assertIn('(unless raised-check?', helper)
+        self.assertNotIn('(parameterize', helper)
+        self.assertIn('"rackunit-failure-propagation.rkt"', regression)
+        self.assertEqual(regression.count('(assert-rackunit-failure-propagation!)'), 2)
+        self.assertIn('(eventspace-handler-thread space)', regression)
+        self.assertIn('(parameterize ([current-check-handler raise])', regression)
+        self.assertIn('(not reached-after-failure?)', regression)
+        self.assertIn('(sync/timeout 10 result-channel)', regression)
+        self.assertIn('(custodian-shutdown-all custodian)', regression)
+
     def test_tampered_base_refused(self):
         with self.assertRaises(ValueError):
             prepare.derive(b"#lang racket/base\n")

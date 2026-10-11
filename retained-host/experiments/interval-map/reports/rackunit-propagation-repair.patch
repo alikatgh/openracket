@@ -1,0 +1,20 @@
+--- immutable-0615/tests/interval-docs-postflight.rkt
++++ working/tests/interval-docs-postflight.rkt
+@@ -3,7 +3,7 @@
+ ;; genuine Check Syntax workflow. This does not replay or synthesize annotations.
+ (require data/interval-map json racket/class racket/file racket/gui/base
+          racket/list racket/path racket/port racket/runtime-path rackunit
+-         syntax/modresolve)
++         syntax/modresolve "rackunit-failure-propagation.rkt")
+ (provide run-interval-docs-postflight!)
+ 
+ (define-runtime-path host-path "independent-native-host.rkt")
+@@ -44,7 +44,7 @@
+ 
+ (define (capture! frame)
+   (require! (not capture-written?) "duplicate postflight invocation")
+-  (require! (eq? (current-check-handler) raise) "RackUnit handler must raise")
++  (assert-rackunit-failure-propagation!)
+   (check-eq? (current-thread) (eventspace-handler-thread (send frame get-eventspace)))
+   (check-equal? (version) "9.3")
+   (check-equal? (getenv "OPENRACKET_UI") "stock")

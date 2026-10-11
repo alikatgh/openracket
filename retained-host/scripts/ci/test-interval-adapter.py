@@ -23,6 +23,10 @@ class AdapterTests(unittest.TestCase):
   self.assertIn('experiments/interval-map/tests/independent-native-host.rkt',wrapper)
   self.assertIn('OPENRACKET_INTERVAL_DOCS_OUTPUT',SOURCE)
   self.assertIn("EXP/'tests/interval-docs-postflight.rkt'",SOURCE)
+  self.assertIn("EXP/'tests/rackunit-failure-propagation.rkt'",SOURCE)
+  self.assertIn("[STOCK/'bin/racket',EXP/'tests/rackunit-failure-propagation-test.rkt']",SOURCE)
+  self.assertIn('propagation_text.splitlines().count(marker)==1',SOURCE)
+  self.assertIn("purpose='failure-propagation',timeout=30,required=False",SOURCE)
   self.assertIn('if sys.flags.optimize != 0:raise RuntimeError',SOURCE)
  def test_sequential_trial_order_unique_outputs_and_all_pair_acceptance(self):
   self.assertIn('for pair,mode in contract.trial_order():',SOURCE)

@@ -11,7 +11,7 @@ assert os.environ.get('GITHUB_REPOSITORY')=='alikatgh/openracket'
 assert os.environ.get('GITHUB_REF')=='refs/heads/prototype/retained-drracket'
 assert sys.argv[1:] in (['prepare'],['helpers'],['correctness'],['telemetry'],['verify'])
 TELEMETRY=ROOT/'experiments/interval-map-telemetry'
-PRODUCTION_PIN='88ab00b8e78d6eecdbf32fd21e8367a3448dd4de19c4a695b206b8ef7f0254f4'
+PRODUCTION_PIN='85858233bf10bb4e0e33c91af17c32cea8c0b1503c6a78c3ecc35e1e3c414b9a'
 TELEMETRY_PIN='82bf5dba355c5374b5e0246a92a8b1064eafcffbed9ac3bba3eead52d1353f85'
 PHASE=sys.argv[1];REPORTS=ROOT/'reports/interval-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 STATE=REPORTS/'results.json';ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)
@@ -133,8 +133,14 @@ try:
   verify_sources('candidate-off',True)
   command('Pinned source and installer refusal tests',[sys.executable,'-m','unittest','discover','-s',EXP/'tests','-p','test_*.py'])
   for mode in ('stock','candidate-off','candidate-on'):
-   command(mode+' compile actual interval-map module',[runtime(mode)/'bin/racket','-l','raco','make',collection(mode,('interval-map.rkt','data')),EXP/'tests/interval-map-differential.rkt',EXP/'tests/native-trace.rkt',ROOT/'scripts/ci/interval-native-host.rkt',EXP/'tests/independent-native-host.rkt',EXP/'tests/independent-native-workflows.rkt',EXP/'tests/interval-docs-postflight.rkt'],mode=mode,purpose='compile',timeout=120)
+   command(mode+' compile actual interval-map module',[runtime(mode)/'bin/racket','-l','raco','make',collection(mode,('interval-map.rkt','data')),EXP/'tests/interval-map-differential.rkt',EXP/'tests/native-trace.rkt',ROOT/'scripts/ci/interval-native-host.rkt',EXP/'tests/independent-native-host.rkt',EXP/'tests/independent-native-workflows.rkt',EXP/'tests/interval-docs-postflight.rkt',EXP/'tests/rackunit-failure-propagation.rkt',EXP/'tests/rackunit-failure-propagation-test.rkt'],mode=mode,purpose='compile',timeout=120)
  elif PHASE=='helpers':
+  propagation_log=REPORTS/'rackunit-failure-propagation.log'
+  propagation_ok=command('Actual separate-eventspace fatal-check propagation regression',
+          [STOCK/'bin/racket',EXP/'tests/rackunit-failure-propagation-test.rkt'],purpose='failure-propagation',timeout=30,required=False,logfile=propagation_log)
+  propagation_text=propagation_log.read_text();print(propagation_text[-32768:],flush=True)
+  marker='OPENRACKET_RACKUNIT_PROPAGATION_OK separate-handler nonraising-ambient rejected-return escaped-failure'
+  record('Fatal-check regression completed with exact success witness',propagation_ok and propagation_text.splitlines().count(marker)==1,'Requires exit0 plus one exact standalone witness')
   for mode in ('stock','candidate-on'):
    private=collection(mode,('module-language.rkt','drracket','private')).parent
    command(mode+' mandatory telemetry native preflight; no skips',

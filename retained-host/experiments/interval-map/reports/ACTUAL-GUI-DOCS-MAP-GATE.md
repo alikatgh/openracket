@@ -6,10 +6,13 @@ The prepared gate reads the actual docs interval map from the retained DrRacket
 54-character Check Syntax fixture. It compares stock against the enabled
 interval-map candidate without replaying annotations or constructing a test map.
 
-67 Python synthetic rejection/source checks pass. Python compilation and a static
+69 Python synthetic rejection/source checks pass. Python compilation and a static
 Racket delimiter/string scan pass. These are source-side checks only. Racket and
 a native GUI are absent here: no Racket module compilation, GUI execution,
-installed-runtime docs capture, or native equivalence result is claimed.
+installed-runtime docs capture, or native equivalence result is claimed for the
+repaired working gate. The earlier native guard failure and narrow behavioral
+repair are documented in `RACKUNIT-FAILURE-PROPAGATION-REPAIR.md`; exact native
+run evidence is in `NATIVE-CORRECTNESS-38119983626.md`.
 
 ## Source/API conclusion
 
