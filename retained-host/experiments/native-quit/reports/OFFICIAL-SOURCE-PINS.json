@@ -1,0 +1,131 @@
+{
+  "scope": "Read-only official individual source retrieval; not installed or executed",
+  "files": [
+    {
+      "path": "gui-lib/framework/private/exit.rkt",
+      "git_blob": "64c879d566bfb94afa42175d5498da37f1dbcfe0",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/exit.rkt",
+      "characters": 2345,
+      "sha256": "7fde756447692c82b3a0ccdfe0855873d74d9d0ce615bcbdbcf694632830d345",
+      "bytes": 2352,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/framework/private/editor-misc.rkt",
+      "git_blob": "77eacf99fe2347760b635ac0017809ac6cd0f7c1",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/editor-misc.rkt",
+      "characters": 34486,
+      "sha256": "3becc626874477283cdd1b9f45631f11baed586aa37a3c95d67a4a0a2b677885",
+      "bytes": 34511,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/framework/private/frame.rkt",
+      "git_blob": "c14df72151b6100d670d5c6d06902f73cecf64f5",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/frame.rkt",
+      "characters": 118842,
+      "sha256": "b8cfd6be40de1b45837ef4042aae4e551847be4f1dbd8a3e5b6045b927590ca3",
+      "bytes": 118955,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/framework/private/main.rkt",
+      "git_blob": "bf460705ef8fbae9daf7122f1a2489a062b0a48a",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/main.rkt",
+      "characters": 29770,
+      "sha256": "3af4063d6d9c7b9ff6b6cf1734d6cf3643188f3c1cc5959c54b449d65ee10723",
+      "bytes": 29825,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/framework/gui-utils.rkt",
+      "git_blob": "c8b300673d5d8ef5acc8343c53ec1df6a6bcc636",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/gui-utils.rkt",
+      "characters": 21824,
+      "sha256": "389554f8f4ed6f6ede167531a5fb0a7c3888c712a905fc84feded9940b396ed0",
+      "bytes": 21840,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/framework/private/early-init.rkt",
+      "git_blob": "56d3d0966cd6e47c897a7af9e4baa859a980815d",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/early-init.rkt",
+      "characters": 333,
+      "sha256": "f2431959d592cab90fd6f6d29a869ecd4ad75237dd692e507f79a2660b182d89",
+      "bytes": 333,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/mred.rkt",
+      "git_blob": "994041cfa8423055fce3e1a7538f8219ef59ac59",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/mred.rkt",
+      "characters": 9338,
+      "sha256": "5a34a8e15c21d5eac6b4c921ee9a7c0d841ab3d6490bf29e029132ea607db359",
+      "bytes": 9338,
+      "verified_git_blob": true
+    },
+    {
+      "path": "drracket-core-lib/drracket/private/main.rkt",
+      "git_blob": "db70524bc768c619fad29f3776101b8459fb5093",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/main.rkt",
+      "characters": 44478,
+      "sha256": "2233daa9c6ce5686887b75f6698c4c150379f86889188416dce32292ad4fd24a",
+      "bytes": 44561,
+      "verified_git_blob": true
+    },
+    {
+      "path": "drracket-core-lib/drracket/private/init.rkt",
+      "git_blob": "a5e26c65277fa77505a90f8ccfd92c95b8d01926",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/init.rkt",
+      "characters": 4890,
+      "sha256": "d6254fb575a44a3e794104d802e9e9ae97194bab3a1fb91f13718447658b34a7",
+      "bytes": 4898,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/app.rkt",
+      "git_blob": "438a53883946cec0618755c4cf7e7dd74fcce9ac",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/app.rkt",
+      "characters": 6864,
+      "sha256": "d0a5e22ae4cd26dad80601dbc8fdd932e69683ab920fb71cee35253b7c0b03f5",
+      "bytes": 6864,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/messagebox.rkt",
+      "git_blob": "e992be9c2b4ed476f50a85cba40179efdbe2dc65",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/messagebox.rkt",
+      "characters": 14665,
+      "sha256": "754a7366c9867752579602bd15dcb579b4ea548ecf1a0967491a02ff80bb8e41",
+      "bytes": 14666,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/wxtop.rkt",
+      "git_blob": "cf1c6ecd27551abd0dcf8f70e94eea2518f2027e",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxtop.rkt",
+      "characters": 32642,
+      "sha256": "2a674622a0d58ec8d5667e4707bc2946946850bbadb05908df67aa2e2487e07a",
+      "bytes": 32644,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/mrtop.rkt",
+      "git_blob": "bcfd0f2842d39727bc7ebe4df0a54a8072b16ee3",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/mrtop.rkt",
+      "characters": 14364,
+      "sha256": "677b5a75926581973a8eb28b34a9ef46003150241460f5655245940fb9bf7e51",
+      "bytes": 14365,
+      "verified_git_blob": true
+    },
+    {
+      "path": "gui-lib/mred/private/wx/cocoa/queue.rkt",
+      "git_blob": "94f5ea39304c26c9cefd6cc9e3a7f3f44c062c43",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wx/cocoa/queue.rkt",
+      "characters": 26235,
+      "sha256": "48aa7c079339ef3836bc72d30703021569c87067b3669925561058a41ca2f440",
+      "bytes": 26235,
+      "verified_git_blob": true
+    }
+  ]
+}

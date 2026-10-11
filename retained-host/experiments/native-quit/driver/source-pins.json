@@ -1,0 +1,57 @@
+[
+  {
+    "module": "framework/private/exit.rkt",
+    "sha256": "7fde756447692c82b3a0ccdfe0855873d74d9d0ce615bcbdbcf694632830d345",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/exit.rkt"
+  },
+  {
+    "module": "framework/private/editor-misc.rkt",
+    "sha256": "3becc626874477283cdd1b9f45631f11baed586aa37a3c95d67a4a0a2b677885",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/editor-misc.rkt"
+  },
+  {
+    "module": "framework/private/frame.rkt",
+    "sha256": "b8cfd6be40de1b45837ef4042aae4e551847be4f1dbd8a3e5b6045b927590ca3",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/frame.rkt"
+  },
+  {
+    "module": "framework/private/main.rkt",
+    "sha256": "3af4063d6d9c7b9ff6b6cf1734d6cf3643188f3c1cc5959c54b449d65ee10723",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/main.rkt"
+  },
+  {
+    "module": "framework/gui-utils.rkt",
+    "sha256": "389554f8f4ed6f6ede167531a5fb0a7c3888c712a905fc84feded9940b396ed0",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/gui-utils.rkt"
+  },
+  {
+    "module": "mred/private/app.rkt",
+    "sha256": "d0a5e22ae4cd26dad80601dbc8fdd932e69683ab920fb71cee35253b7c0b03f5",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/app.rkt"
+  },
+  {
+    "module": "mred/private/messagebox.rkt",
+    "sha256": "754a7366c9867752579602bd15dcb579b4ea548ecf1a0967491a02ff80bb8e41",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/messagebox.rkt"
+  },
+  {
+    "module": "mred/private/wxtop.rkt",
+    "sha256": "2a674622a0d58ec8d5667e4707bc2946946850bbadb05908df67aa2e2487e07a",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxtop.rkt"
+  },
+  {
+    "module": "drracket/private/main.rkt",
+    "sha256": "2233daa9c6ce5686887b75f6698c4c150379f86889188416dce32292ad4fd24a",
+    "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/main.rkt"
+  },
+  {
+    "module": "drracket/private/unit.rkt",
+    "sha256": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5",
+    "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/unit.rkt"
+  },
+  {
+    "module": "framework/private/group.rkt",
+    "sha256": "a753923bdf328ff3888c0def1d747fb4bbb9f3edd73847b250b5ef438bf72e4a",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/group.rkt"
+  }
+]

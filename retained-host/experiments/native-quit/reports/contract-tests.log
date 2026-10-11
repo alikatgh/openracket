@@ -1,0 +1,25 @@
+test_all_three_complete_protocols (__main__.Contracts.test_all_three_complete_protocols) ... ok
+test_bad_envelope_pid_or_image_refused (__main__.Contracts.test_bad_envelope_pid_or_image_refused) ... ok
+test_cancel_focus_and_liveness_required (__main__.Contracts.test_cancel_focus_and_liveness_required) ... ok
+test_cancel_retains_all_objects_and_dirty_text (__main__.Contracts.test_cancel_retains_all_objects_and_dirty_text) ... ok
+test_cleanup_failure_and_survivor_can_never_pass (__main__.Contracts.test_cleanup_failure_and_survivor_can_never_pass) ... ok
+test_each_exit_failure_is_final (__main__.Contracts.test_each_exit_failure_is_final) ... ok
+test_every_screenshot_and_ack_required (__main__.Contracts.test_every_screenshot_and_ack_required) ... ok
+test_every_source_pin_and_scope_flag_required (__main__.Contracts.test_every_source_pin_and_scope_flag_required) ... ok
+test_exact_schema_keys_types_and_modes (__main__.Contracts.test_exact_schema_keys_types_and_modes) ... ok
+test_fixtures_bounded_and_edit_append_only (__main__.Contracts.test_fixtures_bounded_and_edit_append_only) ... ok
+test_independent_post_exit_disk_bytes (__main__.Contracts.test_independent_post_exit_disk_bytes) ... ok
+test_initial_disk_and_symlink_refusal (__main__.Contracts.test_initial_disk_and_symlink_refusal) ... ok
+test_json_loader_rejects_constants_and_duplicate_keys (__main__.Contracts.test_json_loader_rejects_constants_and_duplicate_keys) ... ok
+test_missing_duplicate_or_reordered_stage_refused (__main__.Contracts.test_missing_duplicate_or_reordered_stage_refused) ... ok
+test_modal_parent_attempt_and_checkbox_refusals (__main__.Contracts.test_modal_parent_attempt_and_checkbox_refusals) ... ok
+test_nonfinite_stability_and_inexact_count_fields_refused (__main__.Contracts.test_nonfinite_stability_and_inexact_count_fields_refused) ... ok
+test_terminal_callback_and_expected_choice_required (__main__.Contracts.test_terminal_callback_and_expected_choice_required) ... ok
+test_timeout_exit_cannot_pass (__main__.Contracts.test_timeout_exit_cannot_pass) ... ok
+test_tokens_exact_unique_and_stage_bound (__main__.Contracts.test_tokens_exact_unique_and_stage_bound) ... ok
+test_valid_config (__main__.Contracts.test_valid_config) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.054s
+
+OK

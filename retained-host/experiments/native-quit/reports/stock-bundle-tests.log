@@ -1,0 +1,10 @@
+test_absent_claim_does_not_even_rewrite_plist (__main__.Metadata.test_absent_claim_does_not_even_rewrite_plist) ... ok
+test_existing_preparation_receipt_prevents_retry (__main__.Metadata.test_existing_preparation_receipt_prevents_retry) ... ok
+test_removes_only_association_and_preserves_native_bytes (__main__.Metadata.test_removes_only_association_and_preserves_native_bytes) ... ok
+test_symlinked_components_refused_without_outside_mutation (__main__.Metadata.test_symlinked_components_refused_without_outside_mutation) ... ok
+test_wrong_identity_and_environment_claim_refused_without_write (__main__.Metadata.test_wrong_identity_and_environment_claim_refused_without_write) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.005s
+
+OK

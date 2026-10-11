@@ -1,0 +1,21 @@
+{
+  "base": "/workspace/scratch/5923f1aa2055/openracket-recovery/publication-45/retained-host",
+  "files": {
+    "CONTENTS-SHA256.json": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+    "experiments/mac-app-builder/CANDIDATE-SHA256.json": "b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee",
+    "experiments/mac-app-builder/build-app.sh": "7e14afbbbe70dc68225c7faa8a3824ea0039289e3e961353559742279be7b161",
+    "experiments/mac-app-builder/make-app.rkt": "12f635b329f2d021b9c714e82ca8895365a0361cf94a2c4a53ae9b647120af8d",
+    "experiments/mac-app-builder/make-native-launcher.rkt": "fd1349075c9c59e4e228d02b25ac37cc2f7ad34ac70b45762d5eaab6e5ca89e4",
+    "experiments/mac-app-builder/bootstrap.sh": "36124ece9cb17ce19f8f7ad19f92511bd3122410c8962441160dcc3fd112b6c7",
+    "experiments/mac-app-builder/runtime-dispatch.sh": "d2193260696f93f23fd64567d984a1a13e79b967e44e65f793ffb54dad4cd58c",
+    "experiments/mac-app-observer/tool.rkt": "19aae5e581853b314e739ee88fccb003a2e1f67d0e933dcb47626d91853b5c29",
+    "experiments/mac-app-observer/contract.rkt": "66770f81f5098b21761ee11f68b6b3fcac67661998c9b7553f3394e51097b77d",
+    "experiments/mac-app-observer/cocoa-identity.rkt": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b",
+    "experiments/mac-app-observer/default-handler.rkt": "175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b",
+    "scripts/ci/run-mac-app.py": "27d02d638644f7e59ebdf053446f3bfdbd13bbf233ad95f85b16e23dab9a6ca8",
+    "scripts/ci/app-ci-contract.py": "3953286f9d13ab0371f007dd0f9b06bb8e7c919a2084cd52ccf06d8546c32fac",
+    "scripts/ci/run-stock-tools.py": "89aa23bd3e4f412743c7950112dfbf8e2417c11970441c697bf16d5ecefae04b",
+    "experiments/native-tool-gates/tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "experiments/native-tool-gates/tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b"
+  }
+}

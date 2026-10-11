@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "scope": "test-only native normal Quit source preparation; native execution not run",
+  "files": {
+    "PREPARE-NATIVE.md": "d4537056881580b8ce969c09a767dd9b1fc2e0ce941ec444d01f7fa1ddb1c5db",
+    "README.md": "f6c95a98cfa224ad2fe792b60996ae86e6d1fde437be8a09187d6e0f61189613",
+    "driver/cocoa-identity.rkt": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b",
+    "driver/contract.rkt": "8839d30751a85a46f4df5afb8969f5426435bd63e81cb06e9dd8ecc080a871bc",
+    "driver/info.rkt": "672f8e6b6a4e86ee587bbc2935d121525b5edc62e2097c678396b38e428c8758",
+    "driver/source-pins.json": "10c5e4a8a76a9521c59ea5521c09d59fb0e20634e9626426d4718c0e4daf99e6",
+    "driver/tool.rkt": "fff9532612610de81a92f8c817b2d103459239587cc65b035a257f98b3076c82",
+    "reports/INPUT-PINS.json": "5c28682e928585e5e4f6135979bcdca0195c9574e577844fbc0e3e006db23c33",
+    "reports/OFFICIAL-SOURCE-PINS.json": "03cf0dee5a4cad93d9c264f84cd534a3dd11a8a82ad715b747e03c4d76a22099",
+    "reports/SOURCE-STATUS.md": "da3e96f657eb6701576fbd7519a5f19c7f0d9e3005fb0ec3fb897751fbc33d4d",
+    "reports/contract-tests.log": "8b467df9da19734773436bea30a16d4def180bf423e2adc35dd9a524b49cd801",
+    "reports/source-tests.log": "f36c0c1f840b3b8b136c3ab4a89f20b2b0c2a8d2c8dcccad7b4f1e08b5f297c5",
+    "reports/stock-bundle-tests.log": "2752c34e13ebd54345658b4adfd55b4e61172fd5c62e794dd985233daf3e2023",
+    "scripts/make-case-config.py": "f50c86035a7ed9e7adc79540d636322b897520a61043f05b6ed2ebafa9026498",
+    "scripts/prepare-stock-bundle.py": "5ff3e459856f2219f23ef0f706dd81ddfeff4f01995a74674677570270428a2a",
+    "scripts/quit_contract.py": "e57d7c268f03ec4ccbc914c92498ae5003414cee52c603e44f912e69f112a6d1",
+    "scripts/run-case.py": "b8ff8a9b511021906a3d7b00cf056c158f437bf4d024ad690166cc6b0505b237",
+    "tests/contract-test.rkt": "7da18985cee0b6da350428d482da368537fcfe98dbe0afabf7c44cf1262408ae",
+    "tests/test_contract.py": "7465a5b209e82728000966621da425eedc561fa6b72dbee5d1995eb5820571b4",
+    "tests/test_source.py": "a63e7a56494ff02e0ca1f64e93232d7e23fbaccd3a05ca3e1986bcf4c1664e32",
+    "tests/test_stock_bundle.py": "cce896247d5a0d0981d40c61d742c61810d32bee2e96c8d53f849b7f68da7049"
+  }
+}
