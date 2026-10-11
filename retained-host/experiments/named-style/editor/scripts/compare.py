@@ -29,8 +29,22 @@ DELTA_BOOLS = {"get-underlined-on", "get-underlined-off", "get-size-in-pixels-on
 DELTA_COLORS = {"foreground-mult", "foreground-add", "background-mult", "background-add"}
 APPEAR_SYMBOLS = {"get-family", "get-weight", "get-style", "get-smoothing", "get-alignment"}
 APPEAR_BOOLS = {"get-underlined", "get-size-in-pixels", "get-transparent-text-backing"}
-SEMANTIC_KEYS = ("fixture_search", "initial", "edited", "edited_final", "lexer_transitions", "identity", "rich_before",
+SEMANTIC_KEYS = ("registry_setup", "fixture_search", "initial", "edited", "edited_final", "lexer_transitions", "identity", "rich_before",
                  "rich_after_save", "rich_restored", "rich_final", "wxme")
+
+# Additive exact registry contract; all earlier ordered comparisons stay intact.
+REGISTRY_SETUP = {
+    "before": {"index": -1, "registered_same_object": False, "classes": [
+        {"index": 0, "class": "wxtext", "version": 3},
+        {"index": 1, "class": "wxtab", "version": 1},
+        {"index": 2, "class": "wximage", "version": 2}]},
+    "after": {"index": 3, "registered_same_object": True, "classes": [
+        {"index": 0, "class": "wxtext", "version": 3},
+        {"index": 1, "class": "wxtab", "version": 1},
+        {"index": 2, "class": "wximage", "version": 2},
+        {"index": 3, "class": "wxmedia", "version": 4}]},
+    "prior_entries_same": True, "stock_class_same": True,
+}
 
 class GateError(ValueError):
     pass
@@ -239,6 +253,23 @@ def fixture_search(v, path):
     for key in ("default_target", "eof_target", "absent_target"):
         require(v[key] is False, path + "." + key, "native negative search must return false, never integer zero")
 
+def registry_setup(v, path):
+    keys(v, {"before", "after", "prior_entries_same", "stock_class_same"}, path)
+    for key in ("prior_entries_same", "stock_class_same"):
+        boolean(v[key], path + "." + key)
+    for phase in ("before", "after"):
+        state = v[phase]
+        keys(state, {"index", "registered_same_object", "classes"}, path + "." + phase)
+        integer(state["index"], path + "." + phase + ".index", -1)
+        boolean(state["registered_same_object"], path + "." + phase + ".registered_same_object")
+        array(state["classes"], path + "." + phase + ".classes")
+        for entry in state["classes"]:
+            keys(entry, {"index", "class", "version"}, path + ".class")
+            integer(entry["index"], path + ".class.index")
+            integer(entry["version"], path + ".class.version", 0, 100000)
+            text(entry["class"], path + ".class.name")
+    equal_typed(v, REGISTRY_SETUP, path)
+
 def diagnostics(v, mode, path):
     if mode.startswith("stock"):
         require(v is None, path, "stock must not fabricate diagnostic exports")
@@ -282,6 +313,7 @@ def validate(v, mode):
     require(act["export_status"] == ("missing" if mode.startswith("stock") else "present"), p, "export availability mismatch")
     require(act["enabled"] is (None if mode.startswith("stock") else mode == "on"), p, "export activation mismatch")
     fixture_search(v["fixture_search"], p + ".fixture_search")
+    registry_setup(v["registry_setup"], p + ".registry_setup")
     for name, expected in (("initial", ORIGINAL), ("edited", EDITED), ("edited_final", EDITED)):
         lexed(v[name], expected, p + "." + name)
     equal_typed(v["edited"], v["edited_final"], p + ".final_lexer_stability")

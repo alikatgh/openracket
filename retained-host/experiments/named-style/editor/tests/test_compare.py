@@ -70,6 +70,7 @@ def rich():
 def capture(mode):
     v = {"schema": c.SCHEMA, "mode": mode, "passed": True, "stages": c.STAGES[:],
          "gui_callback_errors": [],
+         "registry_setup": copy.deepcopy(c.REGISTRY_SETUP),
          "fixture_search": {"query": '"λ"', "absent_query": '"OPENRACKET_ABSENT_λ"',
                             "text_length": len(c.ORIGINAL), "selection_start": len(c.ORIGINAL),
                             "selection_end": len(c.ORIGINAL), "target": c.ORIGINAL.index('"λ"'),

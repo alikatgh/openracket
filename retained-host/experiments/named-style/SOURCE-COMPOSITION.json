@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "Reviewed failure-only WXME diagnostic after run38156051663; focused native collection pending",
+  "status": "Reviewed exact stock wxmedia registration repair after run38159705157; full native correctness and conditional timing pending",
   "packages": {
     "production": {
       "source_freeze": "openracket-named-style-index-freeze-20261011-1322",
@@ -10,10 +10,10 @@
       "all_source_bytes_preserved": true
     },
     "editor": {
-      "source_freeze": "openracket-named-style-editor-reload-diagnostic-freeze-20261011-1705",
+      "source_freeze": "openracket-named-style-editor-registry-freeze-20261011-1747",
       "manifest_path": "editor/SHA256SUMS",
-      "manifest_sha256": "17e0880e969e7720a9873088ebacf695273b5b5935fc96e4e393b65cf8a77067",
-      "file_count": 43,
+      "manifest_sha256": "82e97a5bb45e5aaf4c87dce4e3a7b36ac05f248e5f8ab7395142dc9eb17d6344",
+      "file_count": 53,
       "all_source_bytes_preserved": true
     },
     "controls": {
@@ -31,5 +31,5 @@
       "all_source_bytes_preserved": true
     }
   },
-  "base_composition_sha256": "6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273"
+  "base_composition_sha256": "21f908b7d7618173777991f0243ebdf6435b9a627b8c07d61211ea7259673232"
 }

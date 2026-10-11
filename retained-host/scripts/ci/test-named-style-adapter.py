@@ -3,7 +3,7 @@ ROOT=pathlib.Path(__file__).parent;SOURCE=(ROOT/'run-named-style.py').read_text(
 class AdapterTests(unittest.TestCase):
  def test_syntax_and_exact_frozen_pins(self):
   ast.parse(SOURCE)
-  for pin in ('6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273','840fe01e282b60ee8613a87c63e7e7ed21233741c3fb30eb923dcd3bec75bdc4'):self.assertIn(pin,SOURCE)
+  for pin in ('0a8003091634b9b83d02391614a88bd5bd7e09db123e4f8f3f13eeec83482184','840fe01e282b60ee8613a87c63e7e7ed21233741c3fb30eb923dcd3bec75bdc4'):self.assertIn(pin,SOURCE)
  def test_independent_clone_purposes_and_no_other_overlay(self):
   for purpose in ('named-style-control','named-style-candidate'):self.assertIn(purpose,SOURCE);self.assertIn("['"+purpose+"']",(ROOT/'copy-independent-runtime.py').read_text())
   self.assertIn("PRODUCTION/'scripts/overlay.py','apply'",SOURCE)

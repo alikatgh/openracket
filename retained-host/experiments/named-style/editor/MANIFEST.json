@@ -1,28 +1,37 @@
 {
   "schema": "openracket-named-style-editor-package-v1",
-  "created_utc": "2026-10-11T17:05:00Z",
+  "created_utc": "2026-10-11T17:47:00Z",
   "source_only": true,
   "native_executed": false,
   "racket_compiled": false,
   "published": false,
-  "portable_tests": 44,
-  "derivative": "Failure-only WXME reload diagnostics after four-arm run38156051663; no proven serialization repair",
-  "base_composition_sha256": "6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273",
-  "reviewed_patch_sha256": "d9f577055a8d9fc8ac2cde9153ffb63c45180574c17366333dd75df744ce02b7",
+  "portable_tests": 50,
+  "portable_modes": [
+    "ordinary",
+    "explicitly-aliased-TMPDIR"
+  ],
+  "derivative": "Exact stock editor-snip class registration in fresh fixture eventspace; source-backed repair after run38159705157",
+  "base_editor_manifest_sha256": "d06e28d12f7dce98aa0b28d4f5d94bb898df4b098072a98d2c95533371c65345",
+  "reviewed_patch_sha256": "e193b5c34101c4bedb0faa4224c42a633aafcab092b753ac5d490651696e7637",
   "independent_reviews": [
-    "modernize_retained_drracket_host: final source review and44 portable checks passed",
-    "profile_retained_editor_performance: final source review and44 portable checks passed"
+    "modernize_retained_drracket_host: final source review and50 portable checks passed",
+    "profile_retained_editor_performance: final source review and50 portable checks passed"
   ],
   "files": [
     {
       "path": "PROVENANCE.json",
-      "bytes": 9964,
-      "sha256": "6c271c991e1db6dea3db6de505930a39d0108ff67d74c66d18b3d5ebd94ea8da"
+      "bytes": 11326,
+      "sha256": "448bca1765c5d2e7b56efe9e5fd3f69f2f49a4516034d2b8ce8b0a982beadff3"
     },
     {
       "path": "README.md",
-      "bytes": 11414,
-      "sha256": "b702cd8246446004ea65f5c9eccb7edab6bc8a8e6f5db00fc42bf81d88165956"
+      "bytes": 11580,
+      "sha256": "ff24aa8af6ca45fc75a21024c4e7802b069df1bbec51c7479db4c21e8e999143"
+    },
+    {
+      "path": "REGISTRY-REPAIR.md",
+      "bytes": 5439,
+      "sha256": "c5c33b30fd64c437683817202d035c81aa394e1e2cb5349c217b95b5113d1792"
     },
     {
       "path": "RELOAD-DIAGNOSTIC.md",
@@ -46,13 +55,18 @@
     },
     {
       "path": "native/editor-gate.rkt",
-      "bytes": 15711,
-      "sha256": "71bb24d24cb6a0c8844b3b2929a50e796d1d027f2983f6b4a91870a6abfb3c92"
+      "bytes": 15807,
+      "sha256": "e4e6da427f6f6a83561ce462093d0614389244ac27f9fe1309624223d6735412"
     },
     {
       "path": "native/failure-observation.rkt",
       "bytes": 5148,
       "sha256": "9a5e064dee031da3807fdfe6fb5ade9a75df996022339dff36f33bdd957326c7"
+    },
+    {
+      "path": "native/registry-setup.rkt",
+      "bytes": 6105,
+      "sha256": "0e00fcf7ff1136c2e0c2b7ec8a08d1093949039a246a8260650f4e3dc1c63d90"
     },
     {
       "path": "native/reload-diagnostic.rkt",
@@ -65,14 +79,34 @@
       "sha256": "468eed9ede02ccad91200546bf158e2eb182fe8a87e6b300c3fbbb52f0b9427e"
     },
     {
+      "path": "reports/REGISTRY-CAUSE.json",
+      "bytes": 23177,
+      "sha256": "887cc1ad6b1669501f76351536440d9a4fc8084aff01b8597210027b0aba3e40"
+    },
+    {
       "path": "reports/STATUS.json",
-      "bytes": 800,
-      "sha256": "ba300168e58dc5f8a8f3dc7ba159e0d33d69900fee3de49ed87d5117dc263b54"
+      "bytes": 947,
+      "sha256": "ce30c7e4f1d801317a0386e1e502cadf3315232a25452e05aa5bab040a5c4c4a"
+    },
+    {
+      "path": "reports/STATUS.md",
+      "bytes": 334,
+      "sha256": "233959a181cdbf2acc361ac5533c7217c84ca2aed896aabd064e4baa39086aa7"
     },
     {
       "path": "reports/portable-tests.log",
       "bytes": 3616,
       "sha256": "36c7969a8e258e03d0e94918be938e31b5b17ec9d60452226975c48f2ffd13dc"
+    },
+    {
+      "path": "reports/registry-repair-aliased-tmpdir.log",
+      "bytes": 6633,
+      "sha256": "8402af1754d41fd2556633449a50d42909a5788cb41c92b7758cfc177d021997"
+    },
+    {
+      "path": "reports/registry-repair-ordinary.log",
+      "bytes": 6627,
+      "sha256": "80d26c6e2167f3a99768305a6a41e8a11f840fa799597498361be73c59a13dd6"
     },
     {
       "path": "reports/reload-diagnostic-portable-tests.log",
@@ -86,8 +120,8 @@
     },
     {
       "path": "scripts/compare.py",
-      "bytes": 21832,
-      "sha256": "e7309f8bfeca1e6c308cf507da5486364e94d87acefb30c8a97015d430bb3e32"
+      "bytes": 23541,
+      "sha256": "6180efab8721e4cc53b900bfd7692f3fd95e2b699aa6c74689cf7a82b61456c9"
     },
     {
       "path": "scripts/run_native.py",
@@ -96,13 +130,18 @@
     },
     {
       "path": "tests/test_compare.py",
-      "bytes": 12941,
-      "sha256": "e107bd1e0f7c7cf781dd0f47f6b85e388859f24b8b3c904df50c1da96b56a595"
+      "bytes": 13001,
+      "sha256": "b798592f696a889afeecff0e8628f4efb76894333c22d63e93e56aa9e47f59fb"
+    },
+    {
+      "path": "tests/test_registry_setup.py",
+      "bytes": 5292,
+      "sha256": "babf5cd1326684278a24646d79141c6f661fa281b00c04dca5f090798414d530"
     },
     {
       "path": "tests/test_reload_diagnostic.py",
-      "bytes": 5722,
-      "sha256": "99e708b1279b0b15a93d353b7819b8d0782101ccdd882091fb2779b481d23097"
+      "bytes": 5620,
+      "sha256": "561a8a079043fe53abcb06acceba64f5c7274a7595be50a8d6e3da2ad7f6dbbc"
     },
     {
       "path": "tests/test_runner.py",
@@ -123,6 +162,11 @@
       "path": "vendor/color.scrbl",
       "bytes": 25515,
       "sha256": "c1a28a870e28b7a908b8382749c4522fdb1609c8930567a56386ce965cd37e39"
+    },
+    {
+      "path": "vendor/editor-funcs.scrbl",
+      "bytes": 17409,
+      "sha256": "a023096081a9ab12f5dfc62c022035cd7aabb176ac6d0828472ed9563044bcc8"
     },
     {
       "path": "vendor/editor-intf.scrbl",
@@ -160,6 +204,11 @@
       "sha256": "6d59d6829722f2bfe8b61e4f2d6fd518c610cba6290bac810d2900b8ee9d0f3b"
     },
     {
+      "path": "vendor/mred.rkt",
+      "bytes": 9338,
+      "sha256": "5a34a8e15c21d5eac6b4c921ee9a7c0d841ab3d6490bf29e029132ea607db359"
+    },
+    {
       "path": "vendor/public-editor.rkt",
       "bytes": 37539,
       "sha256": "1eef92a431da2c2cf40d193237d4ab9879adae9518c71b39ba5af0dc6b32f75a"
@@ -173,6 +222,11 @@
       "path": "vendor/racket.scrbl",
       "bytes": 19091,
       "sha256": "bcae995fe872f4905478f3f4a3c47060edb74db25fe205c7411faa9271c0d717"
+    },
+    {
+      "path": "vendor/snip-class-list-intf.scrbl",
+      "bytes": 1225,
+      "sha256": "4de92e6a455b19bba2c66e6c108e879e6e686bfad4566a81808ff52a299e3a5a"
     },
     {
       "path": "vendor/snip-class.scrbl",

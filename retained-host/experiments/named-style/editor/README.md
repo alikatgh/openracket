@@ -1,8 +1,10 @@
 # Named-style index: small native editor correctness gate
 
-Current derivative: see [RELOAD-DIAGNOSTIC.md](RELOAD-DIAGNOSTIC.md) for failure-only
-observability after run38156051663. The source/API audit found no proven repair.
-44 portable methods pass; the diagnostic native controls remain unexecuted.
+Current derivative: see [REGISTRY-REPAIR.md](REGISTRY-REPAIR.md) for the source-backed
+fresh-eventspace registry repair established by run38159705157's saved bytes.
+50 portable methods pass ordinarily and under an explicitly aliased TMPDIR.
+The repair's native controls and complete editor/WXME gate await official Mac CI.
+Failure-only observability from [RELOAD-DIAGNOSTIC.md](RELOAD-DIAGNOSTIC.md) remains.
 
 
 ## Search-scope repair after run38153992371

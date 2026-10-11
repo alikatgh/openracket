@@ -1,67 +1,58 @@
-# Named-style lookup experiment: WXME failure diagnostics
+# Named-style lookup experiment: fresh-eventspace registry repair
 
-This source-only composition preserves the production, host/trace controls and
-performance packages byte-for-byte from reviewed freezes 1402 and 1620. Only the
-editor test package is replaced with the independently reviewed 1705 diagnostic.
-SOURCE-COMPOSITION.json pins all four complete owner packages.
+This composition preserves all production, host/trace controls and performance
+files from the reviewed 1402/1620/1716 packages. Only the editor test package is
+replaced with reviewed freeze 1747. SOURCE-COMPOSITION.json pins every subtree.
+The default-off production candidate has not been adopted into the preview.
 
-## Current evidence and purpose
+## Source-backed cause and repair
 
-Native run 38156051663 passed preparation, mandatory helpers, actual lookup and
-publication controls, genuine Check Syntax, full annotation/rename comparisons,
-and the original-runtime witness. All four editor modes passed the corrected
-Unicode search and incremental lexer checks, then failed the same original
-standard WXME reload. Their saved rich fixtures were 1,595 bytes with identical
-hashes and matching before/after-save semantics. The generic reader failure does
-not establish a production defect or its cause. Timing was correctly skipped.
-The original raw-log SHA256 is
-`dbb256627279c1652e4998bfceab5898e890454901ba8a560ddbd82570a14f89`.
+Native diagnostic run 38159705157 recovered identical 1,595-byte WXME fixtures
+from all four arms, SHA256
+`586f073086243701ac65ded8a10bd32c744becab99ea2ec41fe5a07c23d4949f`.
+Each original reader returned false at logical item 312. The fresh fixture
+eventspace lacked its actual stock wxmedia version 4 snip class, and the saved
+class table omitted it. The exact stock source and bytes explain the resulting
+invalid class index and reader misalignment; see editor/REGISTRY-REPAIR.md.
+The diagnostic raw-log SHA256 is
+`bf42bdc2524c638836e910ffd3a67daa678b4c8213462bd3088c0f8aaa285069`.
 
-This derivative retains the original sole load call, every success assertion,
-comparison and deadline. It adds bounded failure evidence: exact synthetic saved
-bytes with size/hash, existing class registry identities without autoload, the
-original reader arguments/result, and a best-effort partial restored snapshot.
-Original raised values are always re-raised. Stream tell is used only after an
-already-failed reader result; it is labeled as a logical item index and its
-position-map bookkeeping is disclosed. It is never called before reading or on
-successful return. Mandatory native fake-reader and fake-stream controls verify
-forwarding and diagnostic-failure isolation. These native controls have not run.
-See editor/README.md and SOURCE-REVIEW.md for exact scope and limitations.
+The test setup now adds only that missing exact installed stock class to its
+fresh eventspace using the documented public registry API. Conflicting objects
+or versions fail before mutation. All prior registry identities and order must
+remain unchanged, and the additive four-arm comparator checks exact types and
+values. Mandatory native refusal controls exercise missing, conflicting, wrong,
+reordered and ignored registration, plus idempotence. The original rich save,
+sole load, lexer/style/identity/nested-editor/image comparisons and deadlines
+remain. No alternate reader or edited WXME bytes are used. Failure diagnostics
+remain available; this repair's native execution is still pending.
 
-## Next diagnostic and later acceptance
+## Complete native acceptance before timing
 
-The next focused native batch should prepare and verify exact sources in separate
-disposable stock/candidate runtimes, explicitly compile all editor native modules,
-run the original four independent editor captures (stock, stock-again, off, on),
-and retain the full original-runtime comparison. The original 180-second per-arm
-and 760-second four-arm orchestration bounds remain. It contains no performance
-trials. A repeated reader failure remains a failed editor gate even when useful
-diagnostic evidence was captured. Existing successful controls are historical
-results, not a substituted complete acceptance result for this revision.
+The next run restores the full reviewed sequence: preparation and mandatory
+helper preflight, production lookup/publication correctness, four independent
+editor/WXME arms (stock, stock-again, off, on), genuine stock/off/on Check Syntax
+controls and complete trace/rename comparison, then only after all prerequisites
+pass the unchanged six interleaved full-completion/responsiveness trials with
+isolated 256 MiB profiles. All prior per-process, workflow and post-edit bounds
+remain. Preserve every failed or incomplete outcome. No timing result exists
+for this revision, and no outlier removal or synthetic prewarming is authorized.
 
-After a source-backed repair, restore the complete sequence: production
-correctness, four-arm editor/WXME equivalence, genuine stock/off/on host controls
-and full trace/rename comparisons, mandatory helper preflight, then the unchanged
-six interleaved full-completion/responsiveness trials at isolated 256 MiB.
-No outlier removal, deadline widening, synthetic prewarming or speed claim is
-permitted. All failed and incomplete outcomes remain visible.
-
-The candidate is still default-off; only OPENRACKET_NAMED_STYLE_INDEX=1 enables
-it. Original style source is
-`2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0`;
-candidate source is
+The candidate is enabled only by OPENRACKET_NAMED_STYLE_INDEX=1. Pristine style
+SHA256 is `2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0`;
+candidate SHA256 is
 `74eb24f0d6485187c9700cca421f4299dee67ea092a811d56b737972b2204c6d`.
-No delivered preview changes. This diagnostic supplies no performance or adoption
-result, and no complete native acceptance yet.
+Existing successful native controls remain historical evidence, not a replacement
+for the complete new acceptance. No delivered preview, source candidate or
+measurement workload changes accompany this test repair.
 
 ## Portable verification
 
-The replacement editor package passed 44 portable checks independently. Production
-(18 files), controls (41 files), and performance (36 files) are exact original
-bytes; the editor subtree has 43 files and matches its reviewed freeze exactly.
-REPAIR-VALIDATION.json records the actual composed-layout test run and byte
-comparisons. PORTABLE-VALIDATION.log is retained historical 1402 preparation,
-not a claim that those unchanged suites were rerun for this composition.
-For inherited GUI source tests, GUI_TEST_SOURCE_DIR must name the verified
-individual official DrRacket private source files. Never substitute a missing
-fixture with generated or unverified source.
+The editor package has 53 exact files and 50 portable methods. The composed
+layout was rerun both normally and through an explicitly symlinked TMPDIR.
+REPAIR-VALIDATION.json records these actual checks and exact byte comparisons.
+Production (18 files), controls (41 files) and performance (36 files) are exact
+unchanged packages. PORTABLE-VALIDATION.log is retained historical preparation.
+The CI adapter separately reruns the complete current source/adapter/evidence
+release gate through an aliased TMPDIR before publication. These portable checks
+do not establish native Racket compilation, editor success or performance.

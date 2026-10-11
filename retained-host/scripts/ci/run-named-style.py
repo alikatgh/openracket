@@ -12,7 +12,7 @@ assert sys.argv[1:] in ([p] for p in ('prepare','helpers','production','editor',
 PHASE=sys.argv[1];REPORTS=ROOT/'reports/named-style-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 CLEANUP_BLOCK=REPORTS/'launch-blocked.json';CLEANUP_UNVERIFIED=False
 STATE=REPORTS/'results.json';ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)
-COMPOSITION_PIN='6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273'
+COMPOSITION_PIN='0a8003091634b9b83d02391614a88bd5bd7e09db123e4f8f3f13eeec83482184'
 TELEMETRY_PIN='840fe01e282b60ee8613a87c63e7e7ed21233741c3fb30eb923dcd3bec75bdc4'
 FILES=('capture-host.json','capture-supervisor.json','memory-profile.json','gui-observation.json','worker-init.json','worker-phase-1.json','activation.json','heartbeat.json','binding-export.json','style-witness.json')
 def module(name,file):
@@ -141,7 +141,7 @@ def verify_frozen():
  production=json.loads((PRODUCTION/'manifest.json').read_text());pins=json.loads((TELEMETRY/'candidate-source-pins.json').read_text())
  assert pins['module']=='racket/snip/private/style'
  assert all(pins[k]==production[k] for k in ('stock_sha256','candidate_sha256'))
- record('Exact immutable1620 composition and telemetry',True,str(len(members))+' members; all original owner bytes')
+ record('Exact immutable1748 registry-repair composition and telemetry',True,str(len(members))+' members; all original owner bytes')
 
 try:
  if (CLEANUP_UNVERIFIED or CLEANUP_BLOCK.exists()) and PHASE!='verify':raise RuntimeError('Phase blocked by unverified process-group cleanup')

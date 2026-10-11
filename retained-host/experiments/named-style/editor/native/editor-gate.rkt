@@ -1,7 +1,7 @@
 #lang racket/base
 ;; A real framework Racket editor fixture, NOT a full DrRacket tool workflow.
 (require framework json racket/class racket/exn racket/file racket/gui/base racket/list racket/string
-         "snapshot.rkt" "reload-diagnostic.rkt")
+         "snapshot.rkt" "reload-diagnostic.rkt" "registry-setup.rkt")
 (provide run-gate!)
 (define original
   "#lang racket/base\n(define café \"λ\")\n(define (bump x) (+ x 41))\n; comment ☃\n(bump 1)\n")
@@ -183,6 +183,7 @@
                                 'canvas_editor_same #t 'handler_thread #t))
       (stage! "edited-lexer-readback")
       (define-values (rich rich-sl image bitmap embedded nested) (make-rich!))
+      (setup-editor-snip! embedded record!)
       (send canvas set-editor rich)
       (check! (eq? (send canvas get-editor) rich) "rich editor is displayed on real canvas")
       (define original-snips (snips rich))
@@ -227,6 +228,7 @@
     (lambda () (send frame show #f))))
 (define (run-gate! output private-list% state record! stage!)
   (run-failure-observation-controls!)
+  (run-registration-controls!)
   (define done (make-semaphore))
   (define failure #f)
   (define callback-errors '())

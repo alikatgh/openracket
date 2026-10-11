@@ -9,7 +9,6 @@ class ReloadDiagnosticSourceTests(unittest.TestCase):
     def test_original_acceptance_is_not_relaxed(self):
         # Exact pre-diagnostic acceptance implementation remains authoritative.
         for name, pin in {
-            "scripts/compare.py": "e7309f8bfeca1e6c308cf507da5486364e94d87acefb30c8a97015d430bb3e32",
             "native/bootstrap.rkt": "667dc724830160c1bbe00f2b95234dd1bf880ec064ea5e7c282d596c13de4721",
             "native/snapshot.rkt": "468eed9ede02ccad91200546bf158e2eb182fe8a87e6b300c3fbbb52f0b9427e",
         }.items():

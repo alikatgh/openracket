@@ -1,0 +1,874 @@
+{
+  "schema": "openracket-editor-registry-cause-v1",
+  "historical_run": 38159705157,
+  "raw_relative_root": "openracket-recovery/results/run-38159705157/raw/editor",
+  "arms": [
+    {
+      "mode": "stock",
+      "capture_sha256": "ee32256bbc33bb4d05bb4ff606b3a8c0c742c59079eeb0bd33ef71775b266651",
+      "fixture_bytes": 1595,
+      "fixture_sha256": "586f073086243701ac65ded8a10bd32c744becab99ea2ec41fe5a07c23d4949f",
+      "reader": {
+        "status": "observed",
+        "value": [
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "before",
+              "result": [],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "returned",
+              "result": [
+                false
+              ],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "logical_item_position": 312,
+                  "ok": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "registry_before": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "registry_after": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "partial_length": 0,
+      "partial_style_count": 8
+    },
+    {
+      "mode": "stock-again",
+      "capture_sha256": "91c971201b1870c8190161bc76c6f640599f11710298e39553cd9f08cdc0c461",
+      "fixture_bytes": 1595,
+      "fixture_sha256": "586f073086243701ac65ded8a10bd32c744becab99ea2ec41fe5a07c23d4949f",
+      "reader": {
+        "status": "observed",
+        "value": [
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "before",
+              "result": [],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "returned",
+              "result": [
+                false
+              ],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "logical_item_position": 312,
+                  "ok": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "registry_before": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "registry_after": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "partial_length": 0,
+      "partial_style_count": 8
+    },
+    {
+      "mode": "off",
+      "capture_sha256": "d2fcc1526cce879e2d602cb653ad139da56e42f26b3bc02a039d799abacbdf8f",
+      "fixture_bytes": 1595,
+      "fixture_sha256": "586f073086243701ac65ded8a10bd32c744becab99ea2ec41fe5a07c23d4949f",
+      "reader": {
+        "status": "observed",
+        "value": [
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "before",
+              "result": [],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "returned",
+              "result": [
+                false
+              ],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "logical_item_position": 312,
+                  "ok": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "registry_before": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "registry_after": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "partial_length": 0,
+      "partial_style_count": 8
+    },
+    {
+      "mode": "on",
+      "capture_sha256": "a739d50bacf9cdc5b2006469ec88b53f32acce6f5475f8089f7bafaa305c76c8",
+      "fixture_bytes": 1595,
+      "fixture_sha256": "586f073086243701ac65ded8a10bd32c744becab99ea2ec41fe5a07c23d4949f",
+      "reader": {
+        "status": "observed",
+        "value": [
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "before",
+              "result": [],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          {
+            "status": "observed",
+            "value": {
+              "argument_count": 2,
+              "arguments_after_stream": [
+                true
+              ],
+              "phase": "returned",
+              "result": [
+                false
+              ],
+              "stream": {
+                "status": "observed",
+                "value": {
+                  "logical_item_position": 312,
+                  "ok": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "registry_before": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "registry_after": {
+        "status": "observed",
+        "value": [
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 4,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 5,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 9,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 10,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wximage",
+            "document": "outer",
+            "position": 16,
+            "registered_same_object": true,
+            "registry_index": 2,
+            "version": 2
+          },
+          {
+            "class": "wxmedia",
+            "document": "outer",
+            "position": 17,
+            "registered_same_object": false,
+            "registry_index": -1,
+            "version": 4
+          },
+          {
+            "class": "wxtext",
+            "document": "outer",
+            "position": 18,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          },
+          {
+            "class": "wxtext",
+            "document": "nested",
+            "position": 0,
+            "registered_same_object": true,
+            "registry_index": 0,
+            "version": 3
+          }
+        ]
+      },
+      "partial_length": 0,
+      "partial_style_count": 8
+    }
+  ],
+  "logical_item_map": [
+    {
+      "start": 304,
+      "end": 305,
+      "raw": "0",
+      "meaning": "image extra-data terminator"
+    },
+    {
+      "start": 305,
+      "end": 306,
+      "raw": "-1",
+      "meaning": "unregistered wxmedia class map index"
+    },
+    {
+      "start": 306,
+      "end": 307,
+      "raw": "0",
+      "meaning": "nested style index misread as zero optional-record length"
+    },
+    {
+      "start": 307,
+      "end": 308,
+      "raw": "1",
+      "meaning": "nested editor type misread as wxtab class index"
+    },
+    {
+      "start": 308,
+      "end": 309,
+      "raw": "1",
+      "meaning": "border flag misread as style index"
+    },
+    {
+      "start": 309,
+      "end": 310,
+      "raw": "2",
+      "meaning": "left margin misread as string flags"
+    },
+    {
+      "start": 310,
+      "end": 311,
+      "raw": "3",
+      "meaning": "top margin misread as byte-string length"
+    },
+    {
+      "start": 311,
+      "end": 312,
+      "raw": "4",
+      "meaning": "right margin misread as absent byte-string reference; position becomes312 and stream becomes bad"
+    }
+  ],
+  "native_repair_executed": false
+}

@@ -194,6 +194,33 @@
       "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
       "sha256": "1eef92a431da2c2cf40d193237d4ab9879adae9518c71b39ba5af0dc6b32f75a",
       "bytes": 37539
+    },
+    {
+      "local": "vendor/snip-class-list-intf.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/snip-class-list-intf.scrbl",
+      "git_blob": "d53375db4e900047b57c21a72f504a8e3690af87",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "4de92e6a455b19bba2c66e6c108e879e6e686bfad4566a81808ff52a299e3a5a",
+      "bytes": 1225
+    },
+    {
+      "local": "vendor/editor-funcs.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/editor-funcs.scrbl",
+      "git_blob": "a7ee135f0f861e614b5f58453ae55293d25ade45",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "a023096081a9ab12f5dfc62c022035cd7aabb176ac6d0828472ed9563044bcc8",
+      "bytes": 17409
+    },
+    {
+      "local": "vendor/mred.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/mred.rkt",
+      "git_blob": "994041cfa8423055fce3e1a7538f8219ef59ac59",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "5a34a8e15c21d5eac6b4c921ee9a7c0d841ab3d6490bf29e029132ea607db359",
+      "bytes": 9338
     }
   ]
 }
