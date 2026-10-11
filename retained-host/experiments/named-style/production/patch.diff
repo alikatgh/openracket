@@ -1,0 +1,97 @@
+--- a/racket/snip/private/style.rkt
++++ b/racket/snip/private/style.rkt
+@@ -15,6 +15,8 @@
+          style-delta%
+          style<%>
+          style-list%
++         openracket-named-style-index-enabled?
++         openracket-named-style-index-state
+          the-style-list
+          setup-style-reads-writes
+          done-style-reads-writes
+@@ -987,6 +989,18 @@
+ 
+ (define-struct notify-key (f))
+ 
++;; OPENRACKET NAMED STYLE INDEX: default-off, pinned-source experiment.
++(define openracket-named-style-index-enabled?
++  (equal? (getenv "OPENRACKET_NAMED_STYLE_INDEX") "1"))
++
++;; A fresh local member key avoids collisions with existing subclass methods.
++(define-local-member-name get-openracket-named-style-index-state)
++(define (openracket-named-style-index-state style-list)
++  (unless (is-a? style-list style-list%)
++    (raise-argument-error 'openracket-named-style-index-state
++                          "style-list% instance" style-list))
++  (send style-list get-openracket-named-style-index-state))
++
+ (defclass style-list% object%
+ 
+   (super-new)
+@@ -1003,6 +1017,29 @@
+   ;; and writing a style list to a stream):
+   (define members (list basic))
+   (define member-count 1)
++
++  ;; The only cache cell holds one complete immutable (members . index) pair.
++  ;; Names in members were made immutable before insertion by the stock code.
++  ;; A stale build may replace a newer cache, but cannot match a newer snapshot.
++  (define openracket-named-style-cache #f)
++  (define openracket-named-style-lookups 0)
++  (define openracket-named-style-hits 0)
++  (define openracket-named-style-rebuilds 0)
++  (define openracket-named-style-members-traversed 0)
++
++  ;; Read-only, O(1), payload-free. No lookup, rebuild, or eager prewarming.
++  ;; Counters are diagnostic scalars, not synchronized cross-thread accounting.
++  (define/public (get-openracket-named-style-index-state)
++    (let ([cached openracket-named-style-cache]
++          [snapshot members])
++      (hasheq 'enabled openracket-named-style-index-enabled?
++              'lookups openracket-named-style-lookups
++              'hits openracket-named-style-hits
++              'rebuilds openracket-named-style-rebuilds
++              'members-traversed openracket-named-style-members-traversed
++              'cache-valid (and cached (eq? snapshot (car cached)))
++              'named-entries (if cached (hash-count (cdr cached)) 0)
++              'member-count member-count)))
+   (define/public (get-s-members) members)
+ 
+   (define (add-member s)
+@@ -1080,9 +1117,36 @@
+             s))))
+ 
+   (def/public (find-named-style [string? name])
++    (if openracket-named-style-index-enabled?
++        (let* ([snapshot members]
++               [cached openracket-named-style-cache])
++          (set! openracket-named-style-lookups
++                (add1 openracket-named-style-lookups))
++          (define entry
++            (cond
++              [(and cached (eq? snapshot (car cached)))
++               (set! openracket-named-style-hits
++                     (add1 openracket-named-style-hits))
++               cached]
++              [else
++               (define index
++                 (for/fold ([index (hash)]) ([style (in-list snapshot)])
++                   (set! openracket-named-style-members-traversed
++                         (add1 openracket-named-style-members-traversed))
++                   (define style-name (send style get-s-name))
++                   (if (and style-name (not (hash-has-key? index style-name)))
++                       (hash-set index style-name style)
++                       index)))
++               (define complete (cons snapshot index))
++               (set! openracket-named-style-cache complete)
++               (set! openracket-named-style-rebuilds
++                     (add1 openracket-named-style-rebuilds))
++               complete]))
++          (hash-ref (cdr entry) name #f))
+     (for/or ([s (in-list members)])
+       (and (equal? name (send s get-s-name))
+            s)))
++    )
+ 
+   (define/public (do-named-style name plain-style replac?)
+     (let ([plain-style (if (or (not plain-style)

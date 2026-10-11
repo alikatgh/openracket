@@ -1,0 +1,32 @@
+{
+  "candidate": "named-style-lookup-index",
+  "version": 1,
+  "default_enabled": false,
+  "flag": "OPENRACKET_NAMED_STYLE_INDEX",
+  "enabled_value": "1",
+  "stock_sha256": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0",
+  "candidate_sha256": "74eb24f0d6485187c9700cca421f4299dee67ea092a811d56b737972b2204c6d",
+  "source_commit": "3e6cf73c7bea6bd292462188e51ebabf8384ae53",
+  "changed_existing_method": "style-list% find-named-style",
+  "activation_export": "openracket-named-style-index-enabled?",
+  "state_export": "openracket-named-style-index-state",
+  "native_executed": false,
+  "gui_wxme_verified": false,
+  "performance_measured": false,
+  "published": false,
+  "adopted": false,
+  "status": "source-only; native and publication authorization hold",
+  "portable_checks": {
+    "source_tests": 46,
+    "model_identity_comparisons": 15000
+  },
+  "relative_target": "racket/snip/private/style.rkt",
+  "runtime_apply_contract": "explicit canonical disposable runtime, descendant source, pinned sibling prefs, no symlink paths/ancestors or hardlinked files",
+  "negative_control_contract": {
+    "exit": "positive integer only; actual launch; no timeout or launch error",
+    "stderr_injection": "OPENRACKET_NAMED_STYLE_NEGATIVE_CONTROL_INJECTED_V1",
+    "stderr_exact_error": "named-style-differential: negative-control-wrong-object-identity: #f != #t",
+    "uniqueness": "each exact line once globally, injection before error, no loose/altered duplicate evidence",
+    "stdout_stderr": "no successful or partial JSON record"
+  }
+}

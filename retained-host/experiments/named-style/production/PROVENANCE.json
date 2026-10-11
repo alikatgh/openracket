@@ -1,0 +1,25 @@
+{
+  "scope": "Local default-off source prototype, Python source/model tests only; native execution and publication not authorized",
+  "date": "2026-10-11",
+  "repository": "racket/snip",
+  "ref": "3e6cf73c7bea6bd292462188e51ebabf8384ae53",
+  "version": "9.3",
+  "files": [
+    {
+      "local": "vendor/style.rkt",
+      "path": "snip-lib/racket/snip/private/style.rkt",
+      "source_url": "https://github.com/racket/snip/blob/3e6cf73c7bea6bd292462188e51ebabf8384ae53/snip-lib/racket/snip/private/style.rkt",
+      "git_blob": "6a51969cf066e2eb2443d21d8036fa76fceab82e",
+      "sha256": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0",
+      "bytes": 62169
+    },
+    {
+      "local": "vendor/prefs.rkt",
+      "path": "snip-lib/racket/snip/private/prefs.rkt",
+      "source_url": "https://github.com/racket/snip/blob/3e6cf73c7bea6bd292462188e51ebabf8384ae53/snip-lib/racket/snip/private/prefs.rkt",
+      "git_blob": "a6e4cdd369b3e5cc4066e6cd8c50aff09f82ca84",
+      "sha256": "8c9d895ffb2d57212d6298152f3d940adfaef97250b0cf18ce0350e7ef2574a4",
+      "bytes": 862
+    }
+  ]
+}

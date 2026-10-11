@@ -1,0 +1,28 @@
+{
+  "source_freeze": "openracket-binding-eager-experiment-freeze-20261011-1230",
+  "candidate_freeze": "openracket-named-style-index-freeze-20261011-1322",
+  "candidate_contents_manifest_sha256": "5a698f6506e115cf8a7fbe9d80d312fd530ce3fd81e55cd7330cd6b5ba36413c",
+  "unchanged_copies": {
+    "native/tests/reference-host-0520.rkt": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+    "native/tests/independent-native-workflows.rkt": "b175a92754e8f0e8a0f524ae5947f5eae8da605b0f3274bbc098e20ce1de53bf",
+    "native/tests/independent-native-appearance-workflows.rkt": "c536f3f3b85aa9a5660ef7842d921c9708c9ee6c7cb82c463423e70ec265fda2",
+    "native/tests/independent-native-stop-returning.rkt": "7b2fd5bece5ab3f86d7dcaa0931e62d67366a667806c146eadffc7c4998bcb57",
+    "native/tool/native-appearance-cocoa-policy.rkt": "5d9492443f015b9e9f47270f1cd05baa5d0b7e95e931e04811368742f40bfdf2",
+    "native/tool/native-appearance-platform.rkt": "0a2af8a0d8195feb76b18a5884bdb47ba813c37c12c31fb0986be1c0ada4ce2d",
+    "native/tool/native-appearance.rkt": "f7a0bfc2cc4bc8b6356f7d79c3393b7b23a2dc3ef0cc1924b9a1e88a0c4c2c86",
+    "native/tool/native-appearance-gtk-pair.rkt": "c852c4dcb56b76844fd8b0a85553363a4afd382928aadf317e878f17873ea43a",
+    "native/tool/native-appearance-gtk.rkt": "4eeecb46a48fb3de03da06820d46426ea537c3b0b14199d67c0a3c88931fd6a4",
+    "native/tool/native-appearance-cocoa.rkt": "7b5c9068efd32da6adefae2b6f57c640ba5d0a553b148679af37bd74128876b4",
+    "trace/generate-comparator.py": "4327b7b7fbb9fe006759a9f88aadc3965cf29b915d00234576911718e2132ea8",
+    "trace/test_binding_trace.py": "efbbc4197be1593ba4959660903c75c6960c2bebf6b5d153ab61c7b2bd40c03e",
+    "trace/compare-binding-trace.py": "6daa29c9b6d401f59da5ba038ae2645abb646d4688f9e2f4143d302daa0e8e75",
+    "trace/README.md": "c4ee52d1603d7f6d788f686ea76ecec2d57ff79dd40bea03052c495f84193943",
+    "trace/upstream/manifest.json": "4c97b525732119f229d2c5395664fc71a7286c1cd16ba4ac0576f8fcd44351cb",
+    "trace/upstream/tests/native-trace.rkt": "09deb11179113c92878a4e681f99280bc31aa401f881bd52e041b87d9f05675c",
+    "trace/upstream/tests/compare-trace.py": "102998e9ce8bddd75c3cca3d12108e46c1c83d9f3f42938fd50914a231d00749",
+    "trace/upstream/tests/TRACE-SEMANTICS.md": "1ab59ef9394a959d59fa60f976dabff317c29e35da8760659e04f94615731b87",
+    "trace/upstream/tests/test_compare_trace_exact.py": "d7b7fce7d0fed259273157fd394c99d6d9a686d2e1cd366f64f01a0c5b8bbd87",
+    "trace/upstream/tests/test_compare_trace.py": "8b093c5ef6b09552ad00d7ef71c679fe440153cbc0868bfeb6c216aa4584a423",
+    "trace/upstream/tests/compare-trace-exact.py": "7f75bdb9587f7cf8a6abe211ca49a9fb2e221e3618a4b2a326ef2983fb8f8a6d"
+  }
+}

@@ -1,0 +1,52 @@
+test_28_canonical_temp_apply_verify_revert_and_idempotence (__main__.ApplierTests.test_28_canonical_temp_apply_verify_revert_and_idempotence) ... ok
+test_29_explicit_disposable_acknowledgement_required (__main__.ApplierTests.test_29_explicit_disposable_acknowledgement_required) ... ok
+test_30_root_ancestor_alias_refused_even_with_canonical_target (__main__.ApplierTests.test_30_root_ancestor_alias_refused_even_with_canonical_target) ... ok
+test_31_target_ancestor_alias_and_file_alias_refused (__main__.ApplierTests.test_31_target_ancestor_alias_and_file_alias_refused) ... ok
+test_32_hardlink_outside_root_and_wrong_suffix_refused (__main__.ApplierTests.test_32_hardlink_outside_root_and_wrong_suffix_refused) ... ok
+test_33_sibling_dependency_change_or_alias_refused (__main__.ApplierTests.test_33_sibling_dependency_change_or_alias_refused) ... ok
+test_40_exact_positive_exit_and_unique_injected_error_accepted (__main__.ExactNegativeControlTests.test_40_exact_positive_exit_and_unique_injected_error_accepted) ... ok
+test_41_signals_zero_noninteger_launch_and_timeout_refused (__main__.ExactNegativeControlTests.test_41_signals_zero_noninteger_launch_and_timeout_refused) ... ok
+test_42_altered_operands_prefix_suffix_and_loose_substrings_refused (__main__.ExactNegativeControlTests.test_42_altered_operands_prefix_suffix_and_loose_substrings_refused) ... ok
+test_43_duplicate_exact_or_embedded_injection_or_error_refused (__main__.ExactNegativeControlTests.test_43_duplicate_exact_or_embedded_injection_or_error_refused) ... ok
+test_44_missing_wrong_stream_or_reordered_marker_refused (__main__.ExactNegativeControlTests.test_44_missing_wrong_stream_or_reordered_marker_refused) ... ok
+test_45_success_or_partial_json_contamination_refused_in_either_stream (__main__.ExactNegativeControlTests.test_45_success_or_partial_json_contamination_refused_in_either_stream) ... ok
+test_34_counts_reject_boolean_float_negative_or_string (__main__.RunnerFailureTests.test_34_counts_reject_boolean_float_negative_or_string) ... ok
+test_35_timeout_retains_command_and_partial_output (__main__.RunnerFailureTests.test_35_timeout_retains_command_and_partial_output) ... ok
+test_36_launch_failure_is_not_claimed_as_execution (__main__.RunnerFailureTests.test_36_launch_failure_is_not_claimed_as_execution) ... ok
+test_37_failed_first_mode_keeps_other_modes_and_terminal_fail (__main__.RunnerFailureTests.test_37_failed_first_mode_keeps_other_modes_and_terminal_fail) ... ok
+test_38_json_parse_error_retained_as_independent_run_failure (__main__.RunnerFailureTests.test_38_json_parse_error_retained_as_independent_run_failure) ... ok
+test_39_negative_control_rejects_false_success_timeout_and_no_marker (__main__.RunnerFailureTests.test_39_negative_control_rejects_false_success_timeout_and_no_marker) ... ok
+test_01_pinned_source_and_reproducible_overlay (__main__.SourceTests.test_01_pinned_source_and_reproducible_overlay) ... ok
+test_02_modified_source_and_modified_candidate_refused (__main__.SourceTests.test_02_modified_source_and_modified_candidate_refused) ... ok
+test_03_patch_has_only_insertions (__main__.SourceTests.test_03_patch_has_only_insertions) ... ok
+test_04_only_exact_one_activates (__main__.SourceTests.test_04_only_exact_one_activates) ... ok
+test_05_stock_lookup_branch_is_exact (__main__.SourceTests.test_05_stock_lookup_branch_is_exact) ... ok
+test_06_all_mutation_and_dispatch_forms_unchanged (__main__.SourceTests.test_06_all_mutation_and_dispatch_forms_unchanged) ... ok
+test_07_snapshot_eligibility_and_one_publication (__main__.SourceTests.test_07_snapshot_eligibility_and_one_publication) ... ok
+test_08_immutable_first_winner_index (__main__.SourceTests.test_08_immutable_first_winner_index) ... ok
+test_09_no_query_retention_or_coercion (__main__.SourceTests.test_09_no_query_retention_or_coercion) ... ok
+test_10_no_locks_callbacks_timers_or_catches (__main__.SourceTests.test_10_no_locks_callbacks_timers_or_catches) ... ok
+test_11_private_diagnostics_and_export (__main__.SourceTests.test_11_private_diagnostics_and_export) ... ok
+test_12_diagnostic_is_constant_work_payload_free_readonly (__main__.SourceTests.test_12_diagnostic_is_constant_work_payload_free_readonly) ... ok
+test_13_rebuild_counter_after_publication_visits_before (__main__.SourceTests.test_13_rebuild_counter_after_publication_visits_before) ... ok
+test_14_name_and_members_source_invariants (__main__.SourceTests.test_14_name_and_members_source_invariants) ... ok
+test_15_full_native_modules_are_actual_complete_forms (__main__.SourceTests.test_15_full_native_modules_are_actual_complete_forms) ... ok
+test_15b_changed_dependency_refused_before_staging (__main__.SourceTests.test_15b_changed_dependency_refused_before_staging) ... ok
+test_16_only_test_fixture_has_publication_hook (__main__.SourceTests.test_16_only_test_fixture_has_publication_hook) ... ok
+test_17_racket_source_lexical_delimiters (__main__.SourceTests.test_17_racket_source_lexical_delimiters) ... ok
+test_18_native_identity_contract_and_reentry_coverage (__main__.SourceTests.test_18_native_identity_contract_and_reentry_coverage) ... ok
+test_19_native_interruption_publication_coverage (__main__.SourceTests.test_19_native_interruption_publication_coverage) ... ok
+test_20_native_runner_never_part_of_source_execution (__main__.SourceTests.test_20_native_runner_never_part_of_source_execution) ... ok
+test_21_python_source_compiles_without_running_racket (__main__.SourceTests.test_21_python_source_compiles_without_running_racket) ... ok
+test_22_nonvacuous_fixture_accepted (__main__.ValidatorTests.test_22_nonvacuous_fixture_accepted) ... ok
+test_23_each_missing_mode_refused (__main__.ValidatorTests.test_23_each_missing_mode_refused) ... ok
+test_24_wrong_duplicate_identity_rejected (__main__.ValidatorTests.test_24_wrong_duplicate_identity_rejected) ... ok
+test_25_missing_counter_activity_refused (__main__.ValidatorTests.test_25_missing_counter_activity_refused) ... ok
+test_26_disabled_index_activity_refused (__main__.ValidatorTests.test_26_disabled_index_activity_refused) ... ok
+test_27_activation_trace_and_vacuity_refused (__main__.ValidatorTests.test_27_activation_trace_and_vacuity_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 0.055s
+
+OK
+15000 identity comparisons passed across every five-snapshot publication order; no native execution

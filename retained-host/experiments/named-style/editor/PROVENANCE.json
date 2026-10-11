@@ -1,0 +1,163 @@
+{
+  "schema": "openracket-named-style-editor-provenance-v1",
+  "date": "2026-10-11",
+  "scope": "Exact individual official sources and public docs for source-only native correctness preparation. No native execution, package install/download, timing or publication.",
+  "files": [
+    {
+      "local": "vendor/color.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/framework/color.scrbl",
+      "git_blob": "011651c7179f9fe906484ae8b3202ae0a9f111f6",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "c1a28a870e28b7a908b8382749c4522fdb1609c8930567a56386ce965cd37e39",
+      "bytes": 25515
+    },
+    {
+      "local": "vendor/racket.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/racket.rkt",
+      "git_blob": "ddb4fd61af52b0406dfae3904c03033a8c6b72a2",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "fd3ada7890a54f715fc0c7369993d59902fb079a43b00c83a1d5fbd2f0fe4520",
+      "bytes": 104849
+    },
+    {
+      "local": "vendor/editor-snip.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxme/editor-snip.rkt",
+      "git_blob": "855f6ce069e4ffd844fbaadbe79a459c93f5c60f",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "055f9bd6bdcbbf6712c25dd0ee66b195d0c1a2dbb61ed05da041526c61047049",
+      "bytes": 27143
+    },
+    {
+      "local": "vendor/editor-snip-class.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxme/editor-snip-class.rkt",
+      "git_blob": "45ca3b4964709e0a97a9a18d4ba388c0ecff00a9",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "c0a82e707983738c5b5d76256caecc283993097b7903101f2500e5bf08513f62",
+      "bytes": 2795
+    },
+    {
+      "local": "vendor/editor.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxme/editor.rkt",
+      "git_blob": "f4c8e1f24ed2d508d5e561b053b7cc88334ffe3b",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "63987762c560c5b3b3d4f087e66bb68b3fba3a8aabb7d897bfcb09994391a144",
+      "bytes": 74820
+    },
+    {
+      "local": "vendor/style-intf.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/style-intf.scrbl",
+      "git_blob": "380cb556fcaa910ccb43d0699a9de4863207ee9c",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "4351911655999e85c8f71292a7f55b2bd7ed46839635108c5c0fc7a70f5e719b",
+      "bytes": 4661
+    },
+    {
+      "local": "vendor/snip-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/snip-class.scrbl",
+      "git_blob": "c91bf4495eaaa3e24cfe1076ad11566b737e3710",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "16057edf0aa2e44ff4e9cab759cd47b0066c4bd555af7fa0405c9492fe5a7d37",
+      "bytes": 28243
+    },
+    {
+      "local": "vendor/text-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/text-class.scrbl",
+      "git_blob": "bb074dcb8a41c658967ac4da088fbf88d22839d0",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "5f7733143e241f6bdc6a1529fc0d515b7c506fc0f820d4d3b01ac7cefcb9690f",
+      "bytes": 77388
+    },
+    {
+      "local": "vendor/editor-intf.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/editor-intf.scrbl",
+      "git_blob": "d717c1b92e8d67b90e732a71f5508bc89d6585d5",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "5201e0f8ebd74ef959155b6dd85d8e0c3e826bd3d9fc29676969b051227324cb",
+      "bytes": 87440
+    },
+    {
+      "local": "vendor/editor-snip-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/editor-snip-class.scrbl",
+      "git_blob": "acc53ce77b80f4322df89fe50a87b83ef7437bca",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "0a08864ef54b0bec0c569d7bdd492d3bb51f5c977909ef2d4836066875760832",
+      "bytes": 10893
+    },
+    {
+      "local": "vendor/image-snip-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/image-snip-class.scrbl",
+      "git_blob": "5154a8423bb1dc60faebb98d18cced6f9f43b566",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "6d59d6829722f2bfe8b61e4f2d6fd518c610cba6290bac810d2900b8ee9d0f3b",
+      "bytes": 6290
+    },
+    {
+      "local": "vendor/string-snip-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/string-snip-class.scrbl",
+      "git_blob": "42c19151d97e375ffba12392c9f4c6eb7d22c077",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "063d587d8349c4c992e9f7700b1a7e156ed22971e9c0376197281ff07697d948",
+      "bytes": 1338
+    },
+    {
+      "local": "vendor/style.rkt",
+      "source_url": "https://github.com/racket/snip/blob/3e6cf73c7bea6bd292462188e51ebabf8384ae53/snip-lib/racket/snip/private/style.rkt",
+      "repository": "racket/snip",
+      "ref": "3e6cf73c7bea6bd292462188e51ebabf8384ae53",
+      "path": "snip-lib/racket/snip/private/style.rkt",
+      "git_blob": "6a51969cf066e2eb2443d21d8036fa76fceab82e",
+      "sha256": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0",
+      "bytes": 62169
+    },
+    {
+      "local": "vendor/style-list-class.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/style-list-class.scrbl",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "path": "gui-doc/scribblings/gui/style-list-class.scrbl",
+      "git_blob": "d8050fdb3c0fce1113f6393c009f6184613c3d80",
+      "sha256": "c02bca8c0d6a27110fbe5ed3be297cc3778b2fc30a1a59dc4750f3b525ffeb0d",
+      "bytes": 6894
+    },
+    {
+      "local": "vendor/color.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/color.rkt",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "path": "gui-lib/framework/private/color.rkt",
+      "git_blob": "f6575f45f7972976f885babe831b5fddd9c78a59",
+      "sha256": "da45ea64a5a0b413296a60ebe61d3e5ee69a27b53a6f1e13ae258701bdce1578",
+      "bytes": 71179
+    },
+    {
+      "local": "vendor/eventspace-funcs.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/eventspace-funcs.scrbl",
+      "git_blob": "cb6fbcce7bcb5bbccab91aa248a199daa52422ad",
+      "sha256": "10e00306842d6b3cbdeeb3f047c1bda433c4205199e46ac5b7369342741eece0",
+      "bytes": 9236,
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e"
+    },
+    {
+      "local": "vendor/racket.scrbl",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/framework/racket.scrbl",
+      "git_blob": "dd2b60cf64c7437e9e0459d14edf4888743b992e",
+      "sha256": "bcae995fe872f4905478f3f4a3c47060edb74db25fe205c7411faa9271c0d717",
+      "bytes": 19091,
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e"
+    }
+  ]
+}

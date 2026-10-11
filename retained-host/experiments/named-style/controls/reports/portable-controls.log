@@ -1,0 +1,36 @@
+test_capture_failure_is_retained_without_fabricating_screenshot (test_controls.BoundedCaptureTests.test_capture_failure_is_retained_without_fabricating_screenshot) ... ok
+test_exact_deadline_is_also_timeout (test_controls.BoundedCaptureTests.test_exact_deadline_is_also_timeout) ... ok
+test_hanging_host_is_terminated (test_controls.BoundedCaptureTests.test_hanging_host_is_terminated) ... ok
+test_launch_error_never_counts_as_native_execution (test_controls.BoundedCaptureTests.test_launch_error_never_counts_as_native_execution) ... ok
+test_nonzero_screenshot_and_malformed_png_never_supply_valid_evidence (test_controls.BoundedCaptureTests.test_nonzero_screenshot_and_malformed_png_never_supply_valid_evidence) ... ok
+test_screenshot_wait_is_bounded (test_controls.BoundedCaptureTests.test_screenshot_wait_is_bounded) ... ok
+test_success_preserves_raw_bytes_and_capture_handshake (test_controls.BoundedCaptureTests.test_success_preserves_raw_bytes_and_capture_handshake) ... ok
+test_successful_exit_after_outer_deadline_still_fails (test_controls.BoundedCaptureTests.test_successful_exit_after_outer_deadline_still_fails) ... ok
+test_all_seven_arms_attempted_after_independent_failures (test_controls.CallerAndSourceTests.test_all_seven_arms_attempted_after_independent_failures) ... ok
+test_bound_and_ready_capture_preserved_in_exact_host (test_controls.CallerAndSourceTests.test_bound_and_ready_capture_preserved_in_exact_host) ... ok
+test_contaminated_environment_always_refused (test_controls.CallerAndSourceTests.test_contaminated_environment_always_refused) ... ok
+test_every_trace_caller_is_stock_and_outputs_distinct_raw_capture (test_controls.CallerAndSourceTests.test_every_trace_caller_is_stock_and_outputs_distinct_raw_capture) ... ok
+test_exact_accepted_sources_and_all_tool_dependencies (test_controls.CallerAndSourceTests.test_exact_accepted_sources_and_all_tool_dependencies) ... ok
+test_exact_flag_and_fresh_profiles_for_all_seven_callers (test_controls.CallerAndSourceTests.test_exact_flag_and_fresh_profiles_for_all_seven_callers) ... ok
+test_named_comparator_is_external_label_only_derivative (test_controls.CallerAndSourceTests.test_named_comparator_is_external_label_only_derivative) ... ok
+test_no_eager_postflight_or_candidate_binding_source (test_controls.CallerAndSourceTests.test_no_eager_postflight_or_candidate_binding_source) ... ok
+test_racket_wrapper_delimiters_balanced (test_controls.CallerAndSourceTests.test_racket_wrapper_delimiters_balanced) ... ok
+test_wrapper_only_reads_state_export_and_invokes_unchanged_host (test_controls.CallerAndSourceTests.test_wrapper_only_reads_state_export_and_invokes_unchanged_host) ... ok
+test_all_four_zero_spans_preserved (test_controls.GraphMutations.test_all_four_zero_spans_preserved) ... ok
+test_every_edge_and_integer_type_is_mandatory_in_every_mode (test_controls.GraphMutations.test_every_edge_and_integer_type_is_mandatory_in_every_mode) ... ok
+test_every_runtime_pin_and_path_are_mandatory (test_controls.GraphMutations.test_every_runtime_pin_and_path_are_mandatory) ... ok
+test_failed_host_mismatched_ready_and_workflow_rejected (test_controls.GraphMutations.test_failed_host_mismatched_ready_and_workflow_rejected) ... ok
+test_missing_arm_rejected (test_controls.GraphMutations.test_missing_arm_rejected) ... ok
+test_missing_duplicate_and_malformed_markers_rejected (test_controls.GraphMutations.test_missing_duplicate_and_malformed_markers_rejected) ... ok
+test_nonfinite_and_duplicate_json_rejected (test_controls.GraphMutations.test_nonfinite_and_duplicate_json_rejected) ... ok
+test_screenshot_capture_record_and_bytes_fail_closed (test_controls.GraphMutations.test_screenshot_capture_record_and_bytes_fail_closed) ... ok
+test_source_records_cannot_be_dropped_added_or_relabelled (test_controls.GraphMutations.test_source_records_cannot_be_dropped_added_or_relabelled) ... ok
+test_stock_and_activation_exports_cannot_be_faked (test_controls.GraphMutations.test_stock_and_activation_exports_cannot_be_faked) ... ok
+test_three_modes_exact_fixture_and_explicit_scope (test_controls.GraphMutations.test_three_modes_exact_fixture_and_explicit_scope) ... ok
+test_timeout_launch_failure_handshake_and_caller_mismatch_rejected (test_controls.GraphMutations.test_timeout_launch_failure_handshake_and_caller_mismatch_rejected) ... ok
+test_validation_preserves_inputs_and_original_raw_bytes (test_controls.GraphMutations.test_validation_preserves_inputs_and_original_raw_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.091s
+
+OK

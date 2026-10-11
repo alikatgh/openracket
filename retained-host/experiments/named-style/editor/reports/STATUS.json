@@ -1,0 +1,12 @@
+{
+  "status": "prepared-source-only",
+  "native_executed": false,
+  "racket_compiled": false,
+  "gui_wxme_verified": false,
+  "performance_measured": false,
+  "published": false,
+  "portable_test_methods": 31,
+  "portable_scope": "Typed comparator synthetic records, mocked process/failure capture, source pins/anchors and delimiter lint",
+  "required_next_gate": "Freshly authorized native official 9.3 stock, stock-again, patched-off and patched-on actual GUI/editor captures",
+  "claim": "Prepared correctness gate only; no native success or speed claim"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "experiment": "named-style-index",
+  "owner": "Host CI adapter; no duplicate matrix launcher in this package",
+  "mandatory_before_timing": [
+    "owner production native differential and invalidation/publication gates",
+    "actual editor lexer/style correctness",
+    "WXME/save semantics",
+    "native_preflight.py exit0 with zero skips",
+    "independent clone/source/overlay verification",
+    "both exact common observer compilations"
+  ],
+  "trial_order": [
+    "stock",
+    "candidate",
+    "candidate",
+    "stock",
+    "stock",
+    "candidate"
+  ],
+  "bounds_seconds": {
+    "setup": 30,
+    "frame_startup": 90,
+    "gui_process": 190,
+    "post_edit_absolute": 90,
+    "cleanup": 5,
+    "outer_trial": 235,
+    "preparation": 285
+  },
+  "pair_acceptance": "Always retain pair report, including on capture failure. Require exit0, accepted:true, failures:[], two valid arms.",
+  "exact_equal_across_all_six_arm_report_fields": [
+    "binding_export.export",
+    "terminal",
+    "monitor",
+    "source",
+    "registry",
+    "actual_prefab",
+    "pending_run_settings"
+  ],
+  "require_distinct_across_all_six": [
+    "profile_path",
+    "addon_path"
+  ],
+  "common_manifest_equal_fields": [
+    "stock_pins",
+    "original_pins",
+    "diagnostic_sources",
+    "helpers"
+  ],
+  "arm_input_variance": "Only manifest.style_source.sha256 and corresponding style source bytes vary by pinned arm; raw clone paths differ but verified typed registry identities normalize clone-relatively",
+  "candidate_activity": "Every candidate accepted style_witness has positive selected-same-instance workload_counter_deltas.lookups and .hits; preserve all snapshots and all other counter deltas as unsynchronized diagnostics",
+  "report_ready_durations": {
+    "file_open_and_edit_ready_ms": "host_evidence.workload_completed_monotonic_ms - host_evidence.workload_started_monotonic_ms",
+    "post_edit_ready_ms": "host_evidence.workload_completed_monotonic_ms - host_evidence.edit_dispatched_monotonic_ms",
+    "annotation_application_ms": "gui_points.application-complete.monotonic_ms - gui_points.application-enter.monotonic_ms"
+  },
+  "heartbeat_report": "Use complete heartbeat_evidence.records, producer_lateness_ms, dispatch_latency_ms, handler_gap_ms, after_stop, stop_handler_gap_ms; closed-loop responsiveness only",
+  "style_report": "Preserve absolute snapshots and workload_baseline/style_list_replaced_on_open, workload_counter_deltas and delta_scope; never subtract IDs from separate trials/style instances",
+  "failure_policy": "Retain all failed/partial trials, stdout/stderr, raw outputs, manifests, diffs, native logs and exit statuses; zero skipped native tests; no early speed claim, reruns replacing failures, outlier deletion or deadline widening",
+  "not_acceptance": "No universal speed threshold, first-getter bound, arbitrary-extension proof, physical latency claim or default-on decision"
+}

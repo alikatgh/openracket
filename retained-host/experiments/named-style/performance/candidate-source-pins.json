@@ -1,0 +1,9 @@
+{
+  "module": "racket/snip/private/style",
+  "stock_sha256": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0",
+  "candidate_sha256": "74eb24f0d6485187c9700cca421f4299dee67ea092a811d56b737972b2204c6d",
+  "status": "source-reviewed-owner-pin",
+  "owner_freeze": "openracket-named-style-index-freeze-20261011-1322",
+  "owner_contents_sha256": "5a698f6506e115cf8a7fbe9d80d312fd530ce3fd81e55cd7330cd6b5ba36413c",
+  "owner_manifest_sha256": "c68afd7ac5a2a2c6b3ca61402ddb0274b22af9b6226edbcef71418e45a81c328"
+}

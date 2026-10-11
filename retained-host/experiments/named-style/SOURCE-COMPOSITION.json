@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "status": "local-only reviewed composition; no native execution or publication",
+  "packages": {
+    "production": {
+      "source_freeze": "openracket-named-style-index-freeze-20261011-1322",
+      "manifest_path": "production/CONTENTS-SHA256.json",
+      "manifest_sha256": "5a698f6506e115cf8a7fbe9d80d312fd530ce3fd81e55cd7330cd6b5ba36413c",
+      "file_count": 18,
+      "all_source_bytes_preserved": true
+    },
+    "editor": {
+      "source_freeze": "openracket-named-style-editor-tests-freeze-20261011-1337",
+      "manifest_path": "editor/SHA256SUMS",
+      "manifest_sha256": "0fb40a9d0a1a330166d0c200efd4d7ff3205c86a58abe08291a6512794ac9c39",
+      "file_count": 32,
+      "all_source_bytes_preserved": true
+    },
+    "controls": {
+      "source_freeze": "openracket-named-style-controls-freeze-20261011-1352",
+      "manifest_path": "controls/FROZEN-CONTROLS-ALLOWLIST.json",
+      "manifest_sha256": "3e14d6fc0e6590524c01c4634a88cd04ddb2a75855faddc2c828ffff3d24cf90",
+      "file_count": 41,
+      "all_source_bytes_preserved": true
+    },
+    "performance": {
+      "source_freeze": "openracket-named-style-telemetry-freeze-20261011-1333",
+      "manifest_path": "performance/SHA256SUMS",
+      "manifest_sha256": "840fe01e282b60ee8613a87c63e7e7ed21233741c3fb30eb923dcd3bec75bdc4",
+      "file_count": 36,
+      "all_source_bytes_preserved": true
+    }
+  }
+}

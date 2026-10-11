@@ -1,0 +1,749 @@
+--- /dev/null
++++ b/native/bootstrap.rkt
+@@ -0,0 +1,82 @@
++#lang racket/base
++;; Test-only source/activation wrapper. The accepted host and workflows are intact.
++(require json racket/file racket/path racket/runtime-path syntax/modresolve)
++(define-runtime-path host "tests/reference-host-0520.rkt")
++(define-runtime-path pins-path "../RUNTIME-PINS.json")
++(define-runtime-path provenance-path "../PROVENANCE.json")
++(define-runtime-path package-root "..")
++(define args (current-command-line-arguments))
++(unless (= (vector-length args) 2) (error 'named-style-control "Expected mode and runtime root"))
++(define mode (vector-ref args 0))
++(unless (member mode '("stock" "candidate-off" "candidate-on"))
++  (error 'named-style-control "Unknown mode"))
++(define root (simplify-path (path->complete-path (vector-ref args 1)) #t))
++(define stock? (equal? mode "stock"))
++(define enabled? (equal? mode "candidate-on"))
++(define flag (getenv "OPENRACKET_NAMED_STYLE_INDEX"))
++(unless (and (equal? (version) "9.3")
++             (equal? flag (cond [stock? #f] [enabled? "1"] [else "0"]))
++             (equal? (getenv "OPENRACKET_NATIVE_CASE") "check-syntax")
++             (equal? (getenv "OPENRACKET_UI") "stock"))
++  (error 'named-style-control "Expected 9.3, exact mode environment, stock UI and Check Syntax"))
++(define allowed '(#"OPENRACKET_NAMED_STYLE_INDEX" #"OPENRACKET_NATIVE_CASE" #"OPENRACKET_UI"
++                  #"OPENRACKET_READY_FILE" #"OPENRACKET_CAPTURE_DONE"))
++(for ([key (in-list (environment-variables-names (current-environment-variables)))])
++  (when (and (regexp-match? #rx#"^OPENRACKET_" key) (not (member key allowed)))
++    (error 'named-style-control "Unrelated experiment environment: ~a" key)))
++(define (digest path)
++  (apply string-append
++         (for/list ([byte (in-bytes (sha256-bytes (file->bytes path)))])
++           (define str (number->string byte 16))
++           (if (= (string-length str) 1) (string-append "0" str) str))))
++(define (descendant! path parent)
++  (define actual (simplify-path (path->complete-path path) #t))
++  (define rel (find-relative-path (simplify-path parent #t) actual))
++  (unless (and (file-exists? actual) (relative-path? rel)
++               (not (member 'up (explode-path rel)))
++               (not (equal? actual parent)) (not (link-exists? path)))
++    (error 'named-style-control "Not an actual file within the selected root: ~a" path))
++  actual)
++(unless (and (directory-exists? root) (not (equal? root (string->path "/"))))
++  (error 'named-style-control "Explicit disposable runtime root required"))
++(define executable
++  (descendant! (find-executable-path (find-system-path 'exec-file)) root))
++(define provenance (call-with-input-file provenance-path read-json))
++(for ([(name pin) (in-hash (hash-ref provenance 'unchanged_copies))])
++  (define path (descendant! (build-path package-root (symbol->string name)) package-root))
++  (unless (equal? (digest path) pin)
++    (error 'named-style-control "Copied host/dependency changed: ~a" name)))
++(define pins (call-with-input-file pins-path read-json))
++(define sources
++  (for/hasheq ([(module pin) (in-hash pins)])
++    (define source (descendant! (resolve-module-path module #f) root))
++    (define expected (if (hash? pin) (hash-ref pin (if stock? 'stock 'candidate)) pin))
++    (define actual (digest source))
++    (unless (equal? actual expected)
++      (error 'named-style-control "Runtime source mismatch for ~a: ~a" module actual))
++    (values module (hasheq 'path (path->string source) 'sha256 actual))))
++;; Source-first only for the changed module; shared identity is retained when the
++;; unchanged host imports GUI. No lookup, style construction, cache warming or observer.
++(define style-module 'racket/snip/private/style)
++(parameterize ([use-compiled-file-paths '()]) (dynamic-require style-module #f))
++(define style-resolved (make-resolved-module-path (resolve-module-path style-module #f)))
++(unless (= (namespace-base-phase (module->namespace style-resolved)) 0)
++  (error 'named-style-control "Style module is not instantiated at phase zero"))
++(define missing (gensym 'missing-export))
++(define enabled (dynamic-require style-resolved 'openracket-named-style-index-enabled? (lambda () missing)))
++(define state (dynamic-require style-resolved 'openracket-named-style-index-state (lambda () missing)))
++(unless (if stock?
++            (and (eq? enabled missing) (eq? state missing))
++            (and (boolean? enabled) (eq? enabled enabled?)
++                 (procedure? state) (procedure-arity-includes? state 1)))
++  (error 'named-style-control "Actual style activation/export mismatch"))
++(display "OPENRACKET_NAMED_STYLE_CONTROL_SOURCE ")
++(write-json
++ (hasheq 'schema "openracket-named-style-control-source/v1" 'mode mode
++         'version (version) 'runtime_root (path->string root) 'executable (path->string executable)
++         'flag (or flag 'null) 'activation (if stock? "unexported" enabled)
++         'state_export (if stock? "unexported" "present") 'source_first_load #t
++         'sources sources 'host_sha256 (digest host)))
++(newline) (flush-output)
++;; The host owns READY, capture wait, all GUI actions, cleanup and process exit.
++(dynamic-require host #f)
+--- /dev/null
++++ b/scripts/compare_controls.py
+@@ -0,0 +1,163 @@
++#!/usr/bin/env python3
++"""Validate existing numeric graph output, without claiming a complete table."""
++import argparse
++import hashlib
++import json
++import struct
++import zlib
++from pathlib import Path, PurePosixPath
++ROOT = Path(__file__).resolve().parents[1]
++PINS = json.loads((ROOT/'RUNTIME-PINS.json').read_text())
++HOST_SHA = '5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448'
++MODES = ('stock', 'candidate-off', 'candidate-on')
++EDGES = [[6,17,19,25],[6,17,35,35],[6,17,36,37],[6,17,40,40],
++         [6,17,44,44],[6,17,50,50],[27,31,45,49],[32,33,38,39]]
++class Refused(ValueError):pass
++
++def need(value, why):
++    if not value:raise Refused(why)
++
++def no_duplicates(pairs):
++    result={}
++    for key,value in pairs:
++        need(key not in result,'duplicate JSON field: '+key)
++        result[key]=value
++    return result
++
++def decode(raw):
++    return json.loads(raw, object_pairs_hook=no_duplicates,
++                      parse_constant=lambda value: (_ for _ in ()).throw(Refused('nonfinite JSON')))
++
++def unique_json(text, prefix):
++    lines=[line for line in text.splitlines() if line.startswith(prefix+' ')]
++    need(len(lines)==1 and text.count(prefix)==1,'unique exact '+prefix+' record required')
++    return decode(lines[0][len(prefix)+1:])
++
++def canonical(value):
++    need(type(value) is str and value.startswith('/') and value!='/' and
++         str(PurePosixPath(value))==value and '..' not in PurePosixPath(value).parts,
++         'canonical absolute path required')
++    return PurePosixPath(value)
++
++def validate_source(source, mode):
++    fields={'schema','mode','version','runtime_root','executable','flag','activation',
++            'state_export','source_first_load','sources','host_sha256'}
++    need(type(source) is dict and set(source)==fields,'source proof fields')
++    need(mode in MODES and source['mode']==mode and source['version']=='9.3' and
++         source['schema']=='openracket-named-style-control-source/v1','source mode/version/schema')
++    stock=mode=='stock';enabled=mode=='candidate-on'
++    need(source['flag']==(None if stock else ('1' if enabled else '0')),'exact flag')
++    need(source['activation']=='unexported' if stock else
++         type(source['activation']) is bool and source['activation'] is enabled,'actual activation')
++    need(source['state_export']==('unexported' if stock else 'present') and
++         source['source_first_load'] is True,'source-first and exact diagnostic export presence')
++    root=canonical(source['runtime_root']);exe=canonical(source['executable'])
++    need(root in exe.parents,'actual executable outside selected runtime')
++    need(source['host_sha256']==HOST_SHA,'unchanged accepted host')
++    need(type(source['sources']) is dict and set(source['sources'])==set(PINS),'all runtime pins')
++    for module,pin in PINS.items():
++        row=source['sources'][module]
++        need(type(row) is dict and set(row)=={'path','sha256'},'source record fields')
++        path=canonical(row['path'])
++        need(root in path.parents and str(path).endswith('/'+module+'.rkt'),'actual resolved module path')
++        expected=pin['stock' if stock else 'candidate'] if type(pin) is dict else pin
++        need(row['sha256']==expected,'runtime source pin: '+module)
++    return source
++
++def png_record(raw):
++    need(type(raw) is bytes and 45 <= len(raw) <= 32*1024*1024 and
++         raw[:8]==b'\x89PNG\r\n\x1a\n','real bounded PNG signature required')
++    offset=8;first=True;seen_data=False;ended=False;width=height=0
++    while offset<len(raw):
++        need(offset+12<=len(raw),'truncated PNG chunk')
++        size=struct.unpack('>I',raw[offset:offset+4])[0];kind=raw[offset+4:offset+8]
++        end=offset+12+size
++        need(end<=len(raw),'truncated PNG payload')
++        payload=raw[offset+8:offset+8+size]
++        need(zlib.crc32(kind+payload)==struct.unpack('>I',raw[end-4:end])[0],'PNG chunk CRC')
++        if first:
++            need(kind==b'IHDR' and size==13,'PNG must begin with IHDR')
++            width,height,depth,color,compression,filtering,interlace=struct.unpack('>IIBBBBB',payload)
++            need(0<width<=16384 and 0<height<=16384 and width*height<=100_000_000,
++                 'bounded positive PNG dimensions')
++            need(color in {0,2,3,4,6} and depth in {1,2,4,8,16} and compression==filtering==0 and interlace in {0,1},
++                 'PNG IHDR format')
++            first=False
++        else:need(kind!=b'IHDR','duplicate PNG header')
++        if kind==b'IDAT':seen_data=True
++        if kind==b'IEND':
++            need(size==0 and end==len(raw) and seen_data,'complete PNG end and data required')
++            ended=True
++        offset=end
++    need(ended,'PNG end missing')
++    return {'format':'PNG','bytes':len(raw),'width':width,'height':height,
++            'sha256':hashlib.sha256(raw).hexdigest()}
++
++def validate(raw, ready_raw, process, mode, png_raw):
++    need(type(process) is dict and type(process.get('returncode')) is int and process['returncode']==0
++         and process.get('timed_out') is False and process.get('native_executed') is True,
++         'actual successful bounded process required')
++    need(process.get('timeout_seconds')==60 and type(process.get('timeout_seconds')) is int,
++         'unchanged 60-second outer bound')
++    need(process.get('capture_attempted') is True and process.get('capture_done_written') is True,
++         'READY/capture handshake required')
++    need(type(process.get('capture_returncode')) is int and process['capture_returncode']==0,
++         'successful screenshot process required')
++    screenshot=png_record(png_raw)
++    need(process.get('screenshot')==screenshot and
++         all(type(process['screenshot'][key]) is int for key in ('bytes','width','height')),
++         'actual screenshot bytes/dimensions/hash must match capture record')
++    text=raw.decode('utf-8');ready=decode(ready_raw)
++    need('OPENRACKET_NATIVE_FAILURE' not in text,'native failure output')
++    need(text.splitlines().count('OPENRACKET_NATIVE_READY')==1 and text.count('OPENRACKET_NATIVE_READY')==1,
++         'unique successful READY marker')
++    source=validate_source(unique_json(text,'OPENRACKET_NAMED_STYLE_CONTROL_SOURCE'),mode)
++    need(process.get('runtime_root')==source['runtime_root'] and
++         type(process.get('command')) is list and len(process['command'])==4 and
++         process['command'][0]==source['executable'] and process['command'][2:]==[mode,source['runtime_root']] and
++         process.get('arm')==mode and process.get('named_style_flag')==source['flag'],
++         'caller mode, actual source root/executable and exact environment agree')
++    graph=unique_json(text,'OPENRACKET_BINDING_GRAPH')
++    need(type(graph) is list and len(graph)==8 and all(type(edge) is list and len(edge)==4
++         and all(type(x) is int for x in edge) for edge in graph) and graph==EDGES,
++         'exact typed eight-edge fixture output including all zero spans')
++    result=unique_json(text,'OPENRACKET_NATIVE_RESULT')
++    need(type(result) is dict and result==ready and result.get('status')=='passed' and
++         result.get('genuine_host') is True and result.get('repeated_real_run') is True and
++         result.get('ui')=='stock' and result.get('racket')=='9.3' and
++         result.get('follow_on_case')=='check-syntax','unchanged genuine host result/READY')
++    need(type(result.get('checks')) is int and result['checks']>0 and
++         result.get('complete_stock_parity') is False and
++         result.get('physical_input_to_photon_measured') is False and
++         'native_appearance_lifecycle' in result and result['native_appearance_lifecycle'] is None,
++         'typed positive host checks and unchanged bounded scope required')
++    follow=result.get('follow_on_result')
++    need(type(follow) is dict and follow.get('case')=='check-syntax' and follow.get('status')=='passed',
++         'completed unchanged Check Syntax workflow')
++    need(text.splitlines().count('OPENRACKET_FOLLOWON_CASE check-syntax completed')==1,'workflow completion')
++    return {'source':source,'graph':graph,'raw_sha256':hashlib.sha256(raw).hexdigest(),
++            'ready_sha256':hashlib.sha256(ready_raw).hexdigest()}
++
++def compare(rows):
++    need(set(rows)==set(MODES),'three independent native control arms required')
++    graphs=[rows[mode]['graph'] for mode in MODES]
++    need(graphs[0]==graphs[1]==graphs[2]==EDGES,'exact numeric fixture graph differs')
++    return {'accepted':True,'modes':list(MODES),'edges_per_mode':8,
++            'zero_span_edges_per_mode':4,'numeric_fixture_outputs_equal':True,
++            'scope':'Exact existing numeric eight-edge fixture output. The unchanged workflow filters to same-editor endpoints and removes duplicates; this is not proof about filtered entries or complete table/getter semantics. Full telemetry is a separate gate.',
++            'raw_sha256':{mode:rows[mode]['raw_sha256'] for mode in MODES}}
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__)
++    for mode in MODES:p.add_argument('--'+mode,type=Path,required=True,help='original host capture directory')
++    a=vars(p.parse_args())
++    try:
++        rows={}
++        for mode in MODES:
++            root=a[mode.replace('-','_')]
++            rows[mode]=validate((root/'stdout.bin').read_bytes(),(root/'ready.json').read_bytes(),
++                                decode((root/'process.json').read_bytes()),mode,(root/'screenshot.png').read_bytes())
++        print(json.dumps(compare(rows),indent=2));return 0
++    except (OSError,ValueError,TypeError,KeyError) as e:
++        print(json.dumps({'accepted':False,'error':str(e)}));return 1
++if __name__=='__main__':raise SystemExit(main())
+--- /dev/null
++++ b/scripts/run_native.py
+@@ -0,0 +1,158 @@
++#!/usr/bin/env python3
++"""Future authorized native controls only. No runtime preparation or publication."""
++import argparse
++import hashlib
++import importlib.util
++import json
++import os
++from pathlib import Path
++import signal
++import subprocess
++import time
++import traceback
++import compare_controls as graph
++ROOT=Path(__file__).resolve().parents[1]
++HOST_ARMS=graph.MODES
++TRACE_ARMS=('stock','stock-again','named-style-candidate-off','named-style-candidate-on')
++BANNED={'PYTHONOPTIMIZE','PLTCOLLECTS','PLTCOMPILEDROOTS','PLTCONFIGDIR','PLTLINKS','PLT_LINKS',
++        'PLT_COMPILED_FILE_CHECK','PLT_ZO_PATH','PLTDRDEBUG','PLTDRCM','PLTDRPAR','PLTUSERHOME',
++        'PLTADDONDIR','XDG_CONFIG_HOME','XDG_CACHE_HOME','XDG_DATA_HOME'}
++
++def canonical(path,directory=True):
++    if not path.is_absolute() or path.resolve()!=path or path.is_symlink() or not (path.is_dir() if directory else path.is_file()):
++        raise ValueError('Explicit canonical non-symlink path required: '+str(path))
++    return path
++
++def check_package():
++    pins=json.loads((ROOT/'PROVENANCE.json').read_text())['unchanged_copies']
++    for name,pin in pins.items():
++        p=ROOT/name
++        if p.is_symlink() or not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest()!=pin:
++            raise ValueError('Missing or changed accepted source: '+name)
++
++def mode_for(arm):
++    if arm in ('stock','stock-again'):return 'stock'
++    if arm in ('candidate-off','named-style-candidate-off'):return 'candidate-off'
++    if arm in ('candidate-on','named-style-candidate-on'):return 'candidate-on'
++    raise ValueError('Unknown arm')
++
++def environment(base,arm,profile,host=False):
++    mode=mode_for(arm)
++    contaminated=[key for key in base if key.startswith('OPENRACKET_') or key in BANNED]
++    if contaminated:raise ValueError('Refusing inherited experiment/resolver environment: '+', '.join(sorted(contaminated)))
++    env=dict(base)
++    env.update(PLTUSERHOME=str(profile),PLTADDONDIR=str(profile/'addon'),
++               XDG_CONFIG_HOME=str(profile/'.config'),XDG_CACHE_HOME=str(profile/'.cache'),
++               XDG_DATA_HOME=str(profile/'.local/share'))
++    if mode!='stock':env['OPENRACKET_NAMED_STYLE_INDEX']='1' if mode=='candidate-on' else '0'
++    if host:env.update(OPENRACKET_NATIVE_CASE='check-syntax',OPENRACKET_UI='stock')
++    return env
++
++def command(runtime,arm,out,host):
++    if host:return [str(runtime/'bin/racket'),str(ROOT/'native/bootstrap.rkt'),mode_for(arm),str(runtime)]
++    # Every actual worker uses original stock xref semantics. The outer labels
++    # and named-style flag do not authenticate GUI activation in these captures.
++    return [str(runtime/'bin/racket'),str(ROOT/'trace/upstream/tests/native-trace.rkt'),
++            '--mode','stock','--runtime-root',str(runtime),'--timeout','30','--output',str(out/'trace.json')]
++
++def terminate(process):
++    if process.poll() is None:
++        os.killpg(process.pid,signal.SIGKILL)
++    process.wait(timeout=5)
++
++def capture(runtime,arm,out,host,*,popen=subprocess.Popen,clock=time.monotonic,sleep=time.sleep,screen=subprocess.run):
++    out.mkdir();profile=out/'profile';profile.mkdir()
++    env=environment(os.environ,arm,profile,host)
++    ready=out/'ready.json';done=out/'capture-done';png=out/'screenshot.png'
++    if host:env.update(OPENRACKET_READY_FILE=str(ready),OPENRACKET_CAPTURE_DONE=str(done))
++    timeout=60 if host else 200
++    cmd=command(runtime,arm,out,host)
++    result={'arm':arm,'command':cmd,'runtime_root':str(runtime),'profile':str(profile),
++            'named_style_flag':env.get('OPENRACKET_NAMED_STYLE_INDEX'),
++            'native_executed':False,'returncode':None,'timed_out':False,'timeout_seconds':timeout,
++            'capture_attempted':False,'capture_done_written':False}
++    process=None
++    try:
++        with (out/'stdout.bin').open('wb') as stdout,(out/'stderr.bin').open('wb') as stderr:
++            process=popen(cmd,env=env,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
++            result['native_executed']=True
++            deadline=clock()+timeout
++            while process.poll() is None and clock()<deadline:
++                if host and ready.exists() and not result['capture_attempted']:
++                    result['capture_attempted']=True
++                    try:
++                        remaining=deadline-clock()
++                        if remaining<=0:raise subprocess.TimeoutExpired('screen deadline',0)
++                        shot=screen(['/usr/sbin/screencapture','-x',str(png)],timeout=min(15,remaining),check=False,
++                                    stdout=subprocess.DEVNULL,stderr=stderr)
++                        result['capture_returncode']=shot.returncode
++                        if shot.returncode==0:result['screenshot']=graph.png_record(png.read_bytes())
++                    except (OSError,ValueError,subprocess.TimeoutExpired):result['capture_error']=traceback.format_exc()
++                    done.write_text('Native capture attempted\n');result['capture_done_written']=True
++                sleep(.2)
++            if process.poll() is None or clock()>=deadline:
++                result['timed_out']=True
++                terminate(process)
++            result['returncode']=process.wait(timeout=5)
++    except BaseException:
++        result['failure']=traceback.format_exc()
++        if process is not None and process.poll() is None:terminate(process)
++    finally:
++        result['files']={p.name:{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
++                         for p in out.iterdir() if p.is_file()}
++        (out/'process.json').write_text(json.dumps(result,indent=2)+'\n')
++    return result
++
++def run_matrix(stock,candidate,out):
++    report={'passed':False,'native_executed':False,'host':{},'trace':{},'failures':[]}
++    rows={};captures=[]
++    for kind,arms in [('host',HOST_ARMS),('trace',TRACE_ARMS)]:
++        for arm in arms:
++            destination=out/(kind+'-'+arm)
++            runtime=stock if mode_for(arm)=='stock' else candidate
++            try:
++                process=capture(runtime,arm,destination,kind=='host')
++                report[kind][arm]=process
++                report['native_executed']|=process['native_executed']
++                if process['timed_out'] or process['returncode']!=0:raise ValueError('Unsuccessful native process')
++                if kind=='host':
++                    rows[arm]=graph.validate((destination/'stdout.bin').read_bytes(),
++                                            (destination/'ready.json').read_bytes(),process,arm,(destination/'screenshot.png').read_bytes())
++                else:captures.append(destination/'trace.json')
++            except BaseException:report['failures'].append({'kind':kind,'arm':arm,'details':traceback.format_exc()})
++    try:
++        if len(rows)==3:report['graph_comparison']=graph.compare(rows)
++        if len(captures)==4:
++            spec=importlib.util.spec_from_file_location('trace_gate',ROOT/'trace/compare-named-style-trace.py')
++            gate=importlib.util.module_from_spec(spec);spec.loader.exec_module(gate)
++            raw=[p.read_bytes() for p in captures]
++            report['trace_comparison']=gate.compare(*[json.loads(b) for b in raw],
++                                                    json.loads((ROOT/'trace/upstream/manifest.json').read_text()))
++            report['trace_comparison']['input_sha256']={str(p):hashlib.sha256(b).hexdigest() for p,b in zip(captures,raw)}
++        report['passed']=not report['failures'] and len(rows)==3 and len(captures)==4
++    except BaseException:report['failures'].append({'kind':'comparison','details':traceback.format_exc()})
++    (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
++    return report
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--stock-root',type=Path,required=True);p.add_argument('--candidate-root',type=Path,required=True)
++    p.add_argument('--output',type=Path,required=True)
++    p.add_argument('--authorize-native-execution',action='store_true')
++    a=p.parse_args()
++    if not a.authorize_native_execution:p.error('Native execution remains on hold; explicit authorization required')
++    if os.uname().sysname!='Darwin':p.error('This capture adapter requires the established macOS native screen contract')
++    check_package()
++    roots=[canonical(a.stock_root),canonical(a.candidate_root)]
++    if roots[0]==roots[1] or roots[0] in roots[1].parents or roots[1] in roots[0].parents:p.error('Separate nonoverlapping prepared runtimes required')
++    for root in roots:
++        executable=canonical(root/'bin/racket',False)
++        if not os.access(executable,os.X_OK):p.error('Racket executable not executable')
++    environment(os.environ,'stock',a.output/'probe')
++    out=a.output.absolute()
++    if out.exists():p.error('New output directory required; previous raw evidence is never overwritten')
++    out.mkdir(parents=True)
++    result=run_matrix(*roots,out)
++    print(json.dumps({'passed':result['passed'],'native_executed':result['native_executed'],'report':str(out/'report.json')}))
++    return 0 if result['passed'] else 1
++if __name__=='__main__':raise SystemExit(main())
+--- /dev/null
++++ b/tests/test_controls.py
+@@ -0,0 +1,268 @@
++import copy
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import re
++import sys
++import struct
++import zlib
++import tempfile
++import unittest
++from unittest.mock import patch
++ROOT=Path(__file__).resolve().parents[1]
++sys.path.insert(0,str(ROOT/'scripts'))
++import compare_controls as gate
++import run_native as runner
++
++def test_png(width=2,height=2):
++    def chunk(kind,data):return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data))
++    return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',width,height,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(b'\0'+b'\0'*6+b'\0'+b'\0'*6))+chunk(b'IEND',b'')
++PNG=test_png()
++
++def fixture(mode):
++    stock=mode=='stock';enabled=mode=='candidate-on';root='/runtime/stock' if stock else '/runtime/candidate'
++    source={'schema':'openracket-named-style-control-source/v1','mode':mode,'version':'9.3',
++            'runtime_root':root,'executable':root+'/bin/racket','flag':None if stock else ('1' if enabled else '0'),
++            'activation':'unexported' if stock else enabled,'state_export':'unexported' if stock else 'present',
++            'source_first_load':True,'host_sha256':gate.HOST_SHA,
++            'sources':{name:{'path':root+'/collects/'+name+'.rkt','sha256':pin['stock' if stock else 'candidate'] if type(pin) is dict else pin}
++                       for name,pin in gate.PINS.items()}}
++    result={'checks':31,'complete_stock_parity':False,'physical_input_to_photon_measured':False,
++            'native_appearance_lifecycle':None,'status':'passed','genuine_host':True,'repeated_real_run':True,'ui':'stock','racket':'9.3',
++            'follow_on_case':'check-syntax','follow_on_result':{'case':'check-syntax','status':'passed'}}
++    process={'returncode':0,'timed_out':False,'native_executed':True,'timeout_seconds':60,
++             'capture_attempted':True,'capture_done_written':True,'capture_returncode':0,
++             'screenshot':gate.png_record(PNG),'runtime_root':root,'arm':mode,
++             'command':[root+'/bin/racket','/controls/native/bootstrap.rkt',mode,root],
++             'named_style_flag':source['flag']}
++    return source,copy.deepcopy(gate.EDGES),result,process
++
++def encode(source,graph,result):
++    return ('OPENRACKET_NAMED_STYLE_CONTROL_SOURCE '+json.dumps(source)+'\nOPENRACKET_BINDING_GRAPH '+json.dumps(graph)+
++            '\nOPENRACKET_NATIVE_RESULT '+json.dumps(result)+'\nOPENRACKET_FOLLOWON_CASE check-syntax completed\nOPENRACKET_NATIVE_READY\n').encode()
++
++def validate(parts,mode):
++    source,graph,result,process=parts
++    return gate.validate(encode(source,graph,result),json.dumps(result).encode(),process,mode,PNG)
++
++class GraphMutations(unittest.TestCase):
++    def test_three_modes_exact_fixture_and_explicit_scope(self):
++        rows={mode:validate(fixture(mode),mode) for mode in gate.MODES}
++        result=gate.compare(rows)
++        self.assertTrue(result['accepted']);self.assertEqual(result['zero_span_edges_per_mode'],4)
++        self.assertIn('not proof about filtered entries',result['scope'])
++        self.assertNotIn('complete_graph',result)
++    def test_every_edge_and_integer_type_is_mandatory_in_every_mode(self):
++        for mode in gate.MODES:
++            for n in range(8):
++                for mutation in ('delete','duplicate','reverse','bool','float','changed'):
++                    with self.subTest(mode=mode,edge=n,mutation=mutation):
++                        parts=fixture(mode);edges=parts[1]
++                        if mutation=='delete':edges.pop(n)
++                        elif mutation=='duplicate':edges.append(copy.deepcopy(edges[n]))
++                        elif mutation=='reverse':edges[n]=edges[n][2:]+edges[n][:2]
++                        else:edges[n][0]={'bool':True,'float':float(edges[n][0]),'changed':99}[mutation]
++                        with self.assertRaises(gate.Refused):validate(parts,mode)
++    def test_all_four_zero_spans_preserved(self):
++        zeros=[i for i,e in enumerate(gate.EDGES) if e[2]==e[3]]
++        self.assertEqual(len(zeros),4)
++        for i in zeros:
++            parts=fixture('candidate-on');parts[1][i][3]+=1
++            with self.assertRaises(gate.Refused):validate(parts,'candidate-on')
++    def test_stock_and_activation_exports_cannot_be_faked(self):
++        for mode in gate.MODES:
++            for key,value in [('flag','unexpected'),('flag',True),('activation',0),('activation',1),
++                              ('state_export','missing'),('source_first_load',False),('mode','wrong'),
++                              ('host_sha256','0'*64),('runtime_root','/runtime/../else'),('executable','/else/racket')]:
++                with self.subTest(mode=mode,key=key,value=value):
++                    parts=fixture(mode);parts[0][key]=value
++                    with self.assertRaises(gate.Refused):validate(parts,mode)
++    def test_every_runtime_pin_and_path_are_mandatory(self):
++        for mode in gate.MODES:
++            for name in gate.PINS:
++                for key,value in [('sha256','0'*64),('path','/escape/'+name+'.rkt')]:
++                    parts=fixture(mode);parts[0]['sources'][name][key]=value
++                    with self.subTest(mode=mode,module=name,key=key),self.assertRaises(gate.Refused):validate(parts,mode)
++    def test_source_records_cannot_be_dropped_added_or_relabelled(self):
++        for mutation in ('drop','add','field'):
++            parts=fixture('stock');sources=parts[0]['sources']
++            if mutation=='drop':sources.pop(next(iter(sources)))
++            elif mutation=='add':sources['extra']={}
++            else:sources[next(iter(sources))]['extra']=True
++            with self.assertRaises(gate.Refused):validate(parts,'stock')
++    def test_timeout_launch_failure_handshake_and_caller_mismatch_rejected(self):
++        for key,value in [('returncode',True),('returncode',1),('timed_out',True),('native_executed',False),
++                          ('timeout_seconds',61),('timeout_seconds',60.0),('capture_attempted',False),
++                          ('capture_done_written',False),('runtime_root','/other'),('arm','candidate-off'),
++                          ('named_style_flag','0'),('command',[])]:
++            parts=fixture('stock');parts[3][key]=value
++            with self.subTest(key=key),self.assertRaises(gate.Refused):validate(parts,'stock')
++    def test_missing_duplicate_and_malformed_markers_rejected(self):
++        parts=fixture('stock');source,edges,result,process=parts;raw=encode(source,edges,result)
++        for prefix in ['OPENRACKET_NAMED_STYLE_CONTROL_SOURCE','OPENRACKET_BINDING_GRAPH','OPENRACKET_NATIVE_RESULT','OPENRACKET_NATIVE_READY']:
++            for changed in [raw.replace(prefix.encode(),b'MISSING'),raw+(prefix+' {}\n').encode(),raw.replace(prefix.encode(),('BAD '+prefix).encode())]:
++                with self.subTest(prefix=prefix),self.assertRaises((ValueError,gate.Refused)):
++                    gate.validate(changed,json.dumps(result).encode(),process,'stock',PNG)
++    def test_failed_host_mismatched_ready_and_workflow_rejected(self):
++        parts=fixture('stock');raw=encode(*parts[:3])
++        with self.assertRaises(gate.Refused):gate.validate(raw,b'{}',parts[3],'stock',PNG)
++        for key,value in [('status','failed'),('genuine_host',1),('repeated_real_run',False),('follow_on_case','stop'),('follow_on_result',{}),('checks',True),('checks',0),('checks',31.0),('complete_stock_parity',True),('physical_input_to_photon_measured',True),('native_appearance_lifecycle',{})]:
++            parts=fixture('stock');parts[2][key]=value
++            with self.subTest(key=key),self.assertRaises(gate.Refused):validate(parts,'stock')
++    def test_nonfinite_and_duplicate_json_rejected(self):
++        for raw in ['{"x":1,"x":2}','{"x":NaN}']:
++            with self.assertRaises(gate.Refused):gate.decode(raw)
++    def test_screenshot_capture_record_and_bytes_fail_closed(self):
++        for key,value in [('capture_returncode',1),('capture_returncode',True),('screenshot',{})]:
++            parts=fixture('stock');parts[3][key]=value
++            with self.subTest(key=key),self.assertRaises(gate.Refused):validate(parts,'stock')
++        parts=fixture('stock');raw=encode(*parts[:3])
++        for png in [b'',b'bad',PNG[:-1],PNG+b'extra',PNG[:40]+b'bad'+PNG[43:],test_png(0,2)]:
++            with self.assertRaises(gate.Refused):gate.validate(raw,json.dumps(parts[2]).encode(),parts[3],'stock',png)
++    def test_validation_preserves_inputs_and_original_raw_bytes(self):
++        parts=fixture('stock');before=copy.deepcopy(parts);raw=encode(*parts[:3]);result=validate(parts,'stock')
++        self.assertEqual(parts,before);self.assertEqual(result['raw_sha256'],hashlib.sha256(raw).hexdigest())
++    def test_missing_arm_rejected(self):
++        with self.assertRaises(gate.Refused):gate.compare({'stock':validate(fixture('stock'),'stock')})
++
++class CallerAndSourceTests(unittest.TestCase):
++    def test_exact_accepted_sources_and_all_tool_dependencies(self):
++        runner.check_package()
++        pins=json.loads((ROOT/'PROVENANCE.json').read_text())['unchanged_copies']
++        tools=[key for key in pins if key.startswith('native/tool/')]
++        self.assertEqual(len(tools),6)
++        for path in (ROOT/'native').rglob('*.rkt'):
++            for dep in re.findall(r'"((?:\.\./)?(?:tool/|tests/)?(?:native-|independent-|reference-)[-a-z0-9/]*\.rkt)"',path.read_text()):
++                self.assertTrue((path.parent/dep).is_file(),str(path)+': '+dep)
++        self.assertEqual(hashlib.sha256((ROOT/'native/tests/reference-host-0520.rkt').read_bytes()).hexdigest(),gate.HOST_SHA)
++    def test_no_eager_postflight_or_candidate_binding_source(self):
++        native='\n'.join(p.read_text() for p in (ROOT/'native').rglob('*.rkt'))
++        self.assertNotIn('binding-postflight',native);self.assertNotIn('BINDING_TABLE',native)
++        self.assertNotIn('OPENRACKET_NATIVE_BINDINGS_OK',native)
++    def test_wrapper_only_reads_state_export_and_invokes_unchanged_host(self):
++        s=(ROOT/'native/bootstrap.rkt').read_text()
++        for value in ["[use-compiled-file-paths '()]",'module->namespace',"(lambda () missing)",'(dynamic-require host #f)',
++                      "'openracket-named-style-index-enabled?","'openracket-named-style-index-state"]:self.assertIn(value,s)
++        self.assertNotIn('(state ',s);self.assertNotIn('find-named-style',s);self.assertNotIn('new style',s)
++    def test_exact_flag_and_fresh_profiles_for_all_seven_callers(self):
++        profiles=[]
++        for host,arms in [(True,runner.HOST_ARMS),(False,runner.TRACE_ARMS)]:
++            for arm in arms:
++                profile=Path('/evidence')/('host-' if host else 'trace-')/arm
++                profiles.append(profile);env=runner.environment({'PATH':'/usr/bin'},arm,profile,host)
++                expected=None if arm.startswith('stock') else ('1' if arm.endswith('-on') else '0')
++                self.assertEqual(env.get('OPENRACKET_NAMED_STYLE_INDEX'),expected)
++                self.assertEqual(env['PLTUSERHOME'],str(profile));self.assertNotIn('OPENRACKET_XREF_REPLY_CELL',env)
++                if host:self.assertEqual(env['OPENRACKET_NATIVE_CASE'],'check-syntax')
++        self.assertEqual(len(set(profiles)),7)
++    def test_every_trace_caller_is_stock_and_outputs_distinct_raw_capture(self):
++        commands=[runner.command(Path('/runtime'),arm,Path('/output')/arm,False) for arm in runner.TRACE_ARMS]
++        for command in commands:self.assertEqual(command[command.index('--mode')+1],'stock')
++        self.assertEqual(len({command[-1] for command in commands}),4)
++        self.assertEqual([c[-3] for c in commands],['30']*4)
++    def test_contaminated_environment_always_refused(self):
++        for key in runner.BANNED|{'OPENRACKET_BINDING_TABLE_EAGER','OPENRACKET_XREF_REPLY_CELL','OPENRACKET_NAMED_STYLE_INDEX','OPENRACKET_UI'}:
++            with self.subTest(key=key),self.assertRaises(ValueError):runner.environment({key:'1'},'stock',Path('/profile'))
++    def test_all_seven_arms_attempted_after_independent_failures(self):
++        attempted=[]
++        def fail(runtime,arm,out,host):attempted.append((arm,host));raise ValueError('synthetic failure')
++        with tempfile.TemporaryDirectory() as tmp,patch.object(runner,'capture',side_effect=fail):
++            result=runner.run_matrix(Path('/stock'),Path('/candidate'),Path(tmp))
++        self.assertEqual(len(attempted),7);self.assertEqual(len(result['failures']),7);self.assertFalse(result['passed'])
++    def test_bound_and_ready_capture_preserved_in_exact_host(self):
++        host=(ROOT/'native/tests/reference-host-0520.rkt').read_text()
++        for value in ['OPENRACKET_READY_FILE','OPENRACKET_CAPTURE_DONE','20000','OPENRACKET_NATIVE_READY','(wait-for-capture!)']:
++            self.assertIn(value,host)
++        runner_source=(ROOT/'scripts/run_native.py').read_text()
++        self.assertIn('timeout=60 if host else 200',runner_source)
++        self.assertIn('clock()>=deadline',runner_source)
++        self.assertIn("'/usr/sbin/screencapture','-x'",runner_source)
++    def test_named_comparator_is_external_label_only_derivative(self):
++        p=ROOT/'trace/generate-named-style-comparator.py'
++        spec=importlib.util.spec_from_file_location('labels',p);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
++        self.assertEqual(module.generated_source(),(ROOT/'trace/compare-named-style-trace.py').read_text())
++        original=(ROOT/'trace/compare-binding-trace.py').read_text()
++        transformed=(ROOT/'trace/compare-named-style-trace.py').read_text()
++        for old,new in reversed(module.REPLACEMENTS):transformed=transformed.replace(new,old)
++        self.assertEqual(original,transformed)
++    def test_racket_wrapper_delimiters_balanced(self):
++        source=(ROOT/'native/bootstrap.rkt').read_text();stack=[];string=escape=comment=False
++        for c in source:
++            if comment:
++                if c=='\n':comment=False
++                continue
++            if string:
++                if escape:escape=False
++                elif c=='\\':escape=True
++                elif c=='"':string=False
++                continue
++            if c==';':comment=True
++            elif c=='"':string=True
++            elif c in '([{':stack.append(c)
++            elif c in ')]}':self.assertTrue(stack);self.assertEqual('([{'.index(stack.pop()),')]}'.index(c))
++        self.assertFalse(stack);self.assertFalse(string)
++
++class BoundedCaptureTests(unittest.TestCase):
++    def simulate(self,shot_seconds=0,launch_error=False,shot_error=False,shot_code=0,malformed_png=False,never_finishes=False,ready_after=0):
++        ticks=[0.0];calls=[]
++        class Process:
++            pid=987654321
++            def __init__(self,cmd,**kw):
++                if launch_error:raise OSError('synthetic launch failure')
++                self.done=Path(kw['env']['OPENRACKET_CAPTURE_DONE']);self.killed=False
++                self.ready=Path(kw['env']['OPENRACKET_READY_FILE'])
++                kw['stdout'].write(b'raw stdout\x00\xff');kw['stderr'].write(b'raw stderr\x00\xff')
++            def poll(self):
++                if ticks[0]>=ready_after and not self.ready.exists():self.ready.write_text('{}')
++                return -9 if self.killed else (None if never_finishes or not self.done.exists() else 0)
++            def wait(self,timeout):return self.poll()
++        def shot(cmd,**kw):
++            calls.append((cmd,kw['timeout']));ticks[0]+=shot_seconds
++            if shot_error:raise OSError('synthetic capture failure')
++            Path(cmd[-1]).write_bytes(b'PNG malformed fixture' if malformed_png else PNG)
++            return type('Result',(),{'returncode':shot_code})()
++        def terminate(proc):proc.killed=True
++        def sleep(seconds):ticks[0]+=seconds
++        with tempfile.TemporaryDirectory() as tmp,patch.dict(runner.os.environ,{'PATH':'/usr/bin'},clear=True),patch.object(runner,'terminate',side_effect=terminate):
++            output=Path(tmp)/'host'
++            result=runner.capture(Path('/runtime'),'stock',output,True,popen=Process,
++                                  clock=lambda:ticks[0],sleep=sleep,screen=shot)
++            files={p.name:p.read_bytes() for p in output.iterdir() if p.is_file()}
++        return result,files,calls
++    def test_success_preserves_raw_bytes_and_capture_handshake(self):
++        result,files,calls=self.simulate()
++        self.assertEqual(result['returncode'],0);self.assertFalse(result['timed_out'])
++        self.assertTrue(result['capture_attempted']);self.assertTrue(result['capture_done_written'])
++        self.assertEqual(len(calls),1);self.assertEqual(files['stdout.bin'],b'raw stdout\x00\xff')
++        self.assertEqual(files['stderr.bin'],b'raw stderr\x00\xff')
++        self.assertEqual(result['files']['stdout.bin']['sha256'],hashlib.sha256(files['stdout.bin']).hexdigest())
++    def test_successful_exit_after_outer_deadline_still_fails(self):
++        result,files,calls=self.simulate(shot_seconds=61)
++        self.assertTrue(result['timed_out']);self.assertEqual(result['timeout_seconds'],60)
++        self.assertTrue(result['capture_attempted'])
++    def test_exact_deadline_is_also_timeout(self):
++        result,files,calls=self.simulate(shot_seconds=59.8)
++        self.assertTrue(result['timed_out'])
++    def test_screenshot_wait_is_bounded(self):
++        result,files,calls=self.simulate()
++        self.assertEqual(calls[0][1],15)
++        result,files,calls=self.simulate(ready_after=54)
++        self.assertGreater(calls[0][1],0);self.assertLessEqual(calls[0][1],6)
++    def test_nonzero_screenshot_and_malformed_png_never_supply_valid_evidence(self):
++        for kw in ({'shot_code':1},{'malformed_png':True}):
++            result,files,calls=self.simulate(**kw)
++            self.assertNotIn('screenshot',result)
++    def test_hanging_host_is_terminated(self):
++        result,files,calls=self.simulate(never_finishes=True)
++        self.assertTrue(result['timed_out']);self.assertEqual(result['returncode'],-9)
++    def test_capture_failure_is_retained_without_fabricating_screenshot(self):
++        result,files,calls=self.simulate(shot_error=True)
++        self.assertTrue(result['capture_done_written']);self.assertIn('capture_error',result)
++        self.assertNotIn('screenshot.png',files)
++    def test_launch_error_never_counts_as_native_execution(self):
++        result,files,calls=self.simulate(launch_error=True)
++        self.assertFalse(result['native_executed']);self.assertIsNone(result['returncode'])
++        self.assertFalse(result['timed_out']);self.assertFalse(result['capture_attempted']);self.assertFalse(calls)
++
++if __name__=='__main__':unittest.main()
+--- /dev/null
++++ b/trace/generate-named-style-comparator.py
+@@ -0,0 +1,63 @@
++#!/usr/bin/env python3
++"""External-label derivative only; byte-pinned accepted comparator stays intact."""
++import argparse
++import hashlib
++from pathlib import Path
++HERE = Path(__file__).resolve().parent
++PINS = {
++    'compare-binding-trace.py': '6daa29c9b6d401f59da5ba038ae2645abb646d4688f9e2f4143d302daa0e8e75',
++    'test_binding_trace.py': 'efbbc4197be1593ba4959660903c75c6960c2bebf6b5d153ab61c7b2bd40c03e',
++    'generate-comparator.py': '4327b7b7fbb9fe006759a9f88aadc3965cf29b915d00234576911718e2132ea8',
++}
++REPLACEMENTS = (
++    ('four external binding experiment arms', 'four external named-style experiment arms'),
++    ('GUI binding activation', 'named-style GUI activation'),
++    ('binding GUI manifest', 'named-style GUI manifest'),
++    ('binding-candidate-off', 'named-style-candidate-off'),
++    ('binding-candidate-on', 'named-style-candidate-on'),
++    ('binding_gui_activation', 'named_style_gui_activation'),
++    ('binding GUI activation, actual GUI graph/navigation', 'named-style GUI activation, actual GUI graph/navigation'),
++    ('"binding_off", "binding_on"', '"named_style_off", "named_style_on"'),
++    ('Generated by generate-comparator.py.', 'Generated by generate-named-style-comparator.py.'),
++)
++def generated_source():
++    for name, pin in PINS.items():
++        if hashlib.sha256((HERE/name).read_bytes()).hexdigest() != pin:
++            raise ValueError('Changed accepted trace source: '+name)
++    source = (HERE/'compare-binding-trace.py').read_text()
++    for old, new in REPLACEMENTS:
++        if old not in source:
++            raise ValueError('Missing external-label anchor: '+old)
++        source = source.replace(old, new)
++    return source
++
++def generated_tests():
++    source = (HERE/'test_binding_trace.py').read_text()
++    for old, new in (
++        ('generate-comparator.py', 'generate-named-style-comparator.py'),
++        ('compare-binding-trace.py', 'compare-named-style-trace.py'),
++        ('binding-candidate-', 'named-style-candidate-'),
++        ('binding_gui_activation', 'named_style_gui_activation'),
++    ):
++        source = source.replace(old, new)
++    return source
++
++# Existing mutation tests call these same preservation hooks.
++def verify_sources():
++    import importlib.util
++    spec = importlib.util.spec_from_file_location('accepted_generator', HERE/'generate-comparator.py')
++    original = importlib.util.module_from_spec(spec); spec.loader.exec_module(original)
++    original.verify_sources()
++    generated_source()
++XREF_ORIGINAL_SHA256 = 'acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7'
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--check',action='store_true');a=p.parse_args()
++    verify_sources()
++    for name, text in [('compare-named-style-trace.py',generated_source()),('test_named_style_trace.py',generated_tests())]:
++        path=HERE/name
++        if a.check:
++            if path.read_bytes()!=text.encode():raise SystemExit('Derivative differs: '+name)
++        else:path.write_text(text)
++    print('PASS: exact external-label derivatives and all original pins')
++if __name__=='__main__':main()

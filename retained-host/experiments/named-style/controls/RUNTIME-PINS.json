@@ -1,0 +1,16 @@
+{
+  "racket/snip/private/style": {
+    "stock": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0",
+    "candidate": "74eb24f0d6485187c9700cca421f4299dee67ea092a811d56b737972b2204c6d"
+  },
+  "racket/snip/private/prefs": "8c9d895ffb2d57212d6298152f3d940adfaef97250b0cf18ce0350e7ef2574a4",
+  "drracket/private/syncheck/gui": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e",
+  "drracket/private/syncheck/xref": "acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7",
+  "drracket/private/syncheck/traversals": "bfac72f72b6858d809c840a0aa47bdae2652ae084d86ae961b744d683e06da00",
+  "drracket/private/syncheck/online-comp": "1d78a9aecd0c8c50229083c4c653d58927f43ab1165fef0710e098bbf07240b5",
+  "framework/private/text-misc": "7f95100d31c510ae1b29ddf01c6801d34ba709880b0dfc953ccd895a5bb06638",
+  "framework/private/color": "da45ea64a5a0b413296a60ebe61d3e5ee69a27b53a6f1e13ae258701bdce1578",
+  "drracket/private/unit": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5",
+  "mrlib/switchable-button": "532a707597787d6e61d420f815ee14f6a2ed1ccd342070271da5268056bd61de",
+  "data/interval-map": "1e18a3dafc6e1e87fd79c6fc67b5fd1c5cfd803f3caebf7c9f0ab0801ebb45de"
+}

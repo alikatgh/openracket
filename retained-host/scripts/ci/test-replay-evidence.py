@@ -69,11 +69,30 @@ class EvidenceTests(unittest.TestCase):
  def test_reserved_key_refused(self):
   with self.assertRaises(AssertionError):mod.encode({'__openracket_log_array__':0})
  def test_all_telemetry_evidence_filenames_roundtrip_exactly(self):
-  for name in ('measurements.json','summary.json','worker-init.json','worker-init-overhead.json','memory-profile.json','activation.json','heartbeat.json','binding-export.json','bindings.json','matrix.json','gui-observation.json','worker-phase-1.json','docs-map.json'):
+  for name in ('measurements.json','summary.json','worker-init.json','worker-init-overhead.json','memory-profile.json','activation.json','heartbeat.json','binding-export.json','bindings.json','matrix.json','gui-observation.json','worker-phase-1.json','docs-map.json','style-witness.json','input-digests.json','prepared-manifest.json','report.json','process.json','capture.json','native.json'):
    self.roundtrip({'outcome':{'tool_succeeded':False,'oom':True},'samples':list(range(81))},filename=name)
  def test_binding_full_graph_and_deferred_costs_roundtrip(self):
   for name in ('bindings.json','binding-export.json'):
    self.roundtrip({'graph':[[i,i+1,i+2,i+3] for i in range(1200)],'first_wall_ms':12.5,'second_wall_ms':0.01,'source':'fixture λ','same_public_hash_identity':True},filename=name)
+ def test_named_style_large_unicode_text_wrapper_full_transport(self):
+  helper=module('named_style_evidence_test','named-style-evidence.py')
+  original={'runs':[{'stdout':'🧪λ\n'*50000,'stderr':'trace μ\n'*500} for _ in range(5)],'passed':False}
+  raw=json.dumps(original,ensure_ascii=False,indent=2).encode()
+  wrapper={'schema_version':1,'kind':'lossless-native-json-text-wrapper','original_raw_sha256':hashlib.sha256(raw).hexdigest(),'original_bytes':len(raw),'original_canonical_sha256':hashlib.sha256(helper.canonical(original)).hexdigest(),'document':helper.wrap_text(original)}
+  self.roundtrip(wrapper,filename='native.json')
+  self.assertEqual(helper.restore_text(wrapper['document']),original)
+  self.assertNotEqual(wrapper['original_raw_sha256'],wrapper['original_canonical_sha256'])
+ def test_named_style_text_transport_missing_duplicate_reordered_refused(self):
+  helper=module('named_style_evidence_negative','named-style-evidence.py')
+  value={'document':helper.wrap_text('🧪'*120000)}
+  for mutation in ('missing','duplicate','reordered'):
+   def change(lines):
+    ids=[i for i,line in enumerate(lines) if 'ARRAY_JSON ' in line];self.assertGreater(len(ids),1)
+    if mutation=='missing':del lines[ids[0]]
+    elif mutation=='duplicate':lines.insert(ids[0],lines[ids[0]])
+    else:lines[ids[0]],lines[ids[1]]=lines[ids[1]],lines[ids[0]]
+    return lines
+   with self.subTest(mutation=mutation),self.assertRaises(AssertionError):self.roundtrip(value,change,filename='native.json')
  def test_request_payload_file_refused(self):
   with self.assertRaises(AssertionError):mod.emit(pathlib.Path('capture.rktd'))
 if __name__=='__main__':unittest.main()

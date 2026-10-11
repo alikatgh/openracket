@@ -1,0 +1,19 @@
+{
+  "scope": "Local-only named-style native compatibility-control preparation",
+  "portable_tests": {
+    "controls": 31,
+    "accepted_and_named_style_trace": 70,
+    "original_trace": 37,
+    "total_test_invocations": 138
+  },
+  "source_copies": 21,
+  "source_only": true,
+  "native_compiled": false,
+  "native_executed": false,
+  "gui_verified": false,
+  "performance_measured": false,
+  "published": false,
+  "ci_triggered": false,
+  "publication_and_native_execution": "explicit hold remains",
+  "review": "Parent independently reviewed source and passed 31 controls tests; inherited trace suites rerun after final source changes."
+}

@@ -1,0 +1,19 @@
+{
+  "DIAGNOSTICS.md": "0f953ee09b194d9167b86c5041c98962290071222d7d0c9ea32188c028c09b2e",
+  "NATIVE-PLAN.md": "6f22a840934cbded60a61e8d7390f4356a1c8521f74afb9da83b6df61ed60172",
+  "PROVENANCE.json": "498d04317995cf1d4db23544e3814024938e97fe370155878c9523d29a17d3cb",
+  "README.md": "93c4829f90fc19653b28d9f0fe2710aa70b0f677ffb28a4454729c563ac6318e",
+  "manifest.json": "c68afd7ac5a2a2c6b3ca61402ddb0274b22af9b6226edbcef71418e45a81c328",
+  "overlay/style.rkt": "74eb24f0d6485187c9700cca421f4299dee67ea092a811d56b737972b2204c6d",
+  "patch.diff": "59b528bf220d636794672f1178ab0f9871546322b274aca304712490f353c06d",
+  "reports/source-checks.log": "79cacc33e0b2ba429e57139744189922cf83de28ed8dc0a58a40f69d07d6233d",
+  "scripts/overlay.py": "ce5df9fb2d42d4b4eb2079607c549912143878235c978440f0bfbc28c801ec6f",
+  "scripts/prepare_native.py": "c76b6860564b2c69c494293dcdc95f53dab81fc9f62d1baa5ce7b9598ae852b7",
+  "scripts/run_native.py": "42ffaa2587fd9a84f67e55f0fa840d57e8761eb2db81d3566c59f66a66582c6f",
+  "tests/native/differential.rkt": "da3406b3041f5b24beb7f952bed39619bdbbfb97eba97e1c3c8f6bd56505c57c",
+  "tests/native/publication.rkt": "97f442f5558c3b45e6ed01182face9163ce0295d62235152ff472da67a00425e",
+  "tests/snapshot_model.py": "5da8bbf47211442d449420df8ca870080bac03a72972726751432997ad747b2d",
+  "tests/source_test.py": "f2fc33334b56a0fcd0fa2089205b11e3d3bba462cb27a76c57bd488d0b3069a9",
+  "vendor/prefs.rkt": "8c9d895ffb2d57212d6298152f3d940adfaef97250b0cf18ce0350e7ef2574a4",
+  "vendor/style.rkt": "2e06742f956c3de50847bbb429c400af78303c68e0deba1ebc865a619534bde0"
+}

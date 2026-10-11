@@ -1,0 +1,2 @@
+PASS: seven upstream SHA256 pins and exact generated wrapper
+PASS: exact external-label derivatives and all original pins
