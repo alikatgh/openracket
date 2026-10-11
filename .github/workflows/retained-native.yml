@@ -1,4 +1,4 @@
-name: Retained DrRacket Mac expansion diagnostic (public free runner)
+name: Retained DrRacket Mac expansion phase diagnostic (public free runner)
 
 'on':
   push:
@@ -60,7 +60,7 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare independent initialization-instrumented stock expansion clone
+      - name: Prepare independent initialization/phase-instrumented stock expansion clone
         id: replay_prepare
         timeout-minutes: 9
         run: python3 retained-host/scripts/ci/run-replay.py prepare
@@ -68,7 +68,7 @@ jobs:
         id: replay_capture
         timeout-minutes: 4
         run: python3 retained-host/scripts/ci/run-replay.py capture
-      - name: Diagnose two bounded same-process expansion replays
+      - name: Diagnose two bounded expansions with actual worker and monitor stacks
         timeout-minutes: 3
         run: python3 retained-host/scripts/ci/run-replay.py replay
       - name: Verify all pristine runtime files and bytecode stayed untouched

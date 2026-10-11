@@ -1,0 +1,16 @@
+--- stock/drracket/private/expanding-place.rkt
++++ diagnostic-only/drracket/private/expanding-place.rkt
+@@ -58,6 +58,13 @@
+            (define monitor-pc (list-ref lst 2))
+            (handler (list file id) monitor-pc (dynamic-require file id)))))
+   
++  ;; Opt-in diagnostic only. Integrated capture never sets this flag.
++  (when (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
++    ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'worker-ready!) p (current-logger) (preferences:get 'drracket:child-only-memory-limit)))
++
+   (let loop ([current-job #f]
+              ;; the old-registry argument holds on to the namespace-module-registry
+              ;; from a previous run in order to keep entries in the bytecode cache

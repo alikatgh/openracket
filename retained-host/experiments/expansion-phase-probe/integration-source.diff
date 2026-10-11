@@ -1,0 +1,151 @@
+--- baseline/support.rkt
++++ phase-probe/support.rkt
+@@ -8,6 +8,7 @@
+          relevant-environment captured-terminal? capture-complete?
+          restore-disposable-preferences!)
+ (define-runtime-path support-self "support.rkt")
++(define-runtime-path phase-probe-self "phase-probe.rkt")
+ 
+ (define (digest b) (bytes->hex-string (sha256-bytes b)))
+ (define (file-hash path)
+@@ -309,15 +310,37 @@
+     (error 'replay "Readiness is only permitted in the standalone diagnostic process"))
+   (unless (equal? child-limit 134217728) (error 'replay "Stock child limit changed"))
+   (define-values (snapshot stop) (make-gc-observer logger))
++  (define phase-control
++    (and (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1")
++         ((dynamic-require phase-probe-self 'start-probe!))))
++  (define (combined-snapshot)
++    (define gc (snapshot))
++    (if phase-control (hash-set gc 'phase_probe (phase-control 'snapshot)) gc))
++  (define (stop-all)
++    (cond
++      [(not phase-control) (stop)]
++      [else
++       (define deadline (+ (current-inexact-monotonic-milliseconds) 2000))
++       (define (remaining) (max 0 (/ (- deadline (current-inexact-monotonic-milliseconds)) 1000.0)))
++       (define gc-ok? (with-handlers ([exn? (lambda (_) #f)]) (stop (remaining))))
++       (define phase-ok? (with-handlers ([exn? (lambda (_) #f)]) (phase-control 'stop #f (remaining))))
++       (and gc-ok? phase-ok?)]))
+   (define-values (remote local) (place-channel))
+   (thread
+    (lambda ()
+      (let loop ()
+        (define command (place-channel-get local))
+        (case command
+-         [(snapshot) (place-channel-put local (snapshot)) (loop)]
+-         [(stop) (place-channel-put local (if (stop) 'stopped 'gc-observer-stop-failed))]
+-         [else (error 'replay "Unsupported diagnostic control message")]))))
++         [(snapshot) (place-channel-put local (combined-snapshot)) (loop)]
++         [(stop) (place-channel-put local (if (stop-all) 'stopped
++                                            (if phase-control 'observer-stop-failed 'gc-observer-stop-failed)))]
++         [else
++          (match command
++            [(vector (and action (or 'phase-begin 'phase-end)) (? exact-positive-integer? trial))
++             (unless phase-control (error 'replay "Phase control requires the opt-in probe"))
++             (place-channel-put local (phase-control (if (eq? action 'phase-begin) 'begin 'end) trial))
++             (loop)]
++            [_ (error 'replay "Unsupported diagnostic control message")])]))))
+   (place-channel-put p (vector 'openracket-expansion-replay-ready remote child-limit))
+   (unless (eq? (place-channel-get p) 'openracket-expansion-replay-continue)
+     (error 'replay "Missing initialization acknowledgement")))
+--- baseline/replay.rkt
++++ phase-probe/replay.rkt
+@@ -5,6 +5,7 @@
+ 
+ (define config (string->jsexpr (or (getenv "OPENRACKET_REPLAY_CONFIG")
+                                    (error 'replay "Missing supervisor configuration"))))
++(define phase-probe? (hash-ref config 'phase_probe #f))
+ (define output (path->complete-path (hash-ref config 'output)))
+ (make-directory* output)
+ (define report (make-hasheq))
+@@ -39,6 +40,11 @@
+                      'root_query_received_monotonic_ms received)
+             'worker_clock_within_root_query
+             (<= sent (hash-ref reply 'monotonic_ms) received)))
++(define (phase-control! action trial expected)
++  (when phase-probe?
++    (place-channel-put control (vector action trial))
++    (unless (eq? (sync/timeout 5 control) expected)
++      (error 'phase-probe "Missing exact phase control acknowledgement: ~s" action))))
+ (define (gc-json snapshot start end)
+   (define compatible-clock? (hash-ref snapshot 'worker_clock_within_root_query #t))
+   (hasheq 'gc_counter_ms_observation (hash-ref snapshot 'gc_ms)
+@@ -96,6 +102,11 @@
+ (hash-set! report 'schema_version 1)
+ (hash-set! report 'status "initializing")
+ (hash-set! report 'instrumented_stock_copy #t)
++(hash-set! report 'phase_probe_enabled phase-probe?)
++(when phase-probe?
++  (hash-set! report 'phase_probe_sha256
++             (file-hash (or (getenv "OPENRACKET_REPLAY_PHASE_MODULE")
++                            (error 'phase-probe "Missing phase module path")))))
+ (hash-set! report 'measurement_scope
+            "Isolated process interval including worker, handlers, compiler manager, result sink and observers; not causal allocation ownership in the integrated GUI run")
+ (hash-set! report 'gc_scope_warning
+@@ -111,6 +122,8 @@
+   (unless (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
+                (not (equal? (getenv "OPENRACKET_EXPANSION_CAPTURE") "1")))
+     (error 'replay "Replay-only flag required; capture flag must be absent"))
++  (unless (equal? phase-probe? (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1"))
++    (error 'phase-probe "Configuration and process phase flag disagree"))
+   (define capture-path (path->complete-path (hash-ref config 'capture)))
+   (define record (validate-capture! (load-capture capture-path) #:runtime? #f))
+   (hash-set! report 'disposable_preference_restoration (restore-disposable-preferences! record output))
+@@ -159,6 +172,7 @@
+     (define request (vector-immutable (hash-ref record 'snapshot) (hash-ref record 'source)
+                                       response-in (hash-ref record 'settings) status-in
+                                       (hash-ref record 'open-files)))
++    (phase-control! 'phase-begin trial 'phase-begun)
+     (define worker-before (control-snapshot))
+     (define root-before (root-snapshot))
+     (define capabilities (make-hasheq))
+@@ -226,6 +240,11 @@
+     (define after (metrics))
+     (when terminal (set! last-terminal terminal))
+     (phase "interval_end" trial outcome)
++    (when phase-probe?
++      ;; Preserve the real result even if a later optional probe query fails.
++      (hash-set! report 'last_observed_terminal_before_probe_queries
++                 (if terminal (summarize-result terminal) 'null)))
++    (when completed? (phase-control! 'phase-end trial 'phase-ended))
+     (define worker-after (and completed? (control-snapshot)))
+     (define root-after (root-snapshot))
+     (define terminal-summary (and terminal (summarize-result terminal)))
+@@ -252,6 +271,7 @@
+               'worker_gc_query_boundary_warning "Worker counters bracket diagnostic queries outside the root allocation interval"
+               'root_gc (gc-json root-after start end)
+               'worker_gc (if worker-after (gc-json worker-after start end) 'null)
++              'phase_probe (if worker-after (hash-ref worker-after 'phase_probe 'null) 'null)
+               'monitor_messages monitors 'statuses (map ~a (reverse statuses))
+               'prior_terminal_retained_before_request prior-terminal-retained?
+               'prior_capabilities_retained_before_request prior-capabilities-retained
+--- baseline/supervise.py
++++ phase-probe/supervise.py
+@@ -393,6 +393,9 @@
+     child_env["OPENRACKET_REPLAY_CONFIG"] = json.dumps(config)
+     child_env["OPENRACKET_EXPANSION_REPLAY"] = "1"
+     child_env["OPENRACKET_REPLAY_SUPPORT"] = str(Path(__file__).resolve().with_name("support.rkt"))
++    if config.get("phase_probe") is True:
++        child_env["OPENRACKET_EXPANSION_PHASE_PROBE"] = "1"
++        child_env["OPENRACKET_REPLAY_PHASE_MODULE"] = str(Path(__file__).resolve().with_name("phase-probe.rkt"))
+     report: dict[str, Any] = {
+         "schema_version": 1, "command": command, "config": config,
+         "cwd": cwd or str(Path.cwd()), "launch_context": launch_context,
+@@ -525,6 +528,7 @@
+     parser.add_argument("--capture", required=True, type=Path)
+     parser.add_argument("--output", required=True, type=Path, help="Fresh run output directory")
+     parser.add_argument("--trials", type=int, default=2)
++    parser.add_argument("--phase-probe", action="store_true", help="Enable the separate bounded phase/thread diagnostic")
+     args = parser.parse_args(argv)
+     if args.trials < 1:
+         parser.error("--trials must be positive")
+@@ -535,6 +539,8 @@
+     config = {"capture": str(capture), "output": str(output), "trials": args.trials,
+               "init_timeout_seconds": 30, "terminal_timeout_seconds": 60,
+               "cleanup_timeout_seconds": 2}
++    if args.phase_probe:
++        config["phase_probe"] = True
+     try:
+         launch_context, env = load_launch_context(capture)
+         # Resolve relative executable paths before restoring the captured cwd.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent Mac stock online-expansion attribution; never a speed comparison."""
+"""Independent Mac stock online-expansion phase attribution; never a speed comparison."""
 import hashlib,json,os,pathlib,platform,subprocess,sys
 ROOT=pathlib.Path(__file__).resolve().parents[2];os.chdir(ROOT)
 assert os.environ.get('GITHUB_ACTIONS')=='true'
@@ -10,7 +10,7 @@ assert sys.argv[1:] in (['prepare'],['capture'],['replay'],['verify'])
 PHASE=sys.argv[1];TEMP=pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
 STOCK=pathlib.Path(os.environ['OPENRACKET_CI_STOCK_RACKET']).resolve().parents[1]
 CLONE=STOCK.with_name(STOCK.name+'-replay');RACKET=CLONE/'bin/racket'
-EXP=ROOT/'experiments/expansion-replay';REPORTS=ROOT/'reports/replay-ci';REPORTS.mkdir(parents=True,exist_ok=True)
+EXP=ROOT/'experiments/expansion-phase-probe';REPORTS=ROOT/'reports/replay-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 CAPTURE=REPORTS/'capture';RESULTS=REPORTS/'replay';STATE=REPORTS/'results.json'
 ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)
 sys.path.insert(0,str(ROOT/'performance'));from run import terminate_group
@@ -25,7 +25,7 @@ def env():
 def record(name,ok,detail=''):
     ROWS.append({'name':name,'passed':bool(ok),'detail':detail});STATE.write_text(json.dumps(ROWS,indent=2)+'\n')
     print('OPENRACKET_REPLAY_CI_RESULT '+json.dumps(ROWS[-1]),flush=True)
-    lines=['# Separate Mac online-expansion attribution','', 'This is an initialization-instrumented stock9.3 clone with actual captured request/registry, all stock handlers and the unchanged128MiB child limit. Diagnostic overhead is present; timings do not establish a product speedup.','', '| Check | Outcome | Detail |','|---|---|---|']
+    lines=['# Separate Mac online-expansion attribution','', 'This is an initialization/phase-instrumented stock9.3 clone with actual captured request/registry, all stock handlers and the unchanged128MiB child limit. Diagnostic overhead is present; timings do not establish a product speedup.','', '| Check | Outcome | Detail |','|---|---|---|']
     lines+=['| '+r['name']+' | '+('PASS' if r['passed'] else 'FAIL / incomplete')+' | '+r['detail'].replace('|',';').replace('\n',' ')+' |' for r in ROWS]
     lines+=['','A genuine terminal abnormal/error outcome is distinct from protocol timeout, worker death and cleanup failure. Source payloads stay local; bounded JSON metrics/GC evidence is emitted in ordinary logs. No artifact/cache/release upload.']
     (REPORTS/'summary.md').write_text('\n'.join(lines)+'\n')
@@ -67,16 +67,25 @@ try:
         (TEMP/'replay-headless-profile').mkdir(exist_ok=True)
         testenv=env();testenv.update(REPLAY_TEST_RACKET=str(RACKET),REPLAY_TEST_PROFILE=str(TEMP/'replay-headless-profile'),REPLAY_TEST_SOURCE_DIR=str(pristine.parent))
         testenv['PLTUSERHOME']=testenv['REPLAY_TEST_PROFILE']
-        command('Source boundaries and real-place mock protocol checks',[sys.executable,'-m','unittest','-v','test_implementation','test_supervise'],testenv,timeout=180,cwd=EXP)
+        command('Source boundaries and real-place mock protocol checks',[sys.executable,'-m','unittest','-v','test_implementation','test_supervise','test_phase_probe'],testenv,timeout=180,cwd=EXP)
         command('Read-only support and preference restore assertions',[RACKET,EXP/'test_support.rkt'],testenv,timeout=90)
-        command('Compile supplied support capture and replay drivers',[RACKET,'-l','raco','make',EXP/'support.rkt',EXP/'capture-host.rkt',EXP/'replay.rkt'],timeout=120)
-        try:command('Pinned diagnostic insertions and actual clone compilation',[sys.executable,EXP/'prepare.py','--diagnostic-root',CLONE,'--racket',RACKET],timeout=260)
+        command('Compile supplied support capture and replay drivers',[RACKET,'-l','raco','make',EXP/'support.rkt',EXP/'capture-host.rkt',EXP/'replay.rkt',EXP/'phase-probe.rkt'],timeout=120)
+        try:command('Pinned diagnostic insertions and actual clone compilation',[sys.executable,EXP/'prepare_phase.py','--diagnostic-root',CLONE,'--racket',RACKET],timeout=260)
         finally:tail(CLONE/'openracket-replay-compile.log')
         command('Generate unchanged deterministic fixture',[sys.executable,ROOT/'performance/fixtures.py',REPORTS/'fixtures'],timeout=30)
     elif PHASE=='capture':
         command('Actual native edited-snapshot request and registry capture',[sys.executable,EXP/'capture.py','--racket',RACKET,'--fixture',REPORTS/'fixtures/mixed-1mib.rkt','--output',CAPTURE],timeout=205)
     elif PHASE=='replay':
-        command('Two same-process actual worker expansion replays',[sys.executable,EXP/'supervise.py','--racket',RACKET,'--capture',CAPTURE/'capture.rktd','--output',RESULTS,'--trials','2'],timeout=170)
+        command('Two same-process actual worker expansion replays',[sys.executable,EXP/'supervise.py','--racket',RACKET,'--capture',CAPTURE/'capture.rktd','--output',RESULTS,'--trials','2','--phase-probe'],timeout=170)
+        report=json.loads((RESULTS/'replay.json').read_text())
+        trials=report.get('trials',[])
+        parity=(len(trials)==2 and all(t.get('terminal_summary_matches_integrated_capture') is True for t in trials))
+        record('Actual capture and both replay terminals match',parity)
+        if not parity:raise RuntimeError('Actual terminal parity failed')
+        statuses=[t.get('phase_probe',{}).get('attribution_evidence',{}).get('status','missing') for t in trials]
+        complete=all(s=='coarse_thread_context_available' for s in statuses)
+        record('Separate phase attribution evidence completeness',complete,json.dumps(statuses))
+        if not complete:raise RuntimeError('Replay completed but phase attribution evidence is incomplete')
     elif PHASE=='verify':
         command('Pristine complete runtime unchanged after diagnostic',[sys.executable,ROOT/'scripts/ci/runtime-tree-check.py','compare',STOCK,TEMP/'replay-pristine-tree.json'],timeout=180)
 except Exception as error:

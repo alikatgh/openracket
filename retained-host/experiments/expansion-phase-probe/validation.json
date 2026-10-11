@@ -1,0 +1,33 @@
+{
+  "schema_version": 3,
+  "status": "frozen_for_native_preflight_not_yet_racket_executed",
+  "baseline_manifest_sha256": "4ea9857a282b38da5d8c1d8033e405b13b64bf4340966fe50575dcffd95ca661",
+  "recovered_canonical_verified_unchanged": true,
+  "python_tests": {
+    "passed": 40,
+    "skipped": 3,
+    "failed": 0,
+    "log": "phase-python-tests.log"
+  },
+  "python_compilation": "passed",
+  "racket_reader_compilation_and_thread_checks": "not run: no local Racket executable; three explicit skips require CI execution",
+  "source_pins": {
+    "module-language.rkt": "e76f13b6700df1ce1096f978353c938ef7816672efe9532483ffd38b710ffd53",
+    "expanding-place.rkt": "f6daeb1c8ca26d6f5a3c4c6920cc484f43d5bcd4116aa8d592334f037005a383",
+    "syncheck/online-comp.rkt": "1d78a9aecd0c8c50229083c4c653d58927f43ab1165fef0710e098bbf07240b5"
+  },
+  "source_insertion_removal_checks": "passed: reconstructs exact stock worker/monitor and preserves baseline capture transformation",
+  "racket_delimiter_sanity": "passed for helper/test/support/replay; not a Racket reader or compilation test",
+  "native_phase_probe_executed": false,
+  "performance_measurements": null,
+  "baseline_native_run_context": "38099774787 was reported successful as an OOM diagnostic; baseline numbers are not phase-probe measurements",
+  "required_native_gates": [
+    "Racket helper/source compilation",
+    "Racket generated-source reader checks",
+    "disabled-phase boundary checks",
+    "real-thread mock generation/acceptance checks",
+    "fresh native capture",
+    "bounded replay and evidence completeness inspection"
+  ],
+  "scope": "Replay-only phase counters and approximate actual-thread contexts including diagnostic overhead; no allocator ownership or timing speedup claim"
+}
