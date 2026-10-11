@@ -1,0 +1,20 @@
+{
+  "experiment": "interval-map-direct-set",
+  "racket_version": "9.3",
+  "package": "data-lib",
+  "package_version": "1.2.1",
+  "upstream_commit": "f6d64c1e3c4913d9fb2fc8057ccd0ea87b5019af",
+  "source_url": "https://github.com/racket/data/blob/f6d64c1e3c4913d9fb2fc8057ccd0ea87b5019af/data-lib/data/interval-map.rkt",
+  "relative_target": "data/interval-map.rkt",
+  "flag": "OPENRACKET_INTERVAL_MAP_FAST_SET",
+  "enabled_value": "1",
+  "default_enabled": false,
+  "activation_export": "openracket-interval-map-fast-set-enabled?",
+  "original_sha256": "1e18a3dafc6e1e87fd79c6fc67b5fd1c5cfd803f3caebf7c9f0ab0801ebb45de",
+  "patched_sha256": "1f1636316c3ba3f307fcb33f44d68c00ee9804b775fac7d78916db01d87fec4d",
+  "unchanged_support_sha256_relative_to_data": {
+    "skip-list.rkt": "d92807a371dc56c9dafd556b1f87b13c0f99fd3ec0fa4d4e244afb5e78bef46b",
+    "private/skip-list.rkt": "559e7843e71c934ecde37fd2cf8983d84fedfa90729adce1da738cb0a7114833",
+    "order.rkt": "a6b436ef6c8842a508634931e52dc7e8bdcfb7391094f7c36cf51d93d03b6f8f"
+  }
+}

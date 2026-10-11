@@ -1,0 +1,19 @@
+{
+  "base_host_sha256": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+  "derived_host_sha256": "ad0ba1ec80fb8dbcec86f54e1a0088d6a938c62c052d6bcaf7cb12e251134fb8",
+  "insertions": 2,
+  "existing_bytes_unchanged": true,
+  "unchanged_local_dependencies": {
+    "independent-native-workflows.rkt": "b175a92754e8f0e8a0f524ae5947f5eae8da605b0f3274bbc098e20ce1de53bf",
+    "independent-native-appearance-workflows.rkt": "c536f3f3b85aa9a5660ef7842d921c9708c9ee6c7cb82c463423e70ec265fda2",
+    "independent-native-stop-returning.rkt": "7b2fd5bece5ab3f86d7dcaa0931e62d67366a667806c146eadffc7c4998bcb57"
+  },
+  "unchanged_dormant_tool_dependencies": {
+    "native-appearance.rkt": "f7a0bfc2cc4bc8b6356f7d79c3393b7b23a2dc3ef0cc1924b9a1e88a0c4c2c86",
+    "native-appearance-platform.rkt": "0a2af8a0d8195feb76b18a5884bdb47ba813c37c12c31fb0986be1c0ada4ce2d",
+    "native-appearance-cocoa.rkt": "7b5c9068efd32da6adefae2b6f57c640ba5d0a553b148679af37bd74128876b4",
+    "native-appearance-gtk.rkt": "4eeecb46a48fb3de03da06820d46426ea537c3b0b14199d67c0a3c88931fd6a4"
+  },
+  "dormant_support_only": "copied test dependencies; stock UI and no appearance case required",
+  "native_execution": "not run locally; Racket and GUI unavailable"
+}

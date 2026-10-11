@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Lossless byte-bounded JSON log chunks; never serialized source requests."""
 import hashlib,json,pathlib,re,sys
-ALLOWED={'capture-summary.json','capture-host.json','capture-supervisor.json','replay.json','supervisor.json','trace.json','measurements.json','summary.json','worker-init.json','worker-init-overhead.json','memory-profile.json','acceptance.json','gui-observation.json','worker-phase-1.json'}
+ALLOWED={'capture-summary.json','capture-host.json','capture-supervisor.json','replay.json','supervisor.json','trace.json','measurements.json','summary.json','worker-init.json','worker-init-overhead.json','memory-profile.json','acceptance.json','gui-observation.json','worker-phase-1.json','activation.json','heartbeat.json','docs-map.json'}
 LINE_LIMIT=60000
 ARRAY_LIMIT=4096
 ROW_LIMIT=45000

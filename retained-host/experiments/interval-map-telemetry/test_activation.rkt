@@ -1,0 +1,70 @@
+#lang racket/base
+(require rackunit racket/file racket/path
+         "gui-observer.rkt" (submod "activation.rkt" test-support))
+(define root (make-temporary-file "activation-test~a" 'directory))
+(define counter 0)
+(define (module-fixture body [require-kind "require"])
+  (set! counter (add1 counter))
+  (define dep (build-path root (format "dep~a.rkt" counter)))
+  (define gui (build-path root (format "gui~a.rkt" counter)))
+  (call-with-output-file dep (lambda (out) (display (string-append "#lang racket/base\n" body) out)))
+  (call-with-output-file gui
+    (lambda (out)
+      (display (format "#lang racket/base\n(~a (file ~s))\n" require-kind (path->string dep)) out)))
+  (values gui dep (digest (file->bytes dep))))
+(define (in-clean-environment thunk)
+  (define environment (environment-variables-copy (current-environment-variables)))
+  (environment-variables-set! environment #"OPENRACKET_INTERVAL_MAP_FAST_SET" #f)
+  (environment-variables-set! environment #"OPENRACKET_GUI_PHASE_POINTS" #f)
+  (parameterize ([current-environment-variables environment]) (thunk)))
+(define (check-case body arm flag expected-status expected-enabled verified?)
+  (define-values (gui dep sha) (module-fixture body))
+  (in-clean-environment
+   (lambda ()
+     (when flag (putenv "OPENRACKET_INTERVAL_MAP_FAST_SET" flag))
+     (dynamic-require gui #f) ; models GUI's prior ordinary import, outside probe
+     (define record (existing-import-evidence gui dep arm sha))
+     (check-equal? (hash-ref record 'verified) verified?)
+     (check-equal? (hash-ref record 'export_status) expected-status)
+     (check-equal? (hash-ref record 'fast_set_enabled) expected-enabled)
+     (check-equal? (hash-ref record 'source_sha256) sha)
+     (check-true (hash-ref record 'gui_phase0_import_verified))
+     (check-false (hash-ref (existing-import-evidence gui dep arm (make-string 64 #\0)) 'verified))
+     (putenv "OPENRACKET_GUI_PHASE_POINTS" "1")
+     (check-false (hash-ref (existing-import-evidence gui dep arm sha) 'verified)))))
+(define export-header "(provide openracket-interval-map-fast-set-enabled?)\n")
+(define (boolean-body value)
+  (string-append export-header "(define openracket-interval-map-fast-set-enabled? " value ")\n"))
+(check-case "(define stock #t)\n" "stock" #f "missing" 'null #t)
+(check-case "(define stock #t)\n" "candidate" "1" "missing" 'null #f)
+(check-case (boolean-body "#t") "candidate" "1" "boolean" #t #t)
+(check-case (boolean-body "#f") "candidate" "1" "boolean" #f #f)
+(check-case (boolean-body "#t") "candidate" #f "boolean" #t #f)
+(check-case (boolean-body "#t") "stock" #f "boolean" #t #f)
+(check-case (boolean-body "#f") "stock" #f "boolean" #f #f)
+(check-case (boolean-body "42") "candidate" "1" "non-boolean" 'null #f)
+(check-case "(define stock #t)\n" "stock" "0" "missing" 'null #f)
+
+;; Uninstantiated GUI modules remain uninstantiated; the helper must never load
+;; them (including a body that would throw). A fresh namespace is not a fallback.
+(for ([body (in-list (list "(define stock #t)" "(error 'test \"must not load\")"))])
+  (define-values (gui dep sha) (module-fixture body))
+  (check-exn exn:fail? (lambda () (existing-import-evidence gui dep "stock" sha)))
+  (check-exn exn:fail? (lambda () (module->namespace gui)))
+  (check-exn exn:fail? (lambda () (module->namespace dep))))
+;; A different namespace cannot manufacture evidence from a module elsewhere.
+(define-values (existing-gui existing-dep existing-sha) (module-fixture "(define stock #t)"))
+(dynamic-require existing-gui #f)
+(parameterize ([current-namespace (make-base-namespace)])
+  (check-exn exn:fail? (lambda () (existing-import-evidence existing-gui existing-dep "stock" existing-sha))))
+;; Missing source remains an error, rather than stock missing-export success.
+(delete-file existing-dep)
+(check-exn exn:fail? (lambda () (existing-import-evidence existing-gui existing-dep "stock" existing-sha)))
+;; A syntax export is rejected without evaluating it in a substitute namespace.
+(define-values (syntax-gui syntax-dep syntax-sha)
+  (module-fixture (string-append "(require (for-syntax racket/base))\n" export-header
+                                "(define-syntax (openracket-interval-map-fast-set-enabled? stx) #'#t)\n")))
+(dynamic-require syntax-gui #f)
+(check-exn #rx"Activation export is syntax"
+           (lambda () (existing-import-evidence syntax-gui syntax-dep "stock" syntax-sha)))
+(delete-directory/files root)

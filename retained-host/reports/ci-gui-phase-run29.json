@@ -1,0 +1,93 @@
+{
+  "run_id": 38115601310,
+  "commit": "8b35effc0d96dc7bb205698998c1b5e90415194f",
+  "job_id": 114399762483,
+  "conclusion": "success",
+  "artifact_count": 0,
+  "log_sha256": "8f77ca4d79bea016f42ae1ea9ea0fe1ba8f3a7f88379abe91e1a991fb9366771",
+  "runtime_tree_checks": [
+    {
+      "operation": "baseline",
+      "root": "/Users/runner/work/_temp/openracket-full.soeyGh/racket",
+      "entries": 26838,
+      "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+      "status": "passed"
+    },
+    {
+      "operation": "compare",
+      "root": "/Users/runner/work/_temp/openracket-full.soeyGh/racket",
+      "entries": 26838,
+      "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+      "status": "passed"
+    }
+  ],
+  "native_preflight_tests": 53,
+  "native_preflight_skips": 0,
+  "racket_assertions": 24,
+  "adapter_tests": 5,
+  "transport_tests": 16,
+  "accepted": true,
+  "gates": [
+    {
+      "name": "Frozen diagnostic source hashes",
+      "passed": true,
+      "detail": "dcb636609bae519f9b61c67fc91f422f77e326e4466379f5bbba947006cf1fc1"
+    },
+    {
+      "name": "GUI phase adapter isolation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Readable evidence transport unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dedicated independent stock diagnostic clone",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All native preflight gates; no skipped Racket tests accepted",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pinned diagnostic insertions and actual clone compilation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Generate unchanged deterministic fixture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Genuine GUI control request, trace application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Genuine GUI observed request, trace application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict matched genuine GUI outcome and phase evidence acceptance",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime unchanged after diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "scope": "Two actual GUI processes with identical common observer, one adding bounded producer points. Successful attribution diagnostic only; no product optimization or speed claim. Full trace/rename payload equivalence was not measured by scalar endpoint agreement."
+}

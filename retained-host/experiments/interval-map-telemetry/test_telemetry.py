@@ -1,0 +1,154 @@
+"""Portable interval-map telemetry contracts. Native behavior is gated separately."""
+import hashlib
+import json
+from pathlib import Path
+import tempfile
+import unittest
+
+import capture
+from test_capture import SOURCE_PINS, complete_evidence, write_evidence
+from test_gui_source import balanced
+
+HERE = Path(__file__).resolve().parent
+COMMON_HELPER_PINS = {'gui-observer.rkt': 'c74f75d8e1727956a948d7e4ac94c700bd25539ba609d06af44f52bd7ea05e5e', 'gui-phase.rkt': 'ee05b328cfe494dce75b16b4a4151f73f9939f2d9f6a84e47cc7fa55b0bc9e3a', 'memory-profile.rkt': '9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0', 'profile_setup.py': '9bb3dc30255a4effca1a91f2f407e0af3ae0fce298f2fc20ed823544176daddb', 'supervise.py': '0505de6044b8e9c389088bf3714cd95a9c0bef501dadddf08d3617fbb5437b58', 'fixtures.py': '9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d', 'test_gui_observer.rkt': 'c1ab791f97d43f77452b98391feaea024cbad4c5c23b3836da3681071bc28072', 'test_gui_phase.rkt': 'b586b18a908dd94db1c25798d8e5730bf9cce982f6739769e92e5aa523924680'}
+
+
+class EvidenceTests(unittest.TestCase):
+    def test_source_pins_require_two_distinct_exact_hashes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'pins.json'
+            path.write_text(json.dumps(SOURCE_PINS))
+            self.assertEqual(capture.read_source_pins(path), SOURCE_PINS)
+            for bad in ({}, {'stock_sha256': 'a' * 64},
+                        dict(SOURCE_PINS, candidate_sha256='A' * 64),
+                        dict(SOURCE_PINS, candidate_sha256='a' * 64),
+                        dict(SOURCE_PINS, stock_sha256=True),
+                        dict(SOURCE_PINS, candidate_sha256='0' * 63)):
+                with self.subTest(bad=bad):
+                    path.write_text(json.dumps(bad))
+                    with self.assertRaises(ValueError):
+                        capture.read_source_pins(path)
+
+    def test_complete_both_phase_off_arms_require_new_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for arm in ('stock', 'candidate'):
+                rows = complete_evidence(arm)
+                write_evidence(root, rows)
+                self.assertEqual(capture.check_host_evidence(root, arm, SOURCE_PINS[arm + '_sha256']), [])
+                for file in ('activation.json', 'heartbeat.json'):
+                    (root / file).unlink()
+                    self.assertTrue(capture.check_host_evidence(root, arm, SOURCE_PINS[arm + '_sha256']))
+                    write_evidence(root, rows)
+
+    def test_activation_absence_mismatch_and_errors_fail_closed(self):
+        bad_fields = [('verified', False), ('gui_handler_thread', False),
+                      ('gui_module_already_instantiated', False),
+                      ('gui_phase0_import_verified', False),
+                      ('interval_map_already_instantiated', False),
+                      ('source_sha256', 'f' * 64), ('expected_source_sha256', 'f' * 64),
+                      ('export_status', 'error'), ('phase_points_enabled', True)]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for arm in ('stock', 'candidate'):
+                for field, value in bad_fields + [('flag_value', '0'),
+                                                 ('fast_set_enabled', False)]:
+                    with self.subTest(arm=arm, field=field):
+                        rows = complete_evidence(arm)
+                        rows['activation.json'][field] = value
+                        write_evidence(root, rows)
+                        self.assertTrue(capture.check_host_evidence(root, arm, SOURCE_PINS[arm + '_sha256']))
+
+    def test_stock_null_activation_fields_must_exist(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for field in ('flag_value', 'fast_set_enabled'):
+                rows = complete_evidence('stock')
+                del rows['activation.json'][field]
+                write_evidence(root, rows)
+                self.assertTrue(capture.check_host_evidence(root, 'stock', SOURCE_PINS['stock_sha256']))
+
+    def test_heartbeat_missing_dropped_incomplete_or_unbounded_fails(self):
+        bad_fields = [('joined', False), ('producer_exited', False), ('join_timed_out', True),
+                      ('outstanding_callbacks', 1), ('error_count', 1), ('dropped_records', 1),
+                      ('outstanding_callbacks', False), ('period_ms', 1), ('max_records', 8192),
+                      ('records', []), ('records', [{}] * 4097), ('handled_count', 0),
+                      ('submitted_count', 2), ('submitted_count', True)]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for field, value in bad_fields:
+                with self.subTest(field=field):
+                    rows = complete_evidence('stock')
+                    rows['heartbeat.json'][field] = value
+                    write_evidence(root, rows)
+                    self.assertTrue(capture.check_host_evidence(root, 'stock', SOURCE_PINS['stock_sha256']))
+
+
+class StaticTests(unittest.TestCase):
+    def test_common_proven_helpers_unchanged(self):
+        for name, sha in COMMON_HELPER_PINS.items():
+            self.assertEqual(hashlib.sha256((HERE / name).read_bytes()).hexdigest(), sha, name)
+
+    def test_helpers_and_native_tests_static_reader(self):
+        for name in ('activation.rkt', 'test_activation.rkt', 'heartbeat.rkt', 'test_heartbeat.rkt'):
+            balanced((HERE / name).read_text())
+
+    def test_activation_proves_actual_gui_import_before_export_read(self):
+        source = (HERE / 'activation.rkt').read_text()
+        gate = source.index('(define gui-namespace (module->namespace gui-module))')
+        imports = source.index('(module->imports gui-module)', gate)
+        actual = source.index('(module->namespace actual-module)', imports)
+        exported = source.index('(dynamic-require actual-module activation-export', actual)
+        self.assertLess(gate, imports)
+        self.assertLess(imports, actual)
+        self.assertLess(actual, exported)
+        self.assertIn('(lambda () missing)', source[exported:])
+        for forbidden in ('with-handlers', 'namespace-attach-module', 'namespace-require',
+                          'make-base-namespace', '(eval ', '(dynamic-require dependency'):
+            self.assertNotIn(forbidden, source)
+        self.assertIn('(module-path-index-resolve index #f)', source)
+        self.assertIn('(equal? (car entry) 0)', source)
+
+    def test_host_keeps_io_outside_workload_and_uses_shared_deadline(self):
+        source = (HERE / 'capture-host.rkt').read_text()
+        self.assertIn('(persist-telemetry! "activation.json" activation (* 16 1024))', source)
+        self.assertIn('(persist-telemetry! "heartbeat.json" (heartbeat-summary heartbeat) (* 2 1024 1024))', source)
+        self.assertIn('(heartbeat-join! heartbeat gui-yield deadline)', source)
+        self.assertIn('(min (or workload-deadline +inf.0)', source)
+        self.assertEqual(source.count('90000'), 2)
+        start = source.index('(set! heartbeat (start-heartbeat! queue-callback))')
+        opened = source.index('(send frame change-to-file fixture)', start)
+        final = source.index("(hash-set! report 'workload_completed_monotonic_ms", opened)
+        stop = source.index('(heartbeat-stop! heartbeat)', final)
+        persist = source.index('(persist-extra-evidence!)', stop)
+        self.assertLess(start, opened)
+        self.assertLess(final, stop)
+        self.assertLess(stop, persist)
+        for forbidden in ('persist-extra-evidence!', 'persist-telemetry!', 'write-json', 'jsexpr->string'):
+            self.assertNotIn(forbidden, source[start:final])
+        self.assertIn('not physical input-to-photon or actual typing', source)
+        join = source.index('(heartbeat-join! heartbeat gui-yield deadline)', stop)
+        verified = source.index('(define final-record (complete-observation))', join)
+        self.assertLess(join, verified)
+        self.assertLess(verified, persist)
+        for gate in ("'final_snapshot_characters (send editor last-position)",
+                     "'final_snapshot_sha256 (digest", "'lexer_valid_at_completion (send editor is-lexer-valid?)",
+                     "(hash-ref completed-record 'request_id)"):
+            self.assertIn(gate, source[verified:persist])
+
+
+    def test_heartbeat_has_no_reporting_kill_or_gc(self):
+        source = (HERE / 'heartbeat.rkt').read_text()
+        for forbidden in ('kill-thread', 'custodian-shutdown-all', 'collect-garbage', 'make-log-receiver',
+                          'write-json', 'displayln', 'fprintf', 'call-with-output-file', 'jsexpr->string'):
+            self.assertNotIn(forbidden, source)
+        for field in ('scheduled_monotonic_ms', 'submitted_monotonic_ms', 'handler_monotonic_ms',
+                      'producer_lateness_ms', 'dispatch_latency_ms', 'handler_gap_ms',
+                      'stop_handler_gap_ms', 'outstanding_callbacks', 'join_timed_out'):
+            self.assertIn(field, source)
+        self.assertIn('50.0', source)
+        self.assertIn('4096', source)
+
+
+if __name__ == '__main__':
+    unittest.main()

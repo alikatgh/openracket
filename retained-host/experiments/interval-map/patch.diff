@@ -1,0 +1,27 @@
+--- official-9.3/data/interval-map.rkt
++++ experiment/data/interval-map.rkt
+@@ -8,6 +8,13 @@
+          data/skip-list)
+ 
+ (define not-given (gensym 'not-given))
++
++;; OpenRacket experiment: avoid a second general traversal after removal has
++;; established that the complete interval is empty. Public contracts, removal,
++;; interval boundaries and all other operations remain the stock definitions.
++(define openracket-interval-map-fast-set-enabled?
++  (equal? (getenv "OPENRACKET_INTERVAL_MAP_FAST_SET") "1"))
++(provide openracket-interval-map-fast-set-enabled?)
+ 
+ ;; Interval-maps support only half-open exact-integer intervals.
+ 
+@@ -100,7 +107,9 @@
+   (check-interval start end 'interval-map-set!
+                   "im" im "start" start "end" end "value" value)
+   (interval-map-remove! im start end)
+-  (interval-map-update*! im start end (lambda (old) value) #f))
++  (if openracket-interval-map-fast-set-enabled?
++      (skip-list-set! (interval-map-s im) start (cons (- end start) value))
++      (interval-map-update*! im start end (lambda (old) value) #f)))
+ 
+ (define (interval-map-remove! im start end)
+   (let ([s (interval-map-s im)])

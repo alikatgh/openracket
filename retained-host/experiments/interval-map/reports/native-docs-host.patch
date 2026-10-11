@@ -1,0 +1,21 @@
+--- frozen/tests/independent-native-host.rkt
++++ interval-map/tests/independent-native-host.rkt
+@@ -9,6 +9,7 @@
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+ (define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+ (define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")
++(define-runtime-path interval-docs-module "interval-docs-postflight.rkt")
+ (define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
+ (define native-appearance-result #f)
+ (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
+@@ -307,6 +308,10 @@
+                  ((dynamic-require follow-on-module 'run-follow-on-check!)
+                   frame (string->symbol follow-on-case)))))))
+ 
++  ;; Read-only docs-map postflight after the unchanged genuine Check Syntax case.
++  (on-gui (lambda ()
++            ((dynamic-require interval-docs-module 'run-interval-docs-postflight!) frame)))
++
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+   (on-gui (lambda ()
+             ;; Capture dimensions only: fit the actual runner display (the macOS

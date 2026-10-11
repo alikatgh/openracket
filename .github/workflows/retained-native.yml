@@ -1,4 +1,4 @@
-name: Mac genuine GUI producer-phase observation (public free runner)
+name: Mac interval-map correctness and matched GUI trials (public free runner)
 
 'on':
   push:
@@ -24,7 +24,9 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 30
+    timeout-minutes: 60
+    env:
+      PYTHONOPTIMIZE: ''
     defaults:
       run:
         shell: bash
@@ -60,34 +62,36 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Mandatory native preflight and independent GUI observer clone
-        id: gui_prepare
+      - name: Verify frozen interval candidate and independent runtimes
+        id: interval_prepare
         timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-gui-phase.py prepare
-      - name: Genuine GUI common-observer control
-        if: success() && steps.gui_prepare.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-gui-phase.py control
-      - name: Genuine GUI producer-phase observation
-        if: always() && steps.gui_prepare.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-gui-phase.py observed
-      - name: Strict actual GUI completion and phase evidence acceptance
-        if: always() && steps.gui_prepare.outcome == 'success'
-        timeout-minutes: 2
-        run: python3 retained-host/scripts/ci/run-gui-phase.py accept
+        run: python3 retained-host/scripts/ci/run-interval.py prepare
+      - name: Mandatory native telemetry helpers with no skipped gates
+        id: interval_helpers
+        if: always() && steps.interval_prepare.outcome == 'success'
+        timeout-minutes: 12
+        run: python3 retained-host/scripts/ci/run-interval.py helpers
+      - name: Actual maps, complete traces, docs lookup and native Check Syntax
+        id: interval_correctness
+        if: always() && steps.interval_prepare.outcome == 'success'
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-interval.py correctness
+      - name: Six interleaved genuine GUI application trials
+        if: success() && steps.interval_correctness.outcome == 'success' && steps.interval_helpers.outcome == 'success'
+        timeout-minutes: 38
+        run: python3 retained-host/scripts/ci/run-interval.py telemetry
       - name: Verify original full runtime including bytecode unchanged
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-gui-phase.py verify
-      - name: Report genuine GUI observations and explicit limits
+        run: python3 retained-host/scripts/ci/run-interval.py verify
+      - name: Report interval-map gates and complete-work timing
         if: always()
         run: |
-          if test -f retained-host/reports/gui-phase-ci/summary.md; then
-            cat retained-host/reports/gui-phase-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/interval-ci/summary.md; then
+            cat retained-host/reports/interval-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Preparation failed before genuine GUI observation was available.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Preparation failed before interval-map evidence was available.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'Two fresh GUI processes, one shared pinned runtime and fixture, original tools and 256 MiB setting. Actual terminal, current trace application and final lexer completion remain strict gates.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Bounded producer points are diagnostic. No standalone replay, worker barrier, sampling thread or new logger subscription. One pair cannot establish precise overhead or a product speedup.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'No artifact/cache/release/package upload or paid runner. Delivered preview and broader release evidence remain separate.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'A default-off data/interval-map candidate in an independent runtime. Correctness gates precede three fresh stock/candidate GUI pairs; both use 256 MiB, original stock tools and 20 ms batching.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Producer phases stay off in both measured arms. All source/metadata, terminal, full current application and final lexer endpoints must pass; failed or incomplete work is retained.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No artifact/cache/release upload, paid runner or default product change. Historical release gaps remain separate.' >> "$GITHUB_STEP_SUMMARY"
