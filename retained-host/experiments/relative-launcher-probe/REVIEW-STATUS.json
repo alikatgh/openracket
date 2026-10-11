@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "status": "source-only hypothesis ready for bounded review",
+  "portable_tests": {
+    "passed": 56,
+    "failed": 0,
+    "log": "evidence/PORTABLE-TESTS.log",
+    "kind": "Python synthetic/refusal/source-contract tests; no native execution"
+  },
+  "source_api_review": "all used setup/dirs exports and normalize-path import checked against exact 9.3 source; complete transitive startup remains native-only",
+  "native_reader_compile": "not run",
+  "native_generator": "not run",
+  "native_bootstrap": "not run",
+  "runtime_paths_and_identity": "not run",
+  "nested_runtime_metadata_audit": "requires actual full runtime; any declarations block all launches",
+  "runtime_provenance": "not supplied or verified by this source task",
+  "empty_collects_then_X": "unproved explicit hypothesis; early minimal receipt and fail-closed assertion",
+  "clean_destination_tested": false,
+  "full_distribution_acceptance": false,
+  "native_execution_triggered": false,
+  "remote_mutation": false,
+  "original_accepted_builder_unchanged": true,
+  "lifecycle_review_correction": "All signal/wait/recheck/creation uncertainty is NativeCleanupUncertain; 5-second bounded death confirmation; mocked regressions prove no after-handler query or relocation on uncertainty.",
+  "native_workload_timeout_seconds": 120,
+  "cleanup_wait_timeout_seconds": 5,
+  "malformed_report_types": "exact integer schema 1, positive exact integer GUI/child PIDs and exact boolean path exists values required"
+}

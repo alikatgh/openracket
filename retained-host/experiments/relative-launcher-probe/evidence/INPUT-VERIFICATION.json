@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "checked_utc": "2026-10-11T16:02:00Z",
+  "exact_vendor_files": 34,
+  "all_vendor_sha256_and_git_blob_sha1_match": true,
+  "accepted_builder_files": 14,
+  "all_accepted_builder_files_unchanged": true,
+  "accepted_builder_manifest_sha256": "b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee",
+  "vendor_manifest_sha256": "45e8d1d139a7d25b3c0e7bf126fa3f1d2fe1a70f20d1521dabc35262a79a9293",
+  "additional_exact_racket_core_sources": 9,
+  "reused_observers_byte_identical": true,
+  "execution_scope": "Python/source tests only; no Racket reader/compiler/runtime/app/package/installer/archive/CI execution"
+}

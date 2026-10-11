@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenRacket bounded native path observation (not distribution acceptance)",
+  "description": "Schema validates shape only. The supervisor additionally resolves filesystem paths, hashes files, checks native process identity, static/dynamic dependency closure and independent before/after witnesses. No native report has been produced yet.",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "version",
+    "os",
+    "gc",
+    "startup",
+    "paths",
+    "modules",
+    "identity",
+    "loaded_images",
+    "child",
+    "child_stderr"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "status": {
+      "const": "observed"
+    },
+    "version": {
+      "const": "9.3"
+    },
+    "os": {
+      "const": "macosx"
+    },
+    "gc": {
+      "const": "cs"
+    },
+    "startup": {
+      "$ref": "#/$defs/paths"
+    },
+    "paths": {
+      "$ref": "#/$defs/paths"
+    },
+    "modules": {
+      "type": "object",
+      "required": [
+        "racket_base",
+        "setup_dirs",
+        "pkg_lib",
+        "gui_base",
+        "drracket_main"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "identity": {
+      "$ref": "#/$defs/identity"
+    },
+    "loaded_images": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8192,
+      "items": {
+        "type": "string",
+        "pattern": "^/"
+      }
+    },
+    "child": {
+      "$ref": "#/$defs/child"
+    },
+    "child_stderr": {
+      "type": "string",
+      "maxLength": 1048576
+    }
+  },
+  "$defs": {
+    "path": {
+      "type": "object",
+      "required": [
+        "raw",
+        "absolute",
+        "exists",
+        "resolved"
+      ],
+      "properties": {
+        "raw": {
+          "type": "string"
+        },
+        "absolute": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "exists": {
+          "type": "boolean"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^/"
+            },
+            {
+              "const": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "const": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "system",
+        "use_collection_link_paths",
+        "use_user_specific_search_paths",
+        "collection_paths",
+        "compiled_roots",
+        "setup",
+        "config_file",
+        "links_file",
+        "package_database"
+      ],
+      "properties": {
+        "system": {
+          "type": "object",
+          "required": [
+            "exec-file",
+            "run-file",
+            "collects-dir",
+            "config-dir",
+            "addon-dir",
+            "home-dir",
+            "pref-dir",
+            "temp-dir"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "use_collection_link_paths": {
+          "const": true
+        },
+        "use_user_specific_search_paths": {
+          "const": false
+        },
+        "collection_paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "compiled_roots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "setup": {
+          "type": "object",
+          "required": [
+            "collects",
+            "config",
+            "lib",
+            "dll",
+            "share",
+            "doc",
+            "pkgs",
+            "links",
+            "console_bin",
+            "gui_bin",
+            "lib_search",
+            "pkgs_search",
+            "links_search",
+            "doc_search"
+          ]
+        },
+        "config_file": {
+          "$ref": "#/$defs/file"
+        },
+        "links_file": {
+          "$ref": "#/$defs/file"
+        },
+        "package_database": {
+          "$ref": "#/$defs/file"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": [
+        "process_image_path",
+        "pid",
+        "running_pid",
+        "same_running_application",
+        "running_bundle_identifier",
+        "running_bundle_path",
+        "running_executable_path",
+        "main_bundle_identifier",
+        "main_bundle_path",
+        "main_bundle_executable_path",
+        "observation"
+      ],
+      "properties": {
+        "pid": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "running_pid": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "same_running_application": {
+          "const": true
+        },
+        "running_bundle_identifier": {
+          "const": "org.openracket.relative-path-probe"
+        },
+        "main_bundle_identifier": {
+          "const": "org.openracket.relative-path-probe"
+        },
+        "process_image_path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "running_bundle_path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "running_executable_path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "main_bundle_path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "main_bundle_executable_path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "observation": {
+          "type": "string"
+        }
+      }
+    },
+    "child": {
+      "type": "object",
+      "required": [
+        "schema",
+        "status",
+        "pid",
+        "version",
+        "gc",
+        "paths",
+        "loaded_images"
+      ],
+      "properties": {
+        "schema": {
+          "const": 1
+        },
+        "status": {
+          "const": "observed"
+        },
+        "pid": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "version": {
+          "const": "9.3"
+        },
+        "gc": {
+          "const": "cs"
+        },
+        "paths": {
+          "$ref": "#/$defs/paths"
+        },
+        "loaded_images": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8192,
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          }
+        }
+      }
+    }
+  }
+}

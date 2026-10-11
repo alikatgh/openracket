@@ -1,0 +1,330 @@
+{
+  "schema": 1,
+  "status": "source-only; runtime provenance remains required",
+  "vendor_manifest_sha256": "45e8d1d139a7d25b3c0e7bf126fa3f1d2fe1a70f20d1521dabc35262a79a9293",
+  "plan_manifest_sha256": "f228c2400f8f1c641236dc7e01b7acd793db96f19685af29ed792f788629d56c",
+  "accepted_core_manifest_sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+  "accepted_builder_manifest_sha256": "b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee",
+  "vendor_sources": [
+    {
+      "bytes": 47028,
+      "git_blob_sha1": "f371172733788da1f44736882173e39ab22bf3ab",
+      "path": "vendor/racket-racket/racket/collects/launcher/launcher.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "789f3f861bd1f714acd1a3e338e49c06eb2dd51699d35b277ed26ebd3d0dfc96",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/launcher/launcher.rkt"
+    },
+    {
+      "bytes": 121790,
+      "git_blob_sha1": "013abe042fb912b245789230538a619fc1719c6a",
+      "path": "vendor/racket-racket/racket/collects/compiler/embed.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "eb00e99b53756fe392ed6ee8b1d60cbd0a3e46155af967789f322e2afcd7b68b",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/embed.rkt"
+    },
+    {
+      "bytes": 36087,
+      "git_blob_sha1": "d634d7e612a98637a22c4f93858c19ffef9d7a60",
+      "path": "vendor/racket-racket/racket/collects/compiler/distribute.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "30604ca7c23efd72fe179bcb8d64cfcdf2bdfe54bebdc23c162e97f1ac6ea5be",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/distribute.rkt"
+    },
+    {
+      "bytes": 9809,
+      "git_blob_sha1": "d77236adf74a5bc5352f50394b1a8bacfeb81bdd",
+      "path": "vendor/racket-racket/racket/collects/setup/dirs.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "a08eef5283a078eb6a6c9d0e59f56607d93e816d9881deebb6b8a2f64bc2b8b3",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/setup/dirs.rkt"
+    },
+    {
+      "bytes": 12144,
+      "git_blob_sha1": "15328e53c5c1a9ab17f76f2a7ef999c536961064",
+      "path": "vendor/racket-racket/racket/collects/setup/private/dirs.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "870936b06f4f454f3aaeada5a1efe96b4135b32d75c579e6df16cbfc1ecd5b54",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/setup/private/dirs.rkt"
+    },
+    {
+      "bytes": 13990,
+      "git_blob_sha1": "c9f032545d013f4cbbd4d8c282a5b19ba5595e8a",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/exe.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "6d1b057494b1e23ad7871c37c0d097797d070201d5056e43d507867a335a46fd",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/exe.scrbl"
+    },
+    {
+      "bytes": 23953,
+      "git_blob_sha1": "ac95fbe895dd53e612606432fe66bb24e81371a9",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/launcher.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "1c3f1ad0914a0dd70072a40fec47666a73b0603cb97c8bef2fe4ab40928dcb06",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/launcher.scrbl"
+    },
+    {
+      "bytes": 26639,
+      "git_blob_sha1": "8b9d7b88863c926441181f1a8c5429ee3fd47193",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/exe-api.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "a79274058b2f1a211eeb185f189ea7f0164dcd0b81a64ddefad1c8087768ec0b",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/exe-api.scrbl"
+    },
+    {
+      "bytes": 2220,
+      "git_blob_sha1": "e2b9ba1e17e9fc7c80416d39138ac3ca6ff1a147",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/dist-api.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "a3de0741e3065a23eeaaf6a7e70e5c627b80c2125ccc43ec57c2e59d4fcf36d3",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/dist-api.scrbl"
+    },
+    {
+      "bytes": 14765,
+      "git_blob_sha1": "ef06c3f4c4740f5265fec79fd55a3ff7b7d221e4",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/config.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "42fc4dabe4ff887a0fdc98b83e4e91f93a10b747096728c7d9e2d7822d2ff3bb",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/config.scrbl"
+    },
+    {
+      "bytes": 4723,
+      "git_blob_sha1": "0cc528d25fe1a9e23603ec1dd008f397b2245df6",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/raco/dist.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "4e8c8b0b978022d20ccbaf077bb72e2b127ac65ae94db974d06940e8d092aabc",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/raco/dist.scrbl"
+    },
+    {
+      "bytes": 2671,
+      "git_blob_sha1": "b30cfa2c4f687ade59d3a1a5d41ebce1806d70f5",
+      "path": "vendor/racket-racket/racket/collects/compiler/private/collects-path.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "6f64d8ac37ba9aa88ce40f856e9ddb4e95aaa151fcc6c2fbaf6e2fb5809be2e0",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/private/collects-path.rkt"
+    },
+    {
+      "bytes": 2574,
+      "git_blob_sha1": "548b3016bd767fb8a7a9ad70268d87e011424919",
+      "path": "vendor/racket-racket/racket/collects/racket/private/config.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "9ab4e4cdc17c48458fc2a111ca4564b1659a73080cbb03799f2885a39a32124f",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/racket/private/config.rkt"
+    },
+    {
+      "bytes": 1867,
+      "git_blob_sha1": "4b20f939f89a6e6c3bf690f7e965436e9dd36470",
+      "path": "vendor/racket-racket/README.md",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "b6a92f432d295e34f4c73e1038e3118f0472c46724fcf1b24ebafcef865874e9",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/README.md"
+    },
+    {
+      "bytes": 7695,
+      "git_blob_sha1": "f4f4b46b74df330101ad76ff49fc877c5a6307c5",
+      "path": "vendor/racket-racket/racket/src/LICENSE.txt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "e2595b19b5ca137b9f6a4f1c299c25db5cbaf17314dd4368037ad559bfe9b1d8",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/src/LICENSE.txt"
+    },
+    {
+      "bytes": 28442,
+      "git_blob_sha1": "fa44a3fa47f13dcd346937c35a46b44dabbf4baf",
+      "path": "vendor/racket-racket/pkgs/racket-doc/scribblings/reference/startup.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "de10040f3570be8a4a61a3121510f53756d64ea685c27fb0d87465b71446e60b",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/scribblings/reference/startup.scrbl"
+    },
+    {
+      "bytes": 12570,
+      "git_blob_sha1": "a702c8ae987f2f53fecd95b7c427588ab34f8e75",
+      "path": "vendor/racket-racket/pkgs/racket-doc/pkg/scribblings/implementation.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "52a20a10526e8f7a915ee362db98bc3ce9376fe1e489190aaf62537c541cbb55",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/pkg/scribblings/implementation.scrbl"
+    },
+    {
+      "bytes": 1899,
+      "git_blob_sha1": "7404e1d2500d929de7b4e9f7445122047d704ef9",
+      "path": "vendor/racket-racket/racket/collects/compiler/private/macfw.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "93fa0ea56b1154d4d2a0e6b54218261763840260b2cdd933acac937fd58df0b2",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/private/macfw.rkt"
+    },
+    {
+      "bytes": 12984,
+      "git_blob_sha1": "931b07712de6a8f7d8dfa03041926001d962626a",
+      "path": "vendor/racket-racket/racket/src/start/ustart.c",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "ddf7df7d64faccd7f45f1edaee070eea1320a78a70c4d3775ae5d8054400e858",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/src/start/ustart.c"
+    },
+    {
+      "bytes": 101421,
+      "git_blob_sha1": "dfb5c2723147fbed6e334d1e29762121c5ed2360",
+      "path": "vendor/racket-racket/pkgs/racket-doc/pkg/scribblings/pkg.scrbl",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "9e0a66078044e82114a74ac64156455fbfbf4b0b9695eace468db9578d654e56",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/pkgs/racket-doc/pkg/scribblings/pkg.scrbl"
+    },
+    {
+      "bytes": 24534,
+      "git_blob_sha1": "d4b45a5c78ed6510ea3d1f3c5e6a574b47e9f003",
+      "path": "vendor/racket-drracket/drracket-core-lib/drracket/private/tools.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "repository": "racket/drracket",
+      "sha256": "0a3a273c40d861f4b6028e71db130aa87b23a10bd1f62196a5e2fd4a4bd5db2e",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/tools.rkt"
+    },
+    {
+      "bytes": 1705,
+      "git_blob_sha1": "ae05c40f1ba21e340184a2ed338e7d662990ea04",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/proof-env.sh",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "5cab829ebbbe09cfbe76a8ff9a0a273ac3b53b02b514ccd9404f78cb40e97636",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/proof-env.sh"
+    },
+    {
+      "bytes": 1309,
+      "git_blob_sha1": "2e7bde7734c43c26d62abf4f5cc48a8d5b4a0851",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/launch-openracket.sh",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "52fc83464501c6d3bbaff4bce384e3cd96950d133671502dcb46555499ce4ed8",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/launch-openracket.sh"
+    },
+    {
+      "bytes": 2861,
+      "git_blob_sha1": "fc9bdb95656d34ecfa351e9978293f1cca5b0a2d",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/preflight.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "709150b86d306dd6575db022a81456fb101f25e9d264991a7c4b71b4e96d5f26",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/preflight.rkt"
+    },
+    {
+      "bytes": 17869,
+      "git_blob_sha1": "cf7e00aefaacd34f7307bb981d4846c9a63579ff",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/memory-profile.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "4a30290e88a8088c3223a810bbe96e276cc3398acee3e67dec7ef16a190fc742",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/memory-profile.rkt"
+    },
+    {
+      "bytes": 16169,
+      "git_blob_sha1": "24736f76366293aaa4636c1f81d39a21e2a1b915",
+      "path": "vendor/alikatgh-openracket/retained-host/CONTENTS-SHA256.json",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/CONTENTS-SHA256.json"
+    },
+    {
+      "bytes": 4555,
+      "git_blob_sha1": "31fb80c5a8d976b3c5faf41c920cdee57a5e2c2d",
+      "path": "vendor/alikatgh-openracket/retained-host/tool/info.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "b5cf6c820be53a5d4b95bb814947638ba49d126410003ea3d4560dae33b0c7d2",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/tool/info.rkt"
+    },
+    {
+      "bytes": 17498,
+      "git_blob_sha1": "7adbb7332d6501f95bea58965df652037848a43c",
+      "path": "vendor/alikatgh-openracket/retained-host/tool/tool.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "f24ce33e0349cab6024818633d78b422ae888915a817fb2fd200d875707e6a64",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/tool/tool.rkt"
+    },
+    {
+      "bytes": 2949,
+      "git_blob_sha1": "229cd3a65d9f863f318aaef418bc6a90dfa11e55",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/apply-overlay.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "1cdaa64ce29ef5b54235abb811537950156bc34dc4ab185059096064143b07dc",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/apply-overlay.rkt"
+    },
+    {
+      "bytes": 2630,
+      "git_blob_sha1": "c0b8cc4b3d8d404d49024452aebd8e30b2fc148b",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/apply-autosave.rkt",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "42cec2bdb94c2d8d710c2b424f7782437b8006852ad5337d89d16c8bee54fd43",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/apply-autosave.rkt"
+    },
+    {
+      "bytes": 364,
+      "git_blob_sha1": "0a1ae3986ae37a1ac8335833e4e1b9f1375baeb3",
+      "path": "vendor/alikatgh-openracket/retained-host/scripts/memory-profile.sh",
+      "ref": "80e51d78526d718a50c45f3662058a042c3038f7",
+      "repository": "alikatgh/openracket",
+      "sha256": "71f4b7a69a2a2c919d1eb1b464173bae2d5836d136ba02729d689cd213d1969e",
+      "source_url": "https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/scripts/memory-profile.sh"
+    },
+    {
+      "bytes": 1510,
+      "git_blob_sha1": "0df5a54a65a7d5ce003b58576b332d285068192e",
+      "path": "vendor/racket-drracket/drracket-core-lib/info.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "repository": "racket/drracket",
+      "sha256": "5911e26716739fac7bead6eaa9cc9f7e0de7263168c8f1fe076a929b29d1846e",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/info.rkt"
+    },
+    {
+      "bytes": 1482,
+      "git_blob_sha1": "a122b58f292a0093686b384bed686b21f865c6c9",
+      "path": "vendor/racket-drracket/drracket/info.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "repository": "racket/drracket",
+      "sha256": "903feca9c847ac116e141a78f8c0d27e7d5719b3f672983f6dd4894ca25d1568",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket/info.rkt"
+    },
+    {
+      "bytes": 1118,
+      "git_blob_sha1": "386ed760a60fc57a3a9404ba537251c8e065f8ae",
+      "path": "vendor/racket-racket/racket/collects/pkg/private/params.rkt",
+      "ref": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+      "repository": "racket/racket",
+      "sha256": "947b13284daafb3d42d1f0f30932220dc0b61858ab51f652e444bf1fca4c40ae",
+      "source_url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/pkg/private/params.rkt"
+    }
+  ],
+  "reused_observers": [
+    {
+      "source_path": "openracket-recovery/publication-45/retained-host/experiments/mac-app-observer/cocoa-identity.rkt",
+      "destination": "probe/cocoa-identity.rkt",
+      "sha256": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b",
+      "provenance": "Byte-identical accepted publication-45 observer; see adjacent API-EVIDENCE.md. This is local accepted-source provenance, not an upstream official file."
+    },
+    {
+      "source_path": "openracket-recovery/publication-45/retained-host/experiments/mac-app-observer/default-handler.rkt",
+      "destination": "probe/default-handler.rkt",
+      "sha256": "175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b",
+      "provenance": "Byte-identical accepted publication-45 observer; see adjacent API-EVIDENCE.md. This is local accepted-source provenance, not an upstream official file."
+    }
+  ]
+}
