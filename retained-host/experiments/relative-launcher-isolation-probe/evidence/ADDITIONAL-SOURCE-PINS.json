@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "commit": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+  "files": [
+    {
+      "path": "racket/collects/racket/path.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/racket/path.rkt",
+      "git_blob_sha1": "b72a600222e9c556c14d073e859206b4c943099f",
+      "sha256": "6a2588fa70c934f64cbf8598a33a25083ad15f0d45565fa4ad499d1febd87d90",
+      "bytes": 11956
+    },
+    {
+      "path": "racket/collects/file/sha1.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/file/sha1.rkt",
+      "git_blob_sha1": "7eaa1593a5b8194f8d48ebf9f8329800b4f460ce",
+      "sha256": "43866156a8cfb8b3d4817e003626dc961f5450891635e8dea2d87667ad74403a",
+      "bytes": 1488
+    },
+    {
+      "path": "racket/collects/compiler/private/winutf16.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/private/winutf16.rkt",
+      "git_blob_sha1": "82e03b6048c16fa3796ed8604ab68107b648ea8d",
+      "sha256": "82f9248bcfb0748c2b59084bb58cd5da68f80893befce95f5f5baf56faa258d9",
+      "bytes": 1410
+    },
+    {
+      "path": "racket/collects/racket/list.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/racket/list.rkt",
+      "git_blob_sha1": "a53887bbbc8f8d3358e28042179b5eca0a98e143",
+      "sha256": "4a4420c38d117a26b63c2e9119cdd12352004f993709786cd3de1a6fe4053c0c",
+      "bytes": 37341
+    },
+    {
+      "path": "racket/collects/json/main.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/json/main.rkt",
+      "git_blob_sha1": "e2a0c96b561cbf4d851e2500cdd1dfc6c8e335cf",
+      "sha256": "ffd7332e6d70bf53d3f06cd1e72dd875dd304b72e9cc5ecc60e15cf1eb8c2ad2",
+      "bytes": 25306
+    },
+    {
+      "path": "racket/collects/compiler/private/mach-o.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/compiler/private/mach-o.rkt",
+      "git_blob_sha1": "bf57819ad37f76f215c50c777a80374c5c68aae1",
+      "sha256": "7a60b07fcc89b341d8f9fb83a141f961f9134b67e17bb5657dbc88e6b23de5a5",
+      "bytes": 39790
+    },
+    {
+      "path": "racket/collects/racket/file.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/racket/file.rkt",
+      "git_blob_sha1": "ce2d90994ff94b364c91877773ea269ab86bc5b0",
+      "sha256": "b43a01b6158e58907ba7af9aef9061f7a03d96bb9a56ca8e40c6ef603d317e05",
+      "bytes": 52348
+    },
+    {
+      "path": "racket/collects/racket/promise.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/racket/promise.rkt",
+      "git_blob_sha1": "c0e9315ef3257533cc726cdabd415454630a8f05",
+      "sha256": "f156c8177626dcd094a8f5a0eaad6d959ae4bfc829253cbd5dacd4d7c92a5b1c",
+      "bytes": 10802
+    },
+    {
+      "path": "racket/collects/setup/cross-system.rkt",
+      "url": "https://github.com/racket/racket/blob/bbf7dea831df95922db23aaa51e13eed17dcf881/racket/collects/setup/cross-system.rkt",
+      "git_blob_sha1": "7dc997d5ba081bd0b27e48a90ed247169e13fc65",
+      "sha256": "2588c57ca938e2a87adea128e5e4f772f0685858c1091a0192d67e7017d9b306",
+      "bytes": 4470
+    }
+  ]
+}

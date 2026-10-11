@@ -1,0 +1,106 @@
+{
+  "API-EVIDENCE.md": {
+    "bytes": 9282,
+    "sha256": "eea85ce13477b3709fd09098d86674fb066f6d3a3e176f8388aab4f279bdee3c"
+  },
+  "ISOLATION-DESIGN.md": {
+    "bytes": 4899,
+    "sha256": "0b7246f166bae4da64cff215919430868c47b36357217263fa5528c4ba158b88"
+  },
+  "NATIVE-ACCEPTANCE.md": {
+    "bytes": 8805,
+    "sha256": "aea1eb666218ef5912f61744754213cd9015fb48fe053bed0a4d2b905515f2b8"
+  },
+  "NATIVE-OUTPUT.schema.json": {
+    "bytes": 6720,
+    "sha256": "fe5a3e55e2aef183819a92299095939add0aed9b04d0360619ad24043cbbe7fa"
+  },
+  "README.md": {
+    "bytes": 7152,
+    "sha256": "3302f3ede8d00fabfe06142f411b838e95b37d80ec2412acad054073789b96ba"
+  },
+  "REVIEW-STATUS.json": {
+    "bytes": 2787,
+    "sha256": "edc402790ccefdda9300880f756c7991ad7035f324519b0ff8ab8e29fa3f2cbe"
+  },
+  "bootstrap.sh": {
+    "bytes": 1763,
+    "sha256": "27c8e7407f5a93f6cd62c0cd88f0dc13765a89ab98dca9d2c7cb1cdf88902e14"
+  },
+  "evidence/ADDITIONAL-SOURCE-PINS.json": {
+    "bytes": 3401,
+    "sha256": "6910405deb08c5ffdf599d6d02c1d8322d11dc3e9c6e5458b24c26b8bb205e18"
+  },
+  "evidence/ADDITIONAL-SOURCE-TEXTS.json": {
+    "bytes": 193204,
+    "sha256": "0af4424b1e2433f363e8dea097fc589126199b0a0b294d5abcfc4f22b5e961d8"
+  },
+  "evidence/INPUT-VERIFICATION.json": {
+    "bytes": 637,
+    "sha256": "2816e00b3e8566d0229d07ce8780814fb9f343f34c366b0c8c7780c222c77369"
+  },
+  "evidence/ISOLATION-INPUTS.json": {
+    "bytes": 4026,
+    "sha256": "96e307039f5d64cad6a3ee199074da4da7b68e6dbc3cb9fe56e0008b79668d20"
+  },
+  "evidence/ISOLATION-PORTABLE-TESTS.log": {
+    "bytes": 33312,
+    "sha256": "679034fc6ce853e4d6d14595fde374c7c04ca38d8439177ff2db389e506a8919"
+  },
+  "evidence/PORTABLE-TESTS.log": {
+    "bytes": 6391,
+    "sha256": "c25deb801a0eff6d1f4a8ed758770fcba43a0d2bb6bb3e2b76b2c61ecad720e2"
+  },
+  "evidence/SOURCE-PINS.json": {
+    "bytes": 18440,
+    "sha256": "60828ef20279d60be8bb5c24cc75a97101a41b430a6d83b459ef3d91975e80f9"
+  },
+  "make-launcher.rkt": {
+    "bytes": 1824,
+    "sha256": "f6020fd553d4dd299b400098beb68a49e17072abaa79211075a32465662a1fde"
+  },
+  "native-read-compile.rkt": {
+    "bytes": 787,
+    "sha256": "7d687bad2e0025a7e106e8be6b50df5d1d392ad163f56413b82dfc936269d66e"
+  },
+  "probe/boot.rkt": {
+    "bytes": 1574,
+    "sha256": "50621f429f62e0317d0ad2d268b60cf48ac2e3c39854f1b54781e5e3d2b29e96"
+  },
+  "probe/child.rkt": {
+    "bytes": 425,
+    "sha256": "2dbf1ab62cd2f41e49be37dba677ade0bfa473946dc238ad87e0fe2dc2aefcad"
+  },
+  "probe/cocoa-identity.rkt": {
+    "bytes": 3909,
+    "sha256": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b"
+  },
+  "probe/default-handler.rkt": {
+    "bytes": 2391,
+    "sha256": "175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b"
+  },
+  "probe/dyld.rkt": {
+    "bytes": 566,
+    "sha256": "146dc077116fa1cb11c5944b76d0db63ea770d850ebd4da233f1ae358c246485"
+  },
+  "probe/gui.rkt": {
+    "bytes": 3754,
+    "sha256": "3f14d8c586af8ab8c369fdd96e4a304a9d9089df90dcc85a48c98d377efcaead"
+  },
+  "probe/paths.rkt": {
+    "bytes": 2545,
+    "sha256": "4f02a18058969b9165885e183ab3e71f8ea4c6d8e7f6cadade74aee7ed75dc2e"
+  },
+  "supervise.py": {
+    "bytes": 42278,
+    "sha256": "366783356095b8badd9ac1deb49c532e4cf1a2125b01b29307896f0f37ea94d0"
+  },
+  "tests/test_isolation.py": {
+    "bytes": 15046,
+    "sha256": "64ee1baeb856b7caeb397f5659555130418ae5bf192a700a694e5aaf9e286018"
+  },
+  "tests/test_source.py": {
+    "bytes": 24522,
+    "sha256": "5d857bcc38fccf652eb1bdaf5d442b93d54b08d49fc4e4e9ab13fbbd4a014f73"
+  }
+}
