@@ -1,0 +1,345 @@
+{
+  "run_id": 38114573816,
+  "commit": "80e51d78526d718a50c45f3662058a042c3038f7",
+  "conclusion": "success",
+  "log_sha256": "db98f63b1fa172300a784d072553147e67d5b4b75b04fb136c964da7aeec9025",
+  "results": [
+    {
+      "name": "Portable adapter isolation unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Runtime immutability witness unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Copy verified portable source into fresh spaced path",
+      "passed": true,
+      "detail": "155 source files; /Users/runner/work/_temp/OpenRacket Portable Proof"
+    },
+    {
+      "name": "Deep-copy independent official portable runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-profile-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-dependency-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "autosave-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile product memory helper",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native product memory profile ownership and preservation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable installer observer and combined save contract tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Profile absent before actual setup freshness reservation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Actual setup-openracket --install",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual launch-openracket --check",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Installed profile/runtime collection confinement",
+      "passed": true,
+      "detail": "{\"toolbar\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/mrlib/switchable-button.rkt\", \"sha256\": \"d80e67b0285da13291d5650b56de4a616db5a217e63c51a6cf95c040603add31\"}, \"autosave\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/framework/private/text-misc.rkt\", \"sha256\": \"00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d\"}, \"unit\": {\"path\": \"/Users/runner/work/_temp/openracket-full.sm1bZn/racket-portable/share/pkgs/drracket-core-lib/drracket/private/unit.rkt\", \"sha256\": \"535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5\"}, \"appearance\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/tool/tool.rkt\", \"sha256\": \"f24ce33e0349cab6024818633d78b422ae888915a817fb2fd200d875707e6a64\"}}"
+    },
+    {
+      "name": "Memory fresh-default effective setting and ownership",
+      "passed": true,
+      "detail": "{\"affects\": \"Run and background analysis\", \"effective_limit_bytes\": 268435456, \"gui_initialized\": false, \"ownership_state\": \"owned\", \"persisted\": true, \"persisted_limit_bytes\": 268435456, \"platform\": \"macosx\", \"preference_key\": \"drracket:child-only-memory-limit\", \"preference_store\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd\", \"profile\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile\", \"runtime_version\": \"9.3\", \"status\": \"observed\"}"
+    },
+    {
+      "name": "Register CI-only read-only launcher observer",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile observer tool registration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile combined actual native save callers",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-modern-default real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-modern-default native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 102006 bytes, SHA256 92320a2693b774a95e62bbe2c3931324f57d20ffa2e3ebd4391839c101b75aea"
+    },
+    {
+      "name": "portable-modern-optout real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-modern-optout native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 102588 bytes, SHA256 0c1d63a772582dda4daac270bd641f0329fb6c37b2517f603d35915d3b44cef1"
+    },
+    {
+      "name": "portable-stock-launcher real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-stock-launcher native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 105863 bytes, SHA256 cbbb9e8865af878624104a20a5b68b0a0463dc29ccb4b3d9d4d6b51509473fb8"
+    },
+    {
+      "name": "Installed profile/runtime collection confinement",
+      "passed": true,
+      "detail": "{\"toolbar\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/mrlib/switchable-button.rkt\", \"sha256\": \"d80e67b0285da13291d5650b56de4a616db5a217e63c51a6cf95c040603add31\"}, \"autosave\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/framework/private/text-misc.rkt\", \"sha256\": \"00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d\"}, \"unit\": {\"path\": \"/Users/runner/work/_temp/openracket-full.sm1bZn/racket-portable/share/pkgs/drracket-core-lib/drracket/private/unit.rkt\", \"sha256\": \"535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5\"}, \"appearance\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/tool/tool.rkt\", \"sha256\": \"f24ce33e0349cab6024818633d78b422ae888915a817fb2fd200d875707e6a64\"}}"
+    },
+    {
+      "name": "Memory restored effective setting and ownership",
+      "passed": true,
+      "detail": "{\"affects\": \"Run and background analysis\", \"effective_limit_bytes\": 134217728, \"gui_initialized\": false, \"ownership_state\": \"restored\", \"persisted\": true, \"persisted_limit_bytes\": 134217728, \"platform\": \"macosx\", \"preference_key\": \"drracket:child-only-memory-limit\", \"preference_store\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd\", \"profile\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile\", \"runtime_version\": \"9.3\", \"status\": \"restored\"}"
+    },
+    {
+      "name": "portable-memory-restored real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-memory-restored native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 101806 bytes, SHA256 fd0984cbe7a310b67f6e1e0be43e098776be96e2055172f7c48b546c5a752603"
+    },
+    {
+      "name": "Memory explicit-stock effective setting and ownership",
+      "passed": true,
+      "detail": "{\"affects\": \"Run and background analysis\", \"effective_limit_bytes\": 134217728, \"gui_initialized\": false, \"ownership_state\": \"explicit\", \"persisted\": true, \"persisted_limit_bytes\": 134217728, \"platform\": \"macosx\", \"preference_key\": \"drracket:child-only-memory-limit\", \"preference_store\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd\", \"profile\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile\", \"runtime_version\": \"9.3\", \"status\": \"selected\"}"
+    },
+    {
+      "name": "portable-memory-explicit-stock real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-memory-explicit-stock native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 101982 bytes, SHA256 764ad215259ce355147d08e22e48f6ba986825a3d2689fb38fb57a3336a388f9"
+    },
+    {
+      "name": "Memory custom effective setting and ownership",
+      "passed": true,
+      "detail": "{\"affects\": \"Run and background analysis\", \"effective_limit_bytes\": 402653184, \"gui_initialized\": false, \"ownership_state\": \"explicit\", \"persisted\": true, \"persisted_limit_bytes\": 402653184, \"platform\": \"macosx\", \"preference_key\": \"drracket:child-only-memory-limit\", \"preference_store\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd\", \"profile\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile\", \"runtime_version\": \"9.3\", \"status\": \"selected\"}"
+    },
+    {
+      "name": "portable-memory-custom real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-memory-custom native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 102119 bytes, SHA256 d85c1313b3d8b9bd046e4bc217e40ac21a349edf514a773b388ac1a0e956e1d6"
+    },
+    {
+      "name": "Repeated actual setup preserves explicit custom memory",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Memory after-repeat-setup effective setting and ownership",
+      "passed": true,
+      "detail": "{\"affects\": \"Run and background analysis\", \"effective_limit_bytes\": 402653184, \"gui_initialized\": false, \"ownership_state\": \"explicit\", \"persisted\": true, \"persisted_limit_bytes\": 402653184, \"platform\": \"macosx\", \"preference_key\": \"drracket:child-only-memory-limit\", \"preference_store\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd\", \"profile\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile\", \"runtime_version\": \"9.3\", \"status\": \"observed\"}"
+    },
+    {
+      "name": "portable-memory-existing real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-memory-existing native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 101815 bytes, SHA256 52eae5d73b18d12fd6e0ed8a68b6a70b62320525080b3d649bb090c4ba06200b"
+    },
+    {
+      "name": "portable-stock-after-memory real launcher/native state",
+      "passed": true,
+      "detail": "exit=0 ready_status=passed"
+    },
+    {
+      "name": "portable-stock-after-memory native OS screenshot",
+      "passed": true,
+      "detail": "1024x768, 106155 bytes, SHA256 41d8dd0e016366928dc2b4c6d9b8f7a447b354c3a33f304dba71ed144ee140d0"
+    },
+    {
+      "name": "Installed profile/runtime collection confinement",
+      "passed": true,
+      "detail": "{\"toolbar\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/mrlib/switchable-button.rkt\", \"sha256\": \"d80e67b0285da13291d5650b56de4a616db5a217e63c51a6cf95c040603add31\"}, \"autosave\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/profile/.local/share/racket/9.3/pkgs/openracket-gui-lib/framework/private/text-misc.rkt\", \"sha256\": \"00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d\"}, \"unit\": {\"path\": \"/Users/runner/work/_temp/openracket-full.sm1bZn/racket-portable/share/pkgs/drracket-core-lib/drracket/private/unit.rkt\", \"sha256\": \"535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5\"}, \"appearance\": {\"path\": \"/Users/runner/work/_temp/OpenRacket Portable Proof/tool/tool.rkt\", \"sha256\": \"f24ce33e0349cab6024818633d78b422ae888915a817fb2fd200d875707e6a64\"}}"
+    },
+    {
+      "name": "Combined installed host candidate-on save and recovery (fresh stock128 test profile)",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Combined installed host candidate-off save and recovery (fresh stock128 test profile)",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "memory_status": [
+    {
+      "label": "fresh-default",
+      "report": {
+        "affects": "Run and background analysis",
+        "effective_limit_bytes": 268435456,
+        "gui_initialized": false,
+        "ownership_state": "owned",
+        "persisted": true,
+        "persisted_limit_bytes": 268435456,
+        "platform": "macosx",
+        "preference_key": "drracket:child-only-memory-limit",
+        "preference_store": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+        "profile": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile",
+        "runtime_version": "9.3",
+        "status": "observed"
+      }
+    },
+    {
+      "label": "restored",
+      "report": {
+        "affects": "Run and background analysis",
+        "effective_limit_bytes": 134217728,
+        "gui_initialized": false,
+        "ownership_state": "restored",
+        "persisted": true,
+        "persisted_limit_bytes": 134217728,
+        "platform": "macosx",
+        "preference_key": "drracket:child-only-memory-limit",
+        "preference_store": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+        "profile": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile",
+        "runtime_version": "9.3",
+        "status": "restored"
+      }
+    },
+    {
+      "label": "explicit-stock",
+      "report": {
+        "affects": "Run and background analysis",
+        "effective_limit_bytes": 134217728,
+        "gui_initialized": false,
+        "ownership_state": "explicit",
+        "persisted": true,
+        "persisted_limit_bytes": 134217728,
+        "platform": "macosx",
+        "preference_key": "drracket:child-only-memory-limit",
+        "preference_store": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+        "profile": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile",
+        "runtime_version": "9.3",
+        "status": "selected"
+      }
+    },
+    {
+      "label": "custom",
+      "report": {
+        "affects": "Run and background analysis",
+        "effective_limit_bytes": 402653184,
+        "gui_initialized": false,
+        "ownership_state": "explicit",
+        "persisted": true,
+        "persisted_limit_bytes": 402653184,
+        "platform": "macosx",
+        "preference_key": "drracket:child-only-memory-limit",
+        "preference_store": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+        "profile": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile",
+        "runtime_version": "9.3",
+        "status": "selected"
+      }
+    },
+    {
+      "label": "after-repeat-setup",
+      "report": {
+        "affects": "Run and background analysis",
+        "effective_limit_bytes": 402653184,
+        "gui_initialized": false,
+        "ownership_state": "explicit",
+        "persisted": true,
+        "persisted_limit_bytes": 402653184,
+        "platform": "macosx",
+        "preference_key": "drracket:child-only-memory-limit",
+        "preference_store": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+        "profile": "/Users/runner/work/_temp/OpenRacket Portable Proof/profile",
+        "runtime_version": "9.3",
+        "status": "observed"
+      }
+    }
+  ]
+}

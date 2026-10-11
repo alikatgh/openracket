@@ -1,4 +1,4 @@
-name: Mac preview fresh-profile capacity and portable launch (public free runner)
+name: Mac genuine GUI producer-phase observation (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 55
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -60,38 +60,34 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Verify source, runtime isolation and native profile safety tests
-        id: portable_prepare
+      - name: Mandatory native preflight and independent GUI observer clone
+        id: gui_prepare
         timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-portable.py prepare
-      - name: Actual portable installation and fresh 256 MiB initialization
-        id: portable_install
-        timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-portable.py install
-      - name: Actual modern, autosave opt-out and stock launchers
-        id: portable_launch
-        timeout-minutes: 6
-        run: python3 retained-host/scripts/ci/run-portable.py launch
-      - name: Restore, explicit settings, repeated setup and stock isolation
-        if: success() && steps.portable_launch.outcome == 'success'
-        timeout-minutes: 23
-        run: python3 retained-host/scripts/ci/run-portable.py memory
-      - name: Combined save and recovery regression in fresh stock128 profiles
-        if: always() && steps.portable_install.outcome == 'success'
-        timeout-minutes: 8
-        run: python3 retained-host/scripts/ci/run-portable.py save
-      - name: Verify both original runtime trees including bytecode unchanged
+        run: python3 retained-host/scripts/ci/run-gui-phase.py prepare
+      - name: Genuine GUI common-observer control
+        if: success() && steps.gui_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-gui-phase.py control
+      - name: Genuine GUI producer-phase observation
+        if: always() && steps.gui_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-gui-phase.py observed
+      - name: Strict actual GUI completion and phase evidence acceptance
+        if: always() && steps.gui_prepare.outcome == 'success'
+        timeout-minutes: 2
+        run: python3 retained-host/scripts/ci/run-gui-phase.py accept
+      - name: Verify original full runtime including bytecode unchanged
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 7
-        run: python3 retained-host/scripts/ci/run-portable.py verify
-      - name: Report actual portable outcomes and remaining limits
+        timeout-minutes: 4
+        run: python3 retained-host/scripts/ci/run-gui-phase.py verify
+      - name: Report genuine GUI observations and explicit limits
         if: always()
         run: |
-          if test -f retained-host/reports/portable-ci/summary.md; then
-            cat retained-host/reports/portable-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/gui-phase-ci/summary.md; then
+            cat retained-host/reports/gui-phase-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Preparation failed before a portable installation result was available.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Preparation failed before genuine GUI observation was available.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'Only newly reserved preview profiles receive 256 MiB. Existing profiles, explicit settings and the separate stock launcher are checked through actual setup and GUI readback.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Capacity evidence comes from the separate nine-trial stock matrix. This installer gate does not claim a broad speedup or repeat the diagnostic profiling.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Earlier Stop and broader release gates remain recorded. No artifact/cache/release/package upload or paid runner.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Two fresh GUI processes, one shared pinned runtime and fixture, original tools and 256 MiB setting. Actual terminal, current trace application and final lexer completion remain strict gates.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Bounded producer points are diagnostic. No standalone replay, worker barrier, sampling thread or new logger subscription. One pair cannot establish precise overhead or a product speedup.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No artifact/cache/release/package upload or paid runner. Delivered preview and broader release evidence remain separate.' >> "$GITHUB_STEP_SUMMARY"
