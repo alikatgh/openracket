@@ -1,0 +1,84 @@
+{
+  "status": "immutable source-only freeze; native compile/execution not run",
+  "source_checks": "25 Python source assertions passed; lexical only",
+  "unchanged_native_files": {
+    "native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+    "native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3"
+  },
+  "changed_files": {
+    "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+    "tests/independent-native-stock-tools.rkt": "46d0716f70fe05babe73d339151e9520d20039d26277a296c998e79318c64786",
+    "tests/native-tool-failure-diagnostics.rkt": "3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a",
+    "tests/native-tool-failure-diagnostics-standalone.rkt": "aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa",
+    "tests/stock-tool-source-test.py": "7ae5949a4e51a83774093391fff34a26a9496863cc06aa1d8f11fd488dde56fe",
+    "tests/tool-dispatch-source-test.py": "49d6c15f9dcba384d2526d250da1fe5479a7b2cd49d9c26c090539638a37021f",
+    "tests/coordinator-standalone-source-test.py": "4a102e006ade17722d983b642a1b987362947f808fd1f6d966d6f9f0ec99350e",
+    "scripts/prepare-stock-tool-host.py": "7c70586ffa34616f567fd6df27ec07141fd0a1bdb716ca3640d28820b11c6537"
+  },
+  "sources": [
+    {
+      "path": "/tmp/17916276491791627649681-drracket/gui-debugger/debug-tool.rkt",
+      "module": "gui-debugger/debug-tool.rkt",
+      "sha256": "5a8b030e9ef3c1f57f829f3749673cdedb0938f460ed1d40f162160036759676"
+    },
+    {
+      "path": "/tmp/17916276491791627649681-drracket/gui-debugger/marks.rkt",
+      "module": "gui-debugger/marks.rkt",
+      "sha256": "7f719f9d91ca81f0f1330e67a668c4e5219e3894713d0d3d52c263cbb5f31f93"
+    },
+    {
+      "path": "/tmp/17916276541791627654466-htdp-lib/test-engine/test-markup.rkt",
+      "module": "test-engine/test-markup.rkt",
+      "sha256": "f0e69b45dab218530df2b63bf7608c21aeb86a85b0e0a1f211642c8c404d5301"
+    },
+    {
+      "path": "/tmp/17916276541791627654466-htdp-lib/lang/htdp-langs.rkt",
+      "module": "lang/htdp-langs.rkt",
+      "sha256": "0d97b97a2dad15fa27481e5249effff38b48868d082a3fa00d937da89bcc6b7f"
+    },
+    {
+      "path": "/tmp/17916276541791627654466-htdp-lib/lang/private/teach-module-begin.rkt",
+      "module": "lang/private/teach-module-begin.rkt",
+      "sha256": "6a1af524c1e29efa446023d880b67823c24d94c5cdb5e870eaabbb5d23a6f2dc"
+    },
+    {
+      "path": "/tmp/17916276541791627654466-htdp-lib/htdp/bsl/runtime.rkt",
+      "module": "htdp/bsl/runtime.rkt",
+      "sha256": "d689ba481a7b57711af6037bcdde05c36f42e88a24565337f97525171cbbbbce"
+    },
+    {
+      "path": "/tmp/17916293651791629365355-gui-lib/framework/main.rkt",
+      "module": "framework/main.rkt",
+      "sha256": "f57fa9d5b0f751d1292d7ae97c0b7ebf113375527377bcab1878b2109d9ce980"
+    },
+    {
+      "path": "/tmp/17916293651791629365355-gui-lib/framework/private/sig.rkt",
+      "module": "framework/private/sig.rkt",
+      "sha256": "1ca6c3cfb289a2c563dc979ca78a8c81c33d44010fabeb7124e251c00964d230"
+    },
+    {
+      "path": "/tmp/17916293651791629365355-gui-lib/framework/private/text-port.rkt",
+      "module": "framework/private/text-port.rkt",
+      "sha256": "06295ef974dff29888c48c49a787b8ab154d1e4a66a1b7972ee10f3ed7c1d76d"
+    },
+    {
+      "path": "/tmp/17916293651791629365355-gui-lib/framework/private/srcloc-snip.rkt",
+      "module": "framework/private/srcloc-snip.rkt",
+      "sha256": "42bbdd67c2a78d1e4d8da12a73d108d30c6acb0a53c2d1aae82a8844e06b131d"
+    },
+    {
+      "path": "/tmp/17916293651791629365355-gui-lib/framework/private/handler.rkt",
+      "module": "framework/private/handler.rkt",
+      "sha256": "1f96b905bfa19d03b8b9de1eed56a803c97666d92afb98495a8cfb84bae86bf9"
+    },
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/unit.rkt",
+      "module": "drracket/private/unit.rkt",
+      "sha256": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5"
+    }
+  ],
+  "mandatory_native_diagnostic_gate": "positive and --inject-failure standalone modes; see UI-REPAIR-API-PROOF.md"
+}

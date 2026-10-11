@@ -1,10 +1,11 @@
 # Native stock-tool acceptance candidate
 
-Current 09:39 revision: see `TOOL-DISPATCH-REPAIR.md` for the observed native
-initial-handler dispatch defect, host-only repair, new distinct-thread regression
-and verification status. `NATIVE-CLI-CONTRACT.md` and the seven-file allowlist are
-the current execution contract. The sections below describe the original tool
-gates and their historical preparation status.
+Historical original acceptance-gate design and preparation notes. The sections
+below describe earlier revisions, not the current verification status or file
+allowlist. Use `UI-REPAIR-API-PROOF.md` for the current stock-tool UI/diagnostics
+repair and `NATIVE-CLI-CONTRACT.md` plus the root nine-file
+`FROZEN-NATIVE-ALLOWLIST.json` for current integration and mandatory commands.
+`TOOL-DISPATCH-REPAIR.md` records the earlier initial-handler repair.
 
 Prepared 2026-10-11. This is a new, unpublished candidate. It does not recover or
 claim results from the lost follow-on candidates.

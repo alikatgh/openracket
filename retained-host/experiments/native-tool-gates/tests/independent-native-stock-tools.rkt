@@ -150,6 +150,31 @@
        (await "shown Debug control enabled" (lambda () (send debug is-enabled?)))
        (gui (lambda () (send debug command)))
        (await "Debugger suspended at real fixture source" suspended?)
+       ;; Read-only evidence before the unchanged source assertions. A stock
+       ;; generated-expression stop can have a PC but no open source editor.
+       (gui (lambda ()
+              (with-handlers ([exn? (lambda (e)
+                                     (emit "debugger-pre-assert-diagnostic-error"
+                                           (hash 'message (exn-message e))))])
+                (define mark-source (dynamic-require 'gui-debugger/marks 'mark-source))
+                (define frames (send tab get-stack-frames))
+                (define (mark-location mark)
+                  (define stx (mark-source mark))
+                  (hash 'source (source-id (syntax-source stx))
+                        'line (or (syntax-line stx) 'null)
+                        'column (or (syntax-column stx) 'null)
+                        'position (or (syntax-position stx) 'null)
+                        'span (or (syntax-span stx) 'null)))
+                (emit "debugger-before-source-assertions"
+                      (hash 'state (debug-state)
+                            'definitions_filename (source-id (send defs get-filename))
+                            'definitions_port_name (source-id (send defs get-port-name))
+                            'pc_resolves_to_retained_defs (eq? (send tab defs-containing-pc) defs)
+                            'frame_resolves_to_retained_defs
+                            (eq? (send tab defs-containing-current-frame) defs)
+                            'stack_count (length frames)
+                            'top_mark (mark-location (car frames))
+                            'current_mark (mark-location (list-ref frames (send tab get-frame-num))))))))
        (define first-state
          (gui (lambda () (assert-source!) (debug-state))))
        (emit "debugger-suspended" first-state)
@@ -287,11 +312,46 @@
              'normal_close #t 'ordinary_run_recovered #t)]
 
       [(teaching-tests)
+       (define failure-form "(check-expect (bump 2) 4)")
+       (define failure-start (car (car (regexp-match-positions (regexp-quote failure-form) teaching-failing))))
+       (define expected-location
+         (hash 'source (path->string (simplify-path file)) 'line 5 'column 0
+               'position (add1 failure-start) 'span (string-length failure-form)))
+       (define failure-summary
+         (format (string-constant test-engine-m-of-n-tests-failed) 1 2))
+       ;; The stock markup formatter uses ~F for a framed value. Flattening
+       ;; retains that value text, so verify the displayed 3-versus-4 payload.
+       (define failure-detail
+         (format (regexp-replace* #rx"~[Ff]"
+                                 (string-constant test-engine-actual-value-differs-error) "~a")
+                 3 4))
+       (define location-label
+         (format (string-constant test-engine-in-at-line-column) "fixture.rkt" "5" "0"))
+       (define source-link% (dynamic-require 'framework 'srcloc-snip:snip%))
+       ;; #lang htdp/bsl emits markup through the actual Interactions output
+       ;; port. Its stock source link is an embedded srcloc-snip%, not the
+       ;; separate legacy teaching-language test-window editor.
+       (define (source-links editor)
+         (let loop ([snip (send editor find-first-snip)])
+           (if snip
+               (append (if (is-a? snip source-link%) (list snip) '())
+                       (if (is-a? snip editor-snip%)
+                           (source-links (send snip get-editor)) '())
+                       (loop (send snip next)))
+               '())))
+       (define (failure-links)
+         (filter (lambda (snip)
+                   (equal? (location->json (get-field srcloc snip)) expected-location))
+                 (source-links ints)))
+       (define (inline-text) (send ints get-text 0 'eof #t))
        (load! teaching-failing)
        (start!)
-       (await "htdp/bsl completes and exposes actual failure report"
-              (lambda () (and (done? "42") (send tab get-test-editor)
-                             (positive? (send (send tab get-test-editor) last-position)))))
+       (await "htdp/bsl completes and exposes actual inline failure report"
+              (lambda () (and (done? "42")
+                             (string-contains? (inline-text) failure-summary)
+                             (string-contains? (inline-text) failure-detail)
+                             (string-contains? (inline-text) location-label)
+                             (= (length (failure-links)) 1))))
        ;; Read the already-instantiated test engine in the actual user evaluator.
        ;; Do not fabricate a model, change its results, or require test-engine in
        ;; the harness namespace and mistake that empty instance for user state.
@@ -330,36 +390,39 @@
                   (define value (unbox response))
                   (and value (if (eq? (car value) 'error) (raise (cdr value)) (cdr value))))))
        (define failing-state (snapshot-tests!))
-       (define report (gui (lambda () (send tab get-test-editor))))
-       (define failure-form "(check-expect (bump 2) 4)")
-       (define failure-start (car (car (regexp-match-positions (regexp-quote failure-form) teaching-failing))))
-       (define expected-location
-         (hash 'source (path->string (simplify-path file)) 'line 5 'column 0
-               'position (add1 failure-start) 'span (string-length failure-form)))
+       (define report ints)
+       (define failure-link (gui (lambda () (car (failure-links)))))
        (gui (lambda ()
               (check-equal? (hash-ref failing-state 'tests) 2)
               (check-equal? (hash-ref failing-state 'passed) 1)
               (check-equal? (hash-ref failing-state 'failures) 1)
               (check-equal? (hash-ref failing-state 'details)
                             (list (hash 'location expected-location 'unequal #t 'actual 3 'expected 4)))
-              (define flat-report (send report get-text 0 'eof #t))
-              (check-true (string-contains? flat-report
-                                           (format (string-constant test-engine-m-of-n-tests-failed) 1 2)))
-              (define location-label
-                (format (string-constant test-engine-in-at-line-column) "fixture.rkt" "5" "0"))
+              (define flat-report (inline-text))
+              (check-true (string-contains? flat-report failure-summary))
+              (check-true (string-contains? flat-report failure-detail))
               (check-true (string-contains? flat-report location-label))
-              ;; Test the stock report's installed source-link callback itself.
-              ;; Use editor positions from unflattened text so nested value snips
-              ;; cannot shift clickback offsets.
-              (define link (regexp-match-positions (regexp-quote location-label) (send report get-text)))
-              (check-not-false link)
-              (send report call-clickback (caar link) (cdar link))
-              (define ranges (send ints get-error-ranges))
-              (check-true (and (list? ranges) (= (length ranges) 1)))
-              (check-eq? (srcloc-source (car ranges)) defs
-                         "The actual report clickback resolves to the retained editor")
-              (check-equal? (hash-remove (location->json (car ranges)) 'source)
-                            (hash-remove expected-location 'source))
+              (check-eq? report (send frame get-interactions-text))
+              (check-equal? (length (failure-links)) 1)
+              (check-equal? (location->json (get-field srcloc failure-link)) expected-location)
+              (define link-editor (send failure-link get-editor))
+              (check-equal? (send link-editor get-text 0 'eof #t) location-label)
+              ;; Invoke the real installed clickback on the actual nested link.
+              ;; framework:srcloc-snip selects via handler:edit-file, not the
+              ;; legacy test-panel callback that installs error-ranges.
+              (send defs set-position 0 0)
+              (send link-editor call-clickback 0 (send link-editor last-position))
+              (identities!)))
+       (await "actual inline source link selects the exact retained source range"
+              (lambda ()
+                (and (eq? defs (send frame get-definitions-text))
+                     (eq? tab (send frame get-current-tab))
+                     (= (send defs get-start-position) failure-start)
+                     (= (send defs get-end-position) (+ failure-start (string-length failure-form)))
+                     (send frame is-shown?))))
+       (gui (lambda ()
+              (check-equal? (send defs get-text (send defs get-start-position)
+                                  (send defs get-end-position)) failure-form)
               (identities!)))
        (emit "teaching-failure" failing-state)
        (focus-preserves! teaching-failing)
@@ -373,11 +436,15 @@
               (check-true (send defs is-modified?))
               (identities!)))
        (start!)
-       (await "corrected htdp/bsl Run completes and clears the old report"
+       (await "corrected htdp/bsl Run replaces the inline failure report"
               (lambda ()
                 (and (done? (string-constant test-engine-both-tests-passed))
-                     (eq? report (send tab get-test-editor))
-                     (zero? (send report last-position)))))
+                     (eq? report (send frame get-interactions-text))
+                     (not (string-contains? (inline-text) failure-summary))
+                     (not (string-contains? (inline-text) failure-detail))
+                     (not (string-contains? (inline-text) location-label))
+                     (null? (source-links ints))
+                     (not (memq failure-link (source-links ints))))))
        (define corrected-state (snapshot-tests!))
        (gui (lambda ()
               (check-equal? (hash-ref corrected-state 'tests) 2)
@@ -385,12 +452,18 @@
               (check-equal? (hash-ref corrected-state 'failures) 0)
               (check-equal? (hash-ref corrected-state 'details) '())
               (check-equal? (send defs get-text) teaching-corrected)
-              (check-equal? (send report get-text 0 'eof #t) "")
+              (check-eq? report (send frame get-interactions-text))
+              (check-true (string-contains? (inline-text) (string-constant test-engine-both-tests-passed)))
+              (check-false (string-contains? (inline-text) failure-summary))
+              (check-false (string-contains? (inline-text) failure-detail))
+              (check-false (string-contains? (inline-text) location-label))
+              (check-equal? (source-links ints) '())
+              (check-false (memq failure-link (source-links ints)))
               (identities!)))
        (focus-preserves! teaching-corrected)
        (emit "teaching-corrected" corrected-state)
        (hash 'before failing-state 'after corrected-state
-             'source_link_verified #t 'retained_report_cleared #t
+             'source_link_verified #t 'inline_failure_report_replaced #t
              'corrected_unsaved_buffer_rerun #t 'retained_focus_and_editors #t)]
       [else (error 'native-tool-gate "Unknown case ~s" which)]))
   (emit "completed" (hash 'case (symbol->string which) 'status "passed" 'result result))

@@ -1,0 +1,514 @@
+--- a/tests/independent-native-host.rkt
++++ b/tests/independent-native-host.rkt
+@@ -3,7 +3,8 @@
+ ;; No substitute editor, evaluator, disabled tool, changed memory limit or mocked GUI.
+ ;; The CI runner supplies a fresh preference profile and external timeout.
+ (require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
+-         json mrlib/switchable-button "native-tool-dispatch.rkt")
++         json mrlib/switchable-button "native-tool-dispatch.rkt"
++         "native-tool-failure-diagnostics.rkt")
+ 
+ (define checks 0)
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+@@ -128,6 +129,7 @@
+          (define descriptions (map describe (take windows (min 8 (length windows)))))
+          (hash 'status "failed" 'failure_diagnostic #t 'checks checks
+                'error (bounded-text (exn-message exception) 1000)
++               'failure_payload (failure->diagnostic exception)
+                'windows descriptions
+                'geometry (if (pair? descriptions) (hash-ref (car descriptions) 'geometry) (hash))))))
+     (printf "OPENRACKET_NATIVE_FAILURE_DIAGNOSTIC ~a\n" (jsexpr->string report))
+@@ -145,8 +147,11 @@
+ (with-handlers
+     ([exn?
+       (lambda (e)
+-        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\n" (exn-message e))
+-        (failure-diagnostics! e)
++        (report-failure!
++         e
++         (lambda (original)
++           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\n" (exn-message original))
++           (failure-diagnostics! original)))
+         (cleanup!)
+         (exit 1))])
+   ;; Read-only capture before DrRacket's appearance tool can set an app override.
+--- a/tests/independent-native-stock-tools.rkt
++++ b/tests/independent-native-stock-tools.rkt
+@@ -150,6 +150,31 @@
+        (await "shown Debug control enabled" (lambda () (send debug is-enabled?)))
+        (gui (lambda () (send debug command)))
+        (await "Debugger suspended at real fixture source" suspended?)
++       ;; Read-only evidence before the unchanged source assertions. A stock
++       ;; generated-expression stop can have a PC but no open source editor.
++       (gui (lambda ()
++              (with-handlers ([exn? (lambda (e)
++                                     (emit "debugger-pre-assert-diagnostic-error"
++                                           (hash 'message (exn-message e))))])
++                (define mark-source (dynamic-require 'gui-debugger/marks 'mark-source))
++                (define frames (send tab get-stack-frames))
++                (define (mark-location mark)
++                  (define stx (mark-source mark))
++                  (hash 'source (source-id (syntax-source stx))
++                        'line (or (syntax-line stx) 'null)
++                        'column (or (syntax-column stx) 'null)
++                        'position (or (syntax-position stx) 'null)
++                        'span (or (syntax-span stx) 'null)))
++                (emit "debugger-before-source-assertions"
++                      (hash 'state (debug-state)
++                            'definitions_filename (source-id (send defs get-filename))
++                            'definitions_port_name (source-id (send defs get-port-name))
++                            'pc_resolves_to_retained_defs (eq? (send tab defs-containing-pc) defs)
++                            'frame_resolves_to_retained_defs
++                            (eq? (send tab defs-containing-current-frame) defs)
++                            'stack_count (length frames)
++                            'top_mark (mark-location (car frames))
++                            'current_mark (mark-location (list-ref frames (send tab get-frame-num))))))))
+        (define first-state
+          (gui (lambda () (assert-source!) (debug-state))))
+        (emit "debugger-suspended" first-state)
+@@ -287,11 +312,46 @@
+              'normal_close #t 'ordinary_run_recovered #t)]
+ 
+       [(teaching-tests)
++       (define failure-form "(check-expect (bump 2) 4)")
++       (define failure-start (car (car (regexp-match-positions (regexp-quote failure-form) teaching-failing))))
++       (define expected-location
++         (hash 'source (path->string (simplify-path file)) 'line 5 'column 0
++               'position (add1 failure-start) 'span (string-length failure-form)))
++       (define failure-summary
++         (format (string-constant test-engine-m-of-n-tests-failed) 1 2))
++       ;; The stock markup formatter uses ~F for a framed value. Flattening
++       ;; retains that value text, so verify the displayed 3-versus-4 payload.
++       (define failure-detail
++         (format (regexp-replace* #rx"~[Ff]"
++                                 (string-constant test-engine-actual-value-differs-error) "~a")
++                 3 4))
++       (define location-label
++         (format (string-constant test-engine-in-at-line-column) "fixture.rkt" "5" "0"))
++       (define source-link% (dynamic-require 'framework 'srcloc-snip:snip%))
++       ;; #lang htdp/bsl emits markup through the actual Interactions output
++       ;; port. Its stock source link is an embedded srcloc-snip%, not the
++       ;; separate legacy teaching-language test-window editor.
++       (define (source-links editor)
++         (let loop ([snip (send editor find-first-snip)])
++           (if snip
++               (append (if (is-a? snip source-link%) (list snip) '())
++                       (if (is-a? snip editor-snip%)
++                           (source-links (send snip get-editor)) '())
++                       (loop (send snip next)))
++               '())))
++       (define (failure-links)
++         (filter (lambda (snip)
++                   (equal? (location->json (get-field srcloc snip)) expected-location))
++                 (source-links ints)))
++       (define (inline-text) (send ints get-text 0 'eof #t))
+        (load! teaching-failing)
+        (start!)
+-       (await "htdp/bsl completes and exposes actual failure report"
+-              (lambda () (and (done? "42") (send tab get-test-editor)
+-                             (positive? (send (send tab get-test-editor) last-position)))))
++       (await "htdp/bsl completes and exposes actual inline failure report"
++              (lambda () (and (done? "42")
++                             (string-contains? (inline-text) failure-summary)
++                             (string-contains? (inline-text) failure-detail)
++                             (string-contains? (inline-text) location-label)
++                             (= (length (failure-links)) 1))))
+        ;; Read the already-instantiated test engine in the actual user evaluator.
+        ;; Do not fabricate a model, change its results, or require test-engine in
+        ;; the harness namespace and mistake that empty instance for user state.
+@@ -330,36 +390,39 @@
+                   (define value (unbox response))
+                   (and value (if (eq? (car value) 'error) (raise (cdr value)) (cdr value))))))
+        (define failing-state (snapshot-tests!))
+-       (define report (gui (lambda () (send tab get-test-editor))))
+-       (define failure-form "(check-expect (bump 2) 4)")
+-       (define failure-start (car (car (regexp-match-positions (regexp-quote failure-form) teaching-failing))))
+-       (define expected-location
+-         (hash 'source (path->string (simplify-path file)) 'line 5 'column 0
+-               'position (add1 failure-start) 'span (string-length failure-form)))
++       (define report ints)
++       (define failure-link (gui (lambda () (car (failure-links)))))
+        (gui (lambda ()
+               (check-equal? (hash-ref failing-state 'tests) 2)
+               (check-equal? (hash-ref failing-state 'passed) 1)
+               (check-equal? (hash-ref failing-state 'failures) 1)
+               (check-equal? (hash-ref failing-state 'details)
+                             (list (hash 'location expected-location 'unequal #t 'actual 3 'expected 4)))
+-              (define flat-report (send report get-text 0 'eof #t))
+-              (check-true (string-contains? flat-report
+-                                           (format (string-constant test-engine-m-of-n-tests-failed) 1 2)))
+-              (define location-label
+-                (format (string-constant test-engine-in-at-line-column) "fixture.rkt" "5" "0"))
++              (define flat-report (inline-text))
++              (check-true (string-contains? flat-report failure-summary))
++              (check-true (string-contains? flat-report failure-detail))
+               (check-true (string-contains? flat-report location-label))
+-              ;; Test the stock report's installed source-link callback itself.
+-              ;; Use editor positions from unflattened text so nested value snips
+-              ;; cannot shift clickback offsets.
+-              (define link (regexp-match-positions (regexp-quote location-label) (send report get-text)))
+-              (check-not-false link)
+-              (send report call-clickback (caar link) (cdar link))
+-              (define ranges (send ints get-error-ranges))
+-              (check-true (and (list? ranges) (= (length ranges) 1)))
+-              (check-eq? (srcloc-source (car ranges)) defs
+-                         "The actual report clickback resolves to the retained editor")
+-              (check-equal? (hash-remove (location->json (car ranges)) 'source)
+-                            (hash-remove expected-location 'source))
++              (check-eq? report (send frame get-interactions-text))
++              (check-equal? (length (failure-links)) 1)
++              (check-equal? (location->json (get-field srcloc failure-link)) expected-location)
++              (define link-editor (send failure-link get-editor))
++              (check-equal? (send link-editor get-text 0 'eof #t) location-label)
++              ;; Invoke the real installed clickback on the actual nested link.
++              ;; framework:srcloc-snip selects via handler:edit-file, not the
++              ;; legacy test-panel callback that installs error-ranges.
++              (send defs set-position 0 0)
++              (send link-editor call-clickback 0 (send link-editor last-position))
++              (identities!)))
++       (await "actual inline source link selects the exact retained source range"
++              (lambda ()
++                (and (eq? defs (send frame get-definitions-text))
++                     (eq? tab (send frame get-current-tab))
++                     (= (send defs get-start-position) failure-start)
++                     (= (send defs get-end-position) (+ failure-start (string-length failure-form)))
++                     (send frame is-shown?))))
++       (gui (lambda ()
++              (check-equal? (send defs get-text (send defs get-start-position)
++                                  (send defs get-end-position)) failure-form)
+               (identities!)))
+        (emit "teaching-failure" failing-state)
+        (focus-preserves! teaching-failing)
+@@ -373,11 +436,15 @@
+               (check-true (send defs is-modified?))
+               (identities!)))
+        (start!)
+-       (await "corrected htdp/bsl Run completes and clears the old report"
++       (await "corrected htdp/bsl Run replaces the inline failure report"
+               (lambda ()
+                 (and (done? (string-constant test-engine-both-tests-passed))
+-                     (eq? report (send tab get-test-editor))
+-                     (zero? (send report last-position)))))
++                     (eq? report (send frame get-interactions-text))
++                     (not (string-contains? (inline-text) failure-summary))
++                     (not (string-contains? (inline-text) failure-detail))
++                     (not (string-contains? (inline-text) location-label))
++                     (null? (source-links ints))
++                     (not (memq failure-link (source-links ints))))))
+        (define corrected-state (snapshot-tests!))
+        (gui (lambda ()
+               (check-equal? (hash-ref corrected-state 'tests) 2)
+@@ -385,12 +452,18 @@
+               (check-equal? (hash-ref corrected-state 'failures) 0)
+               (check-equal? (hash-ref corrected-state 'details) '())
+               (check-equal? (send defs get-text) teaching-corrected)
+-              (check-equal? (send report get-text 0 'eof #t) "")
++              (check-eq? report (send frame get-interactions-text))
++              (check-true (string-contains? (inline-text) (string-constant test-engine-both-tests-passed)))
++              (check-false (string-contains? (inline-text) failure-summary))
++              (check-false (string-contains? (inline-text) failure-detail))
++              (check-false (string-contains? (inline-text) location-label))
++              (check-equal? (source-links ints) '())
++              (check-false (memq failure-link (source-links ints)))
+               (identities!)))
+        (focus-preserves! teaching-corrected)
+        (emit "teaching-corrected" corrected-state)
+        (hash 'before failing-state 'after corrected-state
+-             'source_link_verified #t 'retained_report_cleared #t
++             'source_link_verified #t 'inline_failure_report_replaced #t
+              'corrected_unsaved_buffer_rerun #t 'retained_focus_and_editors #t)]
+       [else (error 'native-tool-gate "Unknown case ~s" which)]))
+   (emit "completed" (hash 'case (symbol->string which) 'status "passed" 'result result))
+--- /dev/null
++++ b/tests/native-tool-failure-diagnostics.rkt
+@@ -0,0 +1,33 @@
++#lang racket/base
++;; Diagnostic data only. Never handles, replaces, or certifies a failed check.
++(require racket/list rackunit
++         (only-in rackunit/private/check-info pretty-info? pretty-info-value))
++(provide failure->diagnostic report-failure!)
++
++;; Output/capture is best effort. A reporter can even raise a non-exception;
++;; neither case may replace the original failure owned by its caller.
++(define (report-failure! failure reporter)
++  (with-handlers ([(lambda (_) #t) (lambda (_) (void))])
++    (reporter failure)
++    (void)))
++
++(define (bounded-write value)
++  (define text (format "~s" value))
++  (substring text 0 (min 2000 (string-length text))))
++
++(define (failure->diagnostic failure)
++  (hash 'exception_type (cond [(exn:test:check? failure) "exn:test:check"]
++                             [(exn:fail? failure) "exn:fail"]
++                             [(exn? failure) "exn"]
++                             [else "raised-value"])
++        ;; RackUnit's exn-message can be empty; the typed stack is authoritative.
++        'check_info
++        (if (exn:test:check? failure)
++            (for/list ([info (in-list (take (exn:test:check-stack failure)
++                                           (min 64 (length (exn:test:check-stack failure)))))])
++              (define raw (check-info-value info))
++              (hash 'name (format "~a" (check-info-name info))
++                    'pretty_info (pretty-info? raw)
++                    'value (bounded-write (if (pretty-info? raw)
++                                             (pretty-info-value raw) raw))))
++            '())))
+--- /dev/null
++++ b/tests/native-tool-failure-diagnostics-standalone.rkt
+@@ -0,0 +1,86 @@
++#lang racket/base
++;; Headless RackUnit payload proof. No GUI/native tool claim.
++(require rackunit racket/list "native-tool-failure-diagnostics.rkt")
++(define arguments (current-command-line-arguments))
++(unless (or (equal? arguments #()) (equal? arguments #("--inject-failure")))
++  (error 'diagnostics-test "Unsupported arguments"))
++(parameterize ([current-check-handler raise])
++  (define original
++    (with-handlers ([exn:test:check? values])
++      (check-equal? 'actual 'deliberately-wrong)
++      (error 'diagnostics-test "The negative control did not fail")))
++  (define payload (failure->diagnostic original))
++  (check-equal? (hash-ref payload 'exception_type) "exn:test:check")
++  (define infos (hash-ref payload 'check_info))
++  (define (unique-info name)
++    (define matches (filter (lambda (i) (equal? (hash-ref i 'name) name)) infos))
++    (check-equal? (length matches) 1)
++    (car matches))
++  (check-equal? (hash-ref (unique-info "name") 'value) "check-equal?")
++  (check-equal? (hash-ref (unique-info "actual") 'value) "actual")
++  (check-equal? (hash-ref (unique-info "expected") 'value) "deliberately-wrong")
++  (check-true (hash-ref (unique-info "actual") 'pretty_info))
++  (check-true (hash-ref (unique-info "expected") 'pretty_info))
++  (check-true (regexp-match? #rx"native-tool-failure-diagnostics-standalone[.]rkt"
++                            (hash-ref (unique-info "location") 'value)))
++  (check-true (regexp-match? #rx"check-equal[?]"
++                            (hash-ref (unique-info "expression") 'value)))
++  ;; Inspecting the payload must not replace the exception crossing a caller.
++  (define received
++    (with-handlers ([exn:test:check? values])
++      (failure->diagnostic original)
++      (raise original)))
++  (check-eq? received original)
++  ;; The same reporter boundary used by the real host must contain output
++  ;; exceptions and arbitrary raised values, while the caller rethrows exactly
++  ;; the original check failure. Assertions remain outside reporter catches.
++  (define closed-output (open-output-string))
++  (close-output-port closed-output)
++  (for ([reporter (in-list
++                  (list (lambda (_) 'ignored-result)
++                        (lambda (_) (display "cannot write" closed-output))
++                        (lambda (_) (raise 'diagnostic-output-token))))])
++    (define seen #f)
++    (define reraised
++      (with-handlers ([exn:test:check? values])
++        (with-handlers ([exn:test:check?
++                         (lambda (failure)
++                           (report-failure! failure
++                                            (lambda (reported)
++                                              (set! seen reported)
++                                              (reporter reported)))
++                           (raise failure))])
++          (raise original))))
++    (check-eq? seen original)
++    (check-eq? reraised original))
++  (define ordinary (exn:fail "ordinary" (current-continuation-marks)))
++  (check-equal? (hash-ref (failure->diagnostic ordinary) 'exception_type) "exn:fail")
++  (check-equal? (hash-ref (failure->diagnostic ordinary) 'check_info) '())
++  (when (equal? arguments #("--inject-failure"))
++    (displayln "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_INJECTING_FAILURE")
++    (flush-output)
++    (with-handlers
++        ([exn:test:check?
++          (lambda (failure)
++            (report-failure!
++             failure
++             (lambda (reported)
++               (define data (failure->diagnostic reported))
++               (define fields (hash-ref data 'check_info))
++               (define (matches? name value)
++                 (define matches (filter (lambda (i) (equal? (hash-ref i 'name) name)) fields))
++                 (and (= (length matches) 1)
++                      (equal? (hash-ref (car matches) 'value) value)))
++               ;; Missing/wrong payload cannot produce the supervisor's marker.
++               (when (and (eq? reported failure)
++                          (equal? (hash-ref data 'exception_type) "exn:test:check")
++                          (matches? "name" "check-equal?")
++                          (matches? "actual" "actual")
++                          (matches? "expected" "deliberately-wrong"))
++                 (displayln "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong")
++                 (flush-output))
++               ;; A broken output sink must not replace this real failed check.
++               (display "cannot write" closed-output)))
++            (raise failure))])
++      (check-equal? 'actual 'deliberately-wrong))))
++(displayln "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_OK typed-payload-preserved output-failures-contained")
+--- a/tests/stock-tool-source-test.py
++++ b/tests/stock-tool-source-test.py
+@@ -147,9 +147,17 @@
+                        '(send ints run-in-evaluation-thread',
+                        '(parameterize ([current-namespace user-namespace])',
+                        "(api 'current-test-object)", "(api 'fail-reason-srcloc)",
+-                       '(send report call-clickback', '(srcloc-source (car ranges)) defs',
++                       '(send link-editor call-clickback 0 (send link-editor last-position))',
++                       "(dynamic-require 'framework 'srcloc-snip:snip%)",
++                       '(get-field srcloc failure-link)',
++                       '(send defs set-position 0 0)',
++                       '(= (send defs get-start-position) failure-start)',
++                       '(= (send defs get-end-position) (+ failure-start (string-length failure-form)))',
+                        '(send defs insert "3" expected-position (add1 expected-position))',
+-                       '(eq? report (send tab get-test-editor))', '(zero? (send report last-position))',
++                       '(eq? report (send frame get-interactions-text))',
++                       '(string-contains? flat-report failure-detail)',
++                       '(check-equal? (source-links ints) \'())',
++                       '(not (memq failure-link (source-links ints)))',
+                        '(done? (string-constant test-engine-both-tests-passed))'):
+             self.assertIn(phrase, self.tool)
+         self.assertIn("'line 5 'column 0", self.tool)
+@@ -157,6 +165,55 @@
+         self.assertIn('(raise (cdr value))', self.tool)
+         self.assertIn('(not (send tab is-running?))', self.tool)
+         self.assertIn('(send canvas has-focus?)', self.tool)
++        teaching = self.tool.split('      [(teaching-tests)')[1]
++        self.assertNotIn('get-test-editor', teaching)
++        self.assertNotIn('get-error-ranges', teaching)
++        self.assertNotIn('set-clickback', teaching)
++        self.assertNotIn('initialize-test-object!', teaching)
++        self.assertNotIn('test-display-results!', teaching)
++
++    def test_failure_payload_keeps_typed_rackunit_info(self):
++        helper = (ROOT/'tests/native-tool-failure-diagnostics.rkt').read_text()
++        self.assertIn("'failure_payload (failure->diagnostic exception)", self.host)
++        for phrase in ('exn:test:check?', 'exn:test:check-stack', 'check-info-name',
++                       'check-info-value', 'pretty-info-value', "'pretty_info"):
++            self.assertIn(phrase, helper)
++        self.assertNotIn('(raise ', helper)
++        self.assertNotIn('current-check-handler', helper)
++        self.assertEqual(helper.count('with-handlers'), 1)
++        self.assertIn('(with-handlers ([(lambda (_) #t) (lambda (_) (void))])', helper)
++        self.assertIn('(reporter failure)', helper)
++        self.assertIn('(report-failure!\n         e', self.host)
++        self.assertIn('(failure-diagnostics! original)))\n        (cleanup!)\n        (exit 1)', self.host)
++        regression = (ROOT/'tests/native-tool-failure-diagnostics-standalone.rkt').read_text()
++        for phrase in ('(parameterize ([current-check-handler raise])',
++                       "(check-equal? 'actual 'deliberately-wrong)",
++                       '(check-eq? received original)', '(unique-info "location")',
++                       '(unique-info "expression")'):
++            self.assertIn(phrase, regression)
++        for phrase in ('(check-eq? seen original)', '(check-eq? reraised original)',
++                       '(display "cannot write" closed-output)',
++                       "(raise 'diagnostic-output-token)", '(raise failure))])',
++                       'OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_INJECTING_FAILURE',
++                       'OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_FAILURE exception=exn:test:check',
++                       'output-failures-contained'):
++            self.assertIn(phrase, regression)
++
++    def test_passing_macro_bytes_and_all_debugger_assertions_preserved(self):
++        macro = self.tool.split('      [(macro-stepper)')[1].split('      [(teaching-tests)')[0]
++        macro = '      [(macro-stepper)' + macro
++        self.assertEqual(hashlib.sha256(macro.encode()).hexdigest(),
++                         '0cf56eac6c88e29d530c21fa8cafacb1ece3d453e12fcab4a44545242548d83d')
++        debug = '      [(debugger)' + self.tool.split('      [(debugger)')[1].split('      [(macro-stepper)')[0]
++        start = debug.index('       ;; Read-only evidence before the unchanged source assertions.')
++        end = debug.index('       (define first-state', start)
++        diagnostic = debug[start:end]
++        for phrase in ('debugger-before-source-assertions', 'mark-source',
++                       'pc_resolves_to_retained_defs', 'frame_resolves_to_retained_defs'):
++            self.assertIn(phrase, diagnostic)
++        debug = debug[:start] + debug[end:]
++        self.assertEqual(hashlib.sha256(debug.encode()).hexdigest(),
++                         '7749aca9412cd6cbfe70993fb7adae1e54dde188b6984ed893cc91a1f0f14f22')
+ 
+     def test_fixture_correction_is_exactly_one_character(self):
+         def fixture(name):
+--- a/tests/tool-dispatch-source-test.py
++++ b/tests/tool-dispatch-source-test.py
+@@ -36,17 +36,27 @@
+         cls.driver = (ROOT/'tests/native-tool-dispatch-standalone.rkt').read_text()
+ 
+     def test_only_import_and_stock_dispatch_changed_in_host(self):
++        # Remove the separately audited additive diagnostics before checking the
++        # already-passed dispatch-only derivative against its original pin.
++        host = self.host.replace('\n         "native-tool-failure-diagnostics.rkt"', '')
++        host = host.replace("               'failure_payload (failure->diagnostic exception)\n", '')
++        host = host.replace('''        (report-failure!
++         e
++         (lambda (original)
++           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message original))
++           (failure-diagnostics! original)))''',
++                            '''        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message e))
++        (failure-diagnostics! e)''')
+         self.assertEqual(self.host.count(NEW_BRANCH), 1)
+         requirement = 'json mrlib/switchable-button "native-tool-dispatch.rkt")'
+-        self.assertEqual(self.host.count(requirement), 1)
+-        restored = self.host.replace(NEW_BRANCH, OLD_BRANCH).replace(
++        self.assertEqual(host.count(requirement), 1)
++        restored = host.replace(NEW_BRANCH, OLD_BRANCH).replace(
+             requirement, 'json mrlib/switchable-button)')
+         self.assertEqual(hashlib.sha256(restored.encode()).hexdigest(),
+                          '2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5')
+ 
+     def test_original_tool_and_strict_coordinator_and_driver_bytes_preserved(self):
+         pins = {
+-            'independent-native-stock-tools.rkt': '06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884',
+             'native-tool-coordinator.rkt': 'a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384',
+             'native-tool-coordinator-test.rkt': '72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d',
+             'native-tool-coordinator-standalone.rkt': '1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949',
+--- a/tests/coordinator-standalone-source-test.py
++++ b/tests/coordinator-standalone-source-test.py
+@@ -11,11 +11,12 @@
+ spec.loader.exec_module(source_tests)
+ 
+ class StandaloneSourceTests(unittest.TestCase):
+-    def test_original_regression_wrapper_and_tools_unchanged(self):
++    def test_original_regression_and_wrapper_unchanged(self):
++        # The tool's new diagnostics/inline-report branch are separately audited
++        # in stock-tool-source-test.py; orchestration bytes remain unchanged.
+         pins = {
+             'native-tool-coordinator-test.rkt': '72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d',
+             'native-tool-coordinator.rkt': 'a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384',
+-            'independent-native-stock-tools.rkt': '06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884',
+         }
+         for name, digest in pins.items():
+             self.assertEqual(hashlib.sha256((ROOT/'tests'/name).read_bytes()).hexdigest(), digest)
+--- a/scripts/prepare-stock-tool-host.py
++++ b/scripts/prepare-stock-tool-host.py
+@@ -24,7 +24,8 @@
+         raise ValueError(f"Unexpected frozen host bytes: {actual}; expected {expected}")
+     additions = [
+         ('         json mrlib/switchable-button)',
+-         '         json mrlib/switchable-button \"native-tool-dispatch.rkt\")'),
++         '         json mrlib/switchable-button \"native-tool-dispatch.rkt\"\n'
++         '         \"native-tool-failure-diagnostics.rkt\")'),
+         ('(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")',
+          '(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")\n'
+          '(define-runtime-path stock-tool-module "independent-native-stock-tools.rkt")'),
+@@ -59,6 +60,18 @@
+               (lambda ()
+                 ((dynamic-require follow-on-module 'run-follow-on-check!)
+                  frame (string->symbol follow-on-case))))])))'''),
++        ('''               'error (bounded-text (exn-message exception) 1000)
++               'windows descriptions''',
++         '''               'error (bounded-text (exn-message exception) 1000)
++               'failure_payload (failure->diagnostic exception)
++               'windows descriptions'''),
++        ('''        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message e))
++        (failure-diagnostics! e)''',
++         '''        (report-failure!
++         e
++         (lambda (original)
++           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message original))
++           (failure-diagnostics! original)))'''),
+     ]
+     result = source
+     for old, new in additions:
+@@ -104,7 +117,7 @@
+         "cases": ["debugger", "macro-stepper", "teaching-tests"],
+         "native_execution": "pending",
+         "base_modified": False,
+-        "change_scope": "four surgical host substitutions; stock-tool-only worker bridge; existing acceptance/READY/capture retained",
++        "change_scope": "bounded host substitutions; stock-tool-only worker bridge and typed diagnostics; existing acceptance/READY/capture retained",
+     }, indent=2) + '\n'
+     outputs = {target: result,
+                ROOT / "reports/stock-tool-host.patch": patch,

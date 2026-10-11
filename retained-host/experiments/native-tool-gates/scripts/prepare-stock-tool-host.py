@@ -24,7 +24,8 @@ def derive(source):
         raise ValueError(f"Unexpected frozen host bytes: {actual}; expected {expected}")
     additions = [
         ('         json mrlib/switchable-button)',
-         '         json mrlib/switchable-button \"native-tool-dispatch.rkt\")'),
+         '         json mrlib/switchable-button \"native-tool-dispatch.rkt\"\n'
+         '         \"native-tool-failure-diagnostics.rkt\")'),
         ('(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")',
          '(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")\n'
          '(define-runtime-path stock-tool-module "independent-native-stock-tools.rkt")'),
@@ -59,6 +60,18 @@ def derive(source):
               (lambda ()
                 ((dynamic-require follow-on-module 'run-follow-on-check!)
                  frame (string->symbol follow-on-case))))])))'''),
+        ('''               'error (bounded-text (exn-message exception) 1000)
+               'windows descriptions''',
+         '''               'error (bounded-text (exn-message exception) 1000)
+               'failure_payload (failure->diagnostic exception)
+               'windows descriptions'''),
+        ('''        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message e))
+        (failure-diagnostics! e)''',
+         '''        (report-failure!
+         e
+         (lambda (original)
+           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message original))
+           (failure-diagnostics! original)))'''),
     ]
     result = source
     for old, new in additions:
@@ -104,7 +117,7 @@ def main():
         "cases": ["debugger", "macro-stepper", "teaching-tests"],
         "native_execution": "pending",
         "base_modified": False,
-        "change_scope": "four surgical host substitutions; stock-tool-only worker bridge; existing acceptance/READY/capture retained",
+        "change_scope": "bounded host substitutions; stock-tool-only worker bridge and typed diagnostics; existing acceptance/READY/capture retained",
     }, indent=2) + '\n'
     outputs = {target: result,
                ROOT / "reports/stock-tool-host.patch": patch,

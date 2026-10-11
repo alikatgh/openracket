@@ -1,0 +1,48 @@
+{
+  "status": "docs-only superseding freeze; all Racket/Python and native bytes unchanged",
+  "baseline_freeze": "/workspace/scratch/5923f1aa2055/openracket-native-tool-gates-freeze-20261011-1017",
+  "baseline_manifest_sha256": "f6834805d16315e69f868b2f9436b0cd560cce8d49da35201d5a3e6827e99b6f",
+  "changed_existing_files": {
+    "reports/NATIVE-CLI-CONTRACT.md": {
+      "before": "a88fe111dd71a7e7dfed004500ebfe745adfb383566e2cc2928c8459d042404d",
+      "after": "476a5f4bf31f3c70ee6a7487a213db306579148386d0282879ffcd8078d406db"
+    },
+    "reports/COORDINATOR-STANDALONE-REPAIR.md": {
+      "before": "7f568657033b89870cfc4f989af39b5dd887022ad8d3f4df3504b1e6ff407e20",
+      "after": "d3c98e7336efa76c6ee3e9b6bf1f2cc8f74ff74bcd9a01db86207570a5ffbcc0"
+    },
+    "reports/TOOL-DISPATCH-REPAIR.md": {
+      "before": "048b2a23f8ad3c45c9097e9342722eb155c50724c93ee132b32fbe39b8a17a6e",
+      "after": "84bc03a7147f9a173bbd4b4af402417c493d97b44551f62c9b9223ac220d2338"
+    },
+    "reports/NATIVE-STOCK-TOOL-GATES.md": {
+      "before": "5f868b35691cf7b748ebe2e6d4f33d1910ae9a9cbed9d15a96c258b53dadc895",
+      "after": "94ea04a18eec6482a118f6f93dc28437b1982571e669041f1314abe71c17de7d"
+    }
+  },
+  "unchanged_source_files": {
+    "scripts/audit-stock-tool-sources.py": "4e8065baabf6c26449508ffc85d49ce93b7978fd4bcfa21259fc27480bb1484f",
+    "scripts/prepare-stock-tool-host.py": "7c70586ffa34616f567fd6df27ec07141fd0a1bdb716ca3640d28820b11c6537",
+    "tests/coordinator-standalone-source-test.py": "4a102e006ade17722d983b642a1b987362947f808fd1f6d966d6f9f0ec99350e",
+    "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+    "tests/independent-native-stock-tools.rkt": "46d0716f70fe05babe73d339151e9520d20039d26277a296c998e79318c64786",
+    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+    "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "tests/native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3",
+    "tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "tests/native-tool-failure-diagnostics-standalone.rkt": "aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa",
+    "tests/native-tool-failure-diagnostics.rkt": "3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a",
+    "tests/reference/independent-native-host-0520.rkt": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+    "tests/stock-tool-source-test.py": "7ae5949a4e51a83774093391fff34a26a9496863cc06aa1d8f11fd488dde56fe",
+    "tests/tool-dispatch-source-test.py": "49d6c15f9dcba384d2526d250da1fe5479a7b2cd49d9c26c090539638a37021f"
+  },
+  "unchanged_native_allowlist_sha256": "02000fbf7adb9a41e34705ef1052d92ee8329f8655f8ef5053d02014cb118ca8",
+  "cli_checks": {
+    "reader_all_nine_native_files": true,
+    "compile_all_nine_native_files": true,
+    "positive_diagnostics_command": true,
+    "negative_diagnostics_command": true
+  },
+  "source_checks": "25/25 passed again; exact host derivation verified; no Racket/native execution"
+}

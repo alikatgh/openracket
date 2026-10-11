@@ -1,5 +1,10 @@
 # Standalone coordinator regression driver
 
+Historical repair note. Its findings and exact negative-control outputs are retained
+for provenance; this is not the current payload/integration contract. Use
+`NATIVE-CLI-CONTRACT.md`, `UI-REPAIR-API-PROOF.md`, and the root nine-file
+`FROZEN-NATIVE-ALLOWLIST.json` for the current revision.
+
 ## Native finding
 
 Mac run [38125605788](https://github.com/alikatgh/openracket/actions/runs/38125605788)

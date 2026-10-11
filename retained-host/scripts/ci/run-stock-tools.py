@@ -16,7 +16,7 @@ sys.path.insert(0,str(ROOT/'performance'));from run import terminate_group
 
 def record(name,ok,detail=''):
  ROWS.append({'name':name,'passed':bool(ok),'detail':detail});STATE.write_text(json.dumps(ROWS,indent=2)+'\n');print('OPENRACKET_STOCK_TOOLS_RESULT '+json.dumps(ROWS[-1]),flush=True)
- lines=['# Actual stock and modern-dark native tools','', 'Six fresh-process cases: stock prerequisite and modern-dark counterpart for Debugger, Macro Stepper and teaching tests. Each uses fresh stock-default128 preferences, independently copied addon registry and private compiled roots. Modern-light is not covered.', '', '| Gate | Outcome | Detail |','|---|---|---|']
+ lines=['# Actual stock and modern-dark native tools','', 'Six fresh-process cases: stock prerequisite and modern-dark counterpart for Debugger, Macro Stepper and teaching tests. Each uses fresh stock-default128 preferences, independently rebuilt official addon registry and private compiled roots. Modern-light is not covered.', '', '| Gate | Outcome | Detail |','|---|---|---|']
  lines+=['| '+r['name']+' | '+('PASS' if r['passed'] else 'FAIL / incomplete')+' | '+r['detail'].replace('|',';').replace('\n',' ')+' |' for r in ROWS]
  lines+=['','Stock failure blocks only its corresponding modern comparison; every other independent case still runs. Native host has the unchanged60s case process bound,20s tool awaits and original strict READY/exit/result assertions.',
  'These gates are independent of the256MiB annotation diagnostic. No timing claim or previously rejected performance candidate is included. Historical Stop, normal Quit, unsaved prompts and other release gaps remain separate.']
@@ -37,10 +37,10 @@ def command(name,args,environment=None,timeout=120,required=True):
  return code==0
 
 def coordinator_result_valid(code,output,negative,kind="coordinator"):
- if kind not in ("coordinator","dispatch"):return False
- prefix="OPENRACKET_NATIVE_TOOL_"+kind.upper()
+ if kind not in ("coordinator","dispatch","failure-diagnostics"):return False
+ prefix="OPENRACKET_NATIVE_TOOL_"+kind.upper().replace("-","_")
  lines=output.splitlines()
- success=prefix+('_OK strict-failures cleanup-complete' if kind=='coordinator' else '_OK distinct-thread strict-failures cleanup-complete')
+ success=prefix+{'coordinator':'_OK strict-failures cleanup-complete','dispatch':'_OK distinct-thread strict-failures cleanup-complete','failure-diagnostics':'_OK typed-payload-preserved output-failures-contained'}[kind]
  injection=prefix+'_INJECTING_FAILURE'
  failure_prefix=prefix+'_FAILURE'
  failure=failure_prefix+' exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
@@ -52,7 +52,7 @@ def coordinator_regression(mode,e,kind="coordinator"):
  for negative in (False,True):
   label=mode+' standalone '+kind+' '+('injected-negative' if negative else 'positive')
   args=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],str(PROOF/'tests'/('native-tool-'+kind+'-standalone.rkt'))]
-  if negative:args.append('--inject-outer-failure' if kind=='coordinator' else '--inject-wrong-result')
+  if negative:args.append({'coordinator':'--inject-outer-failure','dispatch':'--inject-wrong-result','failure-diagnostics':'--inject-failure'}[kind])
   print('::group::'+label,flush=True)
   p=subprocess.Popen(args,env=e,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
   try:output,_=p.communicate(timeout=30);code=p.returncode
@@ -81,10 +81,29 @@ def emit_image(label,path):
  for i in range(0,len(s),3072):print(f'OPENRACKET_SCREENSHOT_DATA {label} {i//3072:04d} {s[i:i+3072]}',flush=True)
  print(f'OPENRACKET_SCREENSHOT_END {label}',flush=True)
 
+def fresh_modern_addon(label,e):
+ home=pathlib.Path(e['PLTUSERHOME']);addon=pathlib.Path(e['PLTADDONDIR'])
+ assert not addon.exists() and not addon.is_symlink(),'Only an absent fresh addon may be registered'
+ home.mkdir(exist_ok=True)
+ prepared=env('prepared-source-query',True,True)
+ query='(require pkg/lib)(define p (pkg-directory "openracket-gui-lib"))(unless p (error "Prepared GUI package missing"))(display p)'
+ source=pathlib.Path(subprocess.check_output([prepared['RACKET'],'-A',prepared['PLTADDONDIR'],'-R',prepared['PLTCOMPILEDROOTS'],'-e',query],env=prepared,text=True,timeout=30)).resolve()
+ assert source.is_dir() and not source.is_symlink() and source.is_relative_to(ADDON.resolve())
+ patch=json.loads((PROOF/'reports/patch-manifest.json').read_text())
+ for relative,pin in (('mrlib/switchable-button.rkt',patch['patched_sha256']),('mrlib/private/openracket-paint.rkt',patch['painter_sha256']),('framework/private/text-misc.rkt','00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d')):
+  assert hashlib.sha256((source/relative).read_bytes()).hexdigest()==pin
+ # Official private-scope registration rebuilds path-sensitive links and info-domain records.
+ # No -U: that would hide the newly registered private user packages.
+ prefix=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],'-l','raco','--']
+ command(label+' fresh addon copies exact prepared GUI package',prefix+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--copy','--force','--name','openracket-gui-lib',source],e,180)
+ command(label+' fresh addon links exact proof appearance tool',prefix+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--link','--name','openracket-appearance',PROOF/'tool'],e,90)
+ command(label+' private tool info-domain registration',prefix+['setup','--avoid-main','--no-docs','--no-launcher','--no-foreign-libs','--no-install','--no-post-install','--pkgs','openracket-appearance'],e,240)
+ command(label+' actual collection and DrRacket discovery proof',[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],ROOT/'scripts/ci/verify-modern-tool-registration.rkt',PROOF],e,30)
+
 def native_case(case,modern=False):
  mode='modern-dark' if modern else 'pristine-stock';label='tools-'+mode+'-'+case;e=env(label,modern)
  home=pathlib.Path(e['PLTUSERHOME']);assert not home.exists();home.mkdir()
- if modern:shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)
+ if modern:fresh_modern_addon(label,e)
  e.update(OPENRACKET_UI='modern' if modern else 'stock',OPENRACKET_HOST_THEME='1' if modern else '0',OPENRACKET_NATIVE_APPEARANCE='1' if modern else '0',OPENRACKET_THEME='dark' if modern else 'light',OPENRACKET_NATIVE_CASE=case)
  if modern:e['OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD']='1'
  ready=REPORTS/(label+'-ready.json');done=REPORTS/(label+'-capture-done');image=REPORTS/(label+'.png');logfile=REPORTS/(label+'.log')
@@ -99,7 +118,9 @@ def native_case(case,modern=False):
     captured,detail=screenshot(image,deadline)
     done.write_text('OS capture attempted\n');break
    time.sleep(.1)
-  try:result=p.wait(timeout=max(.01,deadline-time.monotonic()))
+  try:
+   result=p.wait(timeout=max(.01,deadline-time.monotonic()))
+   if time.monotonic()>deadline:result=124
   except subprocess.TimeoutExpired:
    # Acceptance failed at60s. Up to15s of explicitly labelled diagnostic
    # capture grace follows before cleanup; it can never become a passing result.
@@ -125,18 +146,19 @@ def native_case(case,modern=False):
 try:
  if PHASE=='prepare':
   tree('baseline',STOCK,'pristine')
-  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='dd22f69d02559c3a8a1b72f1735ef7db942d7466553a9dbcc23650648e17a471'
-  members=json.loads(m.read_text());assert len(members)==28
+  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='445e1d57732741ebb0331a88234d42540b2f2ea37897a1c5b4be5676a5edbc87'
+  members=json.loads(m.read_text())['files'];assert len(members)==37
   for name,h in members.items():
    p=EXP/name;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==h
   command('Portable exact host reproduction',[sys.executable,EXP/'scripts/prepare-stock-tool-host.py','--check'])
   command('Portable stock-tool source preservation',[sys.executable,EXP/'tests/stock-tool-source-test.py'])
   command('Standalone driver source preservation',[sys.executable,EXP/'tests/coordinator-standalone-source-test.py'])
   command('Dispatch bridge and exact caller source preservation',[sys.executable,EXP/'tests/tool-dispatch-source-test.py'])
+  command('Fresh official addon registration contract checks',[sys.executable,ROOT/'scripts/ci/test-modern-registration.py'])
   command('Stock-tool adapter isolation tests',[sys.executable,ROOT/'scripts/ci/test-stock-tools-adapter.py'])
   CONTRACT.source_copy(ROOT,PROOF,'2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',155)
-  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='0004bfb07846650f169d12495abad2df2baa42daa543f3b9f46c6c6b77ad66be'
-  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==7
+  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='02000fbf7adb9a41e34705ef1052d92ee8329f8655f8ef5053d02014cb118ca8'
+  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==9
   baseline=json.loads((PROOF/'CONTENTS-SHA256.json').read_text());shutil.copy2(PROOF/'CONTENTS-SHA256.json',PROOF/'BASE-0520-CONTENTS.json')
   for name,h in allowed.items():
    assert hashlib.sha256((EXP/name).read_bytes()).hexdigest()==h
@@ -144,22 +166,28 @@ try:
    if dest.exists():dest.unlink()
    shutil.copy2(EXP/name,dest);baseline[name]=h
   (PROOF/'CONTENTS-SHA256.json').write_text(json.dumps(baseline,indent=2)+'\n')
-  record('Complete native candidate assembled from exact0520 plus seven reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
+  record('Complete native candidate assembled from exact0520 plus nine reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
   command('Independent modern-only tool runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','native-tools'],os.environ.copy(),180)
   tree('baseline',MODERN,'selected-modern')
   command('Actual unchanged setup for modern tool registration',['/bin/sh',PROOF/'scripts/setup-openracket.sh','--install'],env('setup',True,True),720)
-  compile_files=[PROOF/'tests'/n for n in ('native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt','native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
+  compile_files=[ROOT/'scripts/ci/verify-modern-tool-registration.rkt']+[PROOF/'tests'/n for n in ('native-tool-failure-diagnostics.rkt','native-tool-failure-diagnostics-standalone.rkt','native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt','native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
   for mode,modern in [('stock',False),('modern',True)]:
    e=env('compile-'+mode,modern)
    if modern:
-    home=pathlib.Path(e['PLTUSERHOME']);home.mkdir();shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)
+    fresh_modern_addon('compile-modern',e)
    prefix=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],'-l','raco','--']
    command(mode+' explicit native tool callers and runtime-path modules compile',prefix+['make',*compile_files],e,180)
    coordinator_regression(mode,e)
    coordinator_regression(mode,e,"dispatch")
+   coordinator_regression(mode,e,"failure-diagnostics")
  elif PHASE=='cases':
   for case in ('debugger','macro-stepper','teaching-tests'):
-   if native_case(case):native_case(case,True)
+   try:stock_passed=native_case(case)
+   except Exception as error:
+    stock_passed=False;record('tools-pristine-stock-'+case+' supervisor',False,str(error))
+   if stock_passed:
+    try:native_case(case,True)
+    except Exception as error:record('tools-modern-dark-'+case+' registration or supervisor',False,str(error))
    else:record('tools-modern-dark-'+case+' comparison not run',False,'Corresponding actual stock gate failed; other independent cases continue')
  elif PHASE=='verify':
   for root,label in ((STOCK,'pristine'),(MODERN,'selected-modern')):

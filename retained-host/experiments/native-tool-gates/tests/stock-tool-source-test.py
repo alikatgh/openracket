@@ -147,9 +147,17 @@ class StockToolSourceTests(unittest.TestCase):
                        '(send ints run-in-evaluation-thread',
                        '(parameterize ([current-namespace user-namespace])',
                        "(api 'current-test-object)", "(api 'fail-reason-srcloc)",
-                       '(send report call-clickback', '(srcloc-source (car ranges)) defs',
+                       '(send link-editor call-clickback 0 (send link-editor last-position))',
+                       "(dynamic-require 'framework 'srcloc-snip:snip%)",
+                       '(get-field srcloc failure-link)',
+                       '(send defs set-position 0 0)',
+                       '(= (send defs get-start-position) failure-start)',
+                       '(= (send defs get-end-position) (+ failure-start (string-length failure-form)))',
                        '(send defs insert "3" expected-position (add1 expected-position))',
-                       '(eq? report (send tab get-test-editor))', '(zero? (send report last-position))',
+                       '(eq? report (send frame get-interactions-text))',
+                       '(string-contains? flat-report failure-detail)',
+                       '(check-equal? (source-links ints) \'())',
+                       '(not (memq failure-link (source-links ints)))',
                        '(done? (string-constant test-engine-both-tests-passed))'):
             self.assertIn(phrase, self.tool)
         self.assertIn("'line 5 'column 0", self.tool)
@@ -157,6 +165,55 @@ class StockToolSourceTests(unittest.TestCase):
         self.assertIn('(raise (cdr value))', self.tool)
         self.assertIn('(not (send tab is-running?))', self.tool)
         self.assertIn('(send canvas has-focus?)', self.tool)
+        teaching = self.tool.split('      [(teaching-tests)')[1]
+        self.assertNotIn('get-test-editor', teaching)
+        self.assertNotIn('get-error-ranges', teaching)
+        self.assertNotIn('set-clickback', teaching)
+        self.assertNotIn('initialize-test-object!', teaching)
+        self.assertNotIn('test-display-results!', teaching)
+
+    def test_failure_payload_keeps_typed_rackunit_info(self):
+        helper = (ROOT/'tests/native-tool-failure-diagnostics.rkt').read_text()
+        self.assertIn("'failure_payload (failure->diagnostic exception)", self.host)
+        for phrase in ('exn:test:check?', 'exn:test:check-stack', 'check-info-name',
+                       'check-info-value', 'pretty-info-value', "'pretty_info"):
+            self.assertIn(phrase, helper)
+        self.assertNotIn('(raise ', helper)
+        self.assertNotIn('current-check-handler', helper)
+        self.assertEqual(helper.count('with-handlers'), 1)
+        self.assertIn('(with-handlers ([(lambda (_) #t) (lambda (_) (void))])', helper)
+        self.assertIn('(reporter failure)', helper)
+        self.assertIn('(report-failure!\n         e', self.host)
+        self.assertIn('(failure-diagnostics! original)))\n        (cleanup!)\n        (exit 1)', self.host)
+        regression = (ROOT/'tests/native-tool-failure-diagnostics-standalone.rkt').read_text()
+        for phrase in ('(parameterize ([current-check-handler raise])',
+                       "(check-equal? 'actual 'deliberately-wrong)",
+                       '(check-eq? received original)', '(unique-info "location")',
+                       '(unique-info "expression")'):
+            self.assertIn(phrase, regression)
+        for phrase in ('(check-eq? seen original)', '(check-eq? reraised original)',
+                       '(display "cannot write" closed-output)',
+                       "(raise 'diagnostic-output-token)", '(raise failure))])',
+                       'OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_INJECTING_FAILURE',
+                       'OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_FAILURE exception=exn:test:check',
+                       'output-failures-contained'):
+            self.assertIn(phrase, regression)
+
+    def test_passing_macro_bytes_and_all_debugger_assertions_preserved(self):
+        macro = self.tool.split('      [(macro-stepper)')[1].split('      [(teaching-tests)')[0]
+        macro = '      [(macro-stepper)' + macro
+        self.assertEqual(hashlib.sha256(macro.encode()).hexdigest(),
+                         '0cf56eac6c88e29d530c21fa8cafacb1ece3d453e12fcab4a44545242548d83d')
+        debug = '      [(debugger)' + self.tool.split('      [(debugger)')[1].split('      [(macro-stepper)')[0]
+        start = debug.index('       ;; Read-only evidence before the unchanged source assertions.')
+        end = debug.index('       (define first-state', start)
+        diagnostic = debug[start:end]
+        for phrase in ('debugger-before-source-assertions', 'mark-source',
+                       'pc_resolves_to_retained_defs', 'frame_resolves_to_retained_defs'):
+            self.assertIn(phrase, diagnostic)
+        debug = debug[:start] + debug[end:]
+        self.assertEqual(hashlib.sha256(debug.encode()).hexdigest(),
+                         '7749aca9412cd6cbfe70993fb7adae1e54dde188b6984ed893cc91a1f0f14f22')
 
     def test_fixture_correction_is_exactly_one_character(self):
         def fixture(name):

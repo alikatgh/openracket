@@ -1,0 +1,623 @@
+{
+  "run_id": 38131918285,
+  "url": "https://github.com/alikatgh/openracket/actions/runs/38131918285",
+  "commit": "b5f19d0a4b63bba8dcae928c12bedbe04f7ed453",
+  "conclusion": "success",
+  "log_sha256": "bb7c79f6baa1892893f702f9e6473d2ac815366ee39ff7862f1e28f0ff46c75f",
+  "artifact_count": 0,
+  "decoded_documents": 65,
+  "native_rows": 122,
+  "scope": "All native correctness, complete graph/navigation, three strict matched pairs, six-trial matrix and original-runtime witness passed. Candidate remains default-off: lower ordinary annotation application time carries a separately measured5.6\u20138.6second first-public-getter cost. Full arithmetic/heartbeat/GC analysis is recorded separately, without a general speedup claim.",
+  "rows": [
+    {
+      "name": "Reviewed frozen telemetry source hashes",
+      "passed": true,
+      "detail": "feea9575931d78f2abfa487b65efa8c453ec9b974f65c1346d13a26a2cef9b71"
+    },
+    {
+      "name": "Reviewed frozen binding-table source hashes",
+      "passed": true,
+      "detail": "91"
+    },
+    {
+      "name": "CI stage and native-gate contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "CI isolation contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict binding matrix rejection tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless binding-table and diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-control runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-candidate runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding-table-only application",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding source and installer refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact actual native host derivative regeneration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual native binding gate source/comparator tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact stock-worker comparator regeneration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Binding-arm stock-worker comparator refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original full trace semantic mutation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock mandatory telemetry native preflight; no skips",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on mandatory telemetry native preflight; no skips",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "unset actual extracted binding methods and mutation differential",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "unset unique differential mode and positive assertion count",
+      "passed": true,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "zero actual extracted binding methods and mutation differential",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "zero unique differential mode and positive assertion count",
+      "passed": true,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "unexpected actual extracted binding methods and mutation differential",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "unexpected unique differential mode and positive assertion count",
+      "passed": true,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "one actual extracted binding methods and mutation differential",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "one unique differential mode and positive assertion count",
+      "passed": true,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "stock full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Complete semantic trace and real rename equivalence; raw order diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "binding-stock-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917146471791714647542\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "binding-stock-check-syntax complete actual binding table",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "binding-candidate-off-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917146641791714664865\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "binding-candidate-off-check-syntax complete actual binding table",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "binding-candidate-on-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917146751791714675389\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "binding-candidate-on-check-syntax complete actual binding table",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock/off/on complete binding graph, actual navigation and fast-hit parity",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock identical common GUI observer installation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "candidate-on identical common GUI observer installation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Generate one identical immutable workload fixture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate genuine GUI terminal, annotation application and lexer completion",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate capture-host.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate capture-supervisor.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate memory-profile.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate gui-observation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate worker-init.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate worker-phase-1.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate activation.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate heartbeat.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate binding-export.json lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1 strict complete-work acceptance",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1 acceptance evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2 strict complete-work acceptance",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2 acceptance evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3 strict complete-work acceptance",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3 acceptance evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Complete ordered six-trial matrix lossless evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All six valid captures and three strictly accepted pairs",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ]
+}

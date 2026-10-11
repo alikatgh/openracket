@@ -3,7 +3,8 @@
 ;; No substitute editor, evaluator, disabled tool, changed memory limit or mocked GUI.
 ;; The CI runner supplies a fresh preference profile and external timeout.
 (require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
-         json mrlib/switchable-button "native-tool-dispatch.rkt")
+         json mrlib/switchable-button "native-tool-dispatch.rkt"
+         "native-tool-failure-diagnostics.rkt")
 
 (define checks 0)
 (define-runtime-path follow-on-module "independent-native-workflows.rkt")
@@ -128,6 +129,7 @@
          (define descriptions (map describe (take windows (min 8 (length windows)))))
          (hash 'status "failed" 'failure_diagnostic #t 'checks checks
                'error (bounded-text (exn-message exception) 1000)
+               'failure_payload (failure->diagnostic exception)
                'windows descriptions
                'geometry (if (pair? descriptions) (hash-ref (car descriptions) 'geometry) (hash))))))
     (printf "OPENRACKET_NATIVE_FAILURE_DIAGNOSTIC ~a\n" (jsexpr->string report))
@@ -145,8 +147,11 @@
 (with-handlers
     ([exn?
       (lambda (e)
-        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\n" (exn-message e))
-        (failure-diagnostics! e)
+        (report-failure!
+         e
+         (lambda (original)
+           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\n" (exn-message original))
+           (failure-diagnostics! original)))
         (cleanup!)
         (exit 1))])
   ;; Read-only capture before DrRacket's appearance tool can set an app override.

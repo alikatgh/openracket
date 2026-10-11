@@ -2,17 +2,17 @@ import pathlib,ast,unittest
 P=pathlib.Path(__file__).parent;S=(P/'run-stock-tools.py').read_text()
 class ToolAdapter(unittest.TestCase):
  def test_exact_source_and_complete_candidate(self):
-  for pin in ('dd22f69d02559c3a8a1b72f1735ef7db942d7466553a9dbcc23650648e17a471','0004bfb07846650f169d12495abad2df2baa42daa543f3b9f46c6c6b77ad66be','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
-  self.assertIn('len(allowed)==7',S);self.assertIn('BASE-0520-CONTENTS.json',S)
+  for pin in ('445e1d57732741ebb0331a88234d42540b2f2ea37897a1c5b4be5676a5edbc87','02000fbf7adb9a41e34705ef1052d92ee8329f8655f8ef5053d02014cb118ca8','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
+  self.assertIn('len(allowed)==9',S);self.assertIn('BASE-0520-CONTENTS.json',S)
  def test_fresh_each_mode_and_original_deadlines(self):
-  self.assertIn('assert not home.exists()',S);self.assertIn("shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)",S)
+  self.assertIn('assert not home.exists()',S);self.assertIn("if modern:fresh_modern_addon(label,e)",S)
   self.assertIn('deadline=time.monotonic()+60',S);self.assertNotIn('set-mib',S);self.assertNotIn('MEMORY_LIMIT_MIB',S)
  def test_partial_ready_is_parsed_only_after_exit_and_timeout_stays_failed(self):
   self.assertLess(S.index('result=p.wait('),S.index('report=json.loads(raw)'))
   self.assertIn("'status':'malformed-failure'",S);self.assertIn('terminate_group(p);result=124',S)
   self.assertIn('diagnostic_grace_max_seconds=15',S)
  def test_actual_cases_and_corresponding_stock_gate(self):
-  self.assertIn("for case in ('debugger','macro-stepper','teaching-tests')",S);self.assertIn('if native_case(case):native_case(case,True)',S)
+  self.assertIn("for case in ('debugger','macro-stepper','teaching-tests')",S);self.assertIn('try:stock_passed=native_case(case)',S);self.assertIn('if stock_passed:',S);self.assertIn('try:native_case(case,True)',S)
   self.assertIn("report.get('follow_on_case')==case",S);self.assertIn("report['follow_on_result'].get('status')=='passed'",S)
  def test_explicit_compile_and_coordinator_execution(self):
   for name in ('native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt'):self.assertIn(repr(name),S)

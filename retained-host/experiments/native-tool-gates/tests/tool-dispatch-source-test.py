@@ -36,17 +36,27 @@ class DispatchSourceTests(unittest.TestCase):
         cls.driver = (ROOT/'tests/native-tool-dispatch-standalone.rkt').read_text()
 
     def test_only_import_and_stock_dispatch_changed_in_host(self):
+        # Remove the separately audited additive diagnostics before checking the
+        # already-passed dispatch-only derivative against its original pin.
+        host = self.host.replace('\n         "native-tool-failure-diagnostics.rkt"', '')
+        host = host.replace("               'failure_payload (failure->diagnostic exception)\n", '')
+        host = host.replace('''        (report-failure!
+         e
+         (lambda (original)
+           (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message original))
+           (failure-diagnostics! original)))''',
+                            '''        (eprintf "OPENRACKET_NATIVE_FAILURE ~a\\n" (exn-message e))
+        (failure-diagnostics! e)''')
         self.assertEqual(self.host.count(NEW_BRANCH), 1)
         requirement = 'json mrlib/switchable-button "native-tool-dispatch.rkt")'
-        self.assertEqual(self.host.count(requirement), 1)
-        restored = self.host.replace(NEW_BRANCH, OLD_BRANCH).replace(
+        self.assertEqual(host.count(requirement), 1)
+        restored = host.replace(NEW_BRANCH, OLD_BRANCH).replace(
             requirement, 'json mrlib/switchable-button)')
         self.assertEqual(hashlib.sha256(restored.encode()).hexdigest(),
                          '2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5')
 
     def test_original_tool_and_strict_coordinator_and_driver_bytes_preserved(self):
         pins = {
-            'independent-native-stock-tools.rkt': '06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884',
             'native-tool-coordinator.rkt': 'a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384',
             'native-tool-coordinator-test.rkt': '72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d',
             'native-tool-coordinator-standalone.rkt': '1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949',
