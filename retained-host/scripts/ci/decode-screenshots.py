@@ -18,7 +18,7 @@ for line in a.log.read_text().splitlines():
         plain = label.removesuffix('-failure-diagnostic').removesuffix('-timeout-diagnostic')
         allowed = {'pristine-stock','stock-fallback','modern-light','modern-dark','pristine-stock-stop-returning',
                    'modern-dark-native-appearance-restored',
-                   'interval-stock-check-syntax','interval-candidate-on-check-syntax','xref-stock-check-syntax','xref-candidate-on-check-syntax','memory-stock-check-syntax','portable-modern-default','portable-modern-optout','portable-stock-launcher','portable-memory-restored','portable-memory-explicit-stock','portable-memory-custom','portable-memory-existing','portable-stock-after-memory'}
+                   'binding-stock-check-syntax','binding-candidate-off-check-syntax','binding-candidate-on-check-syntax','interval-stock-check-syntax','interval-candidate-on-check-syntax','xref-stock-check-syntax','xref-candidate-on-check-syntax','memory-stock-check-syntax','portable-modern-default','portable-modern-optout','portable-stock-launcher','portable-memory-restored','portable-memory-explicit-stock','portable-memory-custom','portable-memory-existing','portable-stock-after-memory'}
         allowed.update(mode+'-'+case for mode in ('pristine-stock','modern-dark')
                        for case in ('stop','input-eof','wxme','check-syntax'))
         allowed.update('mac-app-'+mode+'-'+step for mode in ('coldempty','coldfile','relocated') for step in ('coldempty','coldfile','warmfile','duplicate'))

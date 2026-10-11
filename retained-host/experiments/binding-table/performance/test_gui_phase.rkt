@@ -1,0 +1,41 @@
+#lang racket/base
+(require rackunit racket/file racket/path json "gui-observer.rkt" "gui-phase.rkt")
+(current-check-handler raise)
+
+(define root (make-temporary-file "gui-phase-test~a" 'directory))
+(define source (build-path root "test.rkt"))
+(define snapshot "#lang racket/base\n(define x 1)\n")
+(putenv "OPENRACKET_GUI_OBSERVER_OUTPUT" (path->string root))
+(putenv "OPENRACKET_GUI_EXPECTED_SOURCE" (path->string source))
+(putenv "OPENRACKET_GUI_EXPECTED_CHARACTERS" (number->string (string-length snapshot)))
+(putenv "OPENRACKET_GUI_EXPECTED_SHA256" (digest (string->bytes/utf-8 snapshot)))
+(define observed? (equal? (getenv "OPENRACKET_GUI_PHASE_POINTS") "1"))
+(define labels '(worker-phase-09 worker-phase-10 worker-phase-11 worker-phase-12 worker-phase-13
+                monitor-build-start monitor-built-send-start monitor-send-return monitor-ack))
+(phase-hook 'begin snapshot source 'test-settings 268435456)
+;; Existing child threads inherit only the metadata token; no sampler is created.
+(define done (make-channel))
+(thread (lambda () (for ([label (in-list labels)]) (phase-hook label)) (channel-put done #t)))
+(check-not-false (sync/timeout 2 done))
+(check-false (file-exists? (build-path root "worker-phase-1.json")))
+(phase-hook 'emit)
+(define result (call-with-input-file (build-path root "worker-phase-1.json") read-json))
+(check-equal? (hash-ref result 'phase_points_enabled) observed?)
+(check-true (hash-ref result 'emission_after_stock_terminal_send))
+(check-equal? (hash-ref result 'observer_failures) 0)
+(check-equal? (hash-ref result 'actual_child_limit_bytes) 268435456)
+(check-equal? (length (hash-ref result 'phase_points)) (if observed? 10 0))
+(when observed?
+  (for ([point (in-list (hash-ref result 'phase_points))])
+    (check-true (hash? (hash-ref point 'producer_metrics)))
+    (check-equal? (hash-ref point 'duplicate_writes) 0)))
+;; Repeated producer writes and duplicate selected jobs are explicit evidence.
+(phase-hook 'begin snapshot source 'test-settings 268435456)
+(phase-hook 'worker-phase-09)
+(phase-hook 'worker-phase-09)
+(phase-hook 'emit)
+(define duplicate (call-with-input-file (build-path root "worker-phase-2.json") read-json))
+(check-equal? (hash-ref duplicate 'selected_job_count) 2)
+(when observed?
+  (check-equal? (hash-ref (car (hash-ref duplicate 'phase_points)) 'duplicate_writes) 1))
+(delete-directory/files root)

@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "scope": "Descriptive scalar contract; accept_binding.py is the fail-closed paired validator",
+  "required_per_arm": [
+    "capture-host.json",
+    "capture-supervisor.json",
+    "gui-observation.json",
+    "worker-init.json",
+    "worker-phase-1.json",
+    "memory-profile.json",
+    "activation.json",
+    "heartbeat.json",
+    "binding-export.json"
+  ],
+  "metrics": {
+    "fields": [
+      "monotonic_ms",
+      "process_allocation_counter_bytes",
+      "gc_counter_ms",
+      "process_cpu_counter_ms_all_places"
+    ],
+    "types": "Finite nonnegative numbers; booleans rejected",
+    "scope": "Same-runtime monotonic clock and whole-runtime cumulative counters"
+  },
+  "gui-observation.json": {
+    "maximum_bytes": 1048576,
+    "fields": [
+      "schema_version",
+      "request_count",
+      "matching_request_ids",
+      "records",
+      "actual_registry",
+      "error_count",
+      "errors",
+      "dropped_records"
+    ],
+    "maximum_records": 8,
+    "accepted_records": 1,
+    "record_fields": [
+      "request_id",
+      "snapshot_sha256",
+      "snapshot_characters",
+      "snapshot_kind",
+      "source",
+      "actual_child_limit_bytes",
+      "actual_prefab",
+      "actual_prefab_truncated",
+      "prefab_annotations_none",
+      "terminal",
+      "gui_points",
+      "point_duplicates",
+      "terminal_callback_current",
+      "application_current",
+      "application_generation",
+      "application_cancelled",
+      "stale_application_events",
+      "monitor_evidence"
+    ],
+    "gui_points": [
+      "request-observed",
+      "monitor-received",
+      "monitor-callback-queue-attempt",
+      "monitor-callback-enter",
+      "monitor-callback-return",
+      "application-enter",
+      "application-complete",
+      "terminal-received",
+      "terminal-callback-queue-attempt",
+      "terminal-callback-enter",
+      "terminal-callback-return"
+    ],
+    "point_values": "metrics object",
+    "terminal_fields": [
+      "tag",
+      "handler_keys",
+      "compiled_bytes"
+    ],
+    "monitor_evidence_fields": [
+      "messages",
+      "trace_batches",
+      "trace_entries",
+      "rename_capability_rows",
+      "error_messages",
+      "invalid_payloads"
+    ],
+    "registry_row_fields": [
+      "module_spec",
+      "export",
+      "monitor",
+      "source",
+      "source_sha256"
+    ]
+  },
+  "worker-init.json": {
+    "maximum_bytes": 16384,
+    "event": "actual-registry-initialized-no-barrier",
+    "fields": [
+      "schema_version",
+      "event",
+      "child_limit_bytes",
+      "memory_accounting_available",
+      "actual_registry",
+      "metrics"
+    ]
+  },
+  "worker-phase-1.json": {
+    "maximum_bytes": 65536,
+    "kind": "genuine-gui-producer-phases",
+    "fields": [
+      "schema_version",
+      "kind",
+      "selected_job_id",
+      "selected_job_count",
+      "dropped_jobs",
+      "observer_failures",
+      "snapshot_sha256",
+      "source",
+      "actual_prefab",
+      "actual_child_limit_bytes",
+      "memory_accounting_available",
+      "terminal",
+      "phase_points_enabled",
+      "emission_after_stock_terminal_send",
+      "phase_points",
+      "scope",
+      "overhead"
+    ],
+    "point_row_fields": [
+      "phase",
+      "duplicate_writes",
+      "producer_metrics"
+    ],
+    "points_array_order": "Storage order differs from chronological order; index by unique phase name",
+    "maximum_selected_jobs": 8,
+    "fixed_slots_per_job": 10,
+    "accepted_selected_job_count": 1,
+    "accepted_phase_points": [],
+    "accepted_phase_points_enabled": false
+  },
+  "capture-host.json": {
+    "maximum_bytes": 65536,
+    "successful_status": "gui_application_complete",
+    "fields_include": [
+      "arm",
+      "racket_version",
+      "os",
+      "fixture",
+      "preserved_preferences",
+      "pending_run_configuration_scope",
+      "pending_run_serialized_settings",
+      "post_edit_deadline_monotonic_ms",
+      "first_final_lexer_valid_observed_monotonic_ms",
+      "terminal_received_monotonic_ms",
+      "terminal_callback_enter_monotonic_ms",
+      "terminal_callback_return_monotonic_ms",
+      "monitor_received_monotonic_ms",
+      "monitor_callback_enter_monotonic_ms",
+      "application_enter_monotonic_ms",
+      "application_complete_monotonic_ms",
+      "matching_request_id",
+      "edited_snapshot_sha256",
+      "final_snapshot_characters",
+      "final_snapshot_sha256",
+      "source_unchanged",
+      "lexer_valid_at_completion",
+      "actual_worker_child_limit_bytes",
+      "actual_worker_memory_accounting_available",
+      "elapsed_ms",
+      "workload_started_monotonic_ms",
+      "edit_dispatched_monotonic_ms",
+      "workload_completed_monotonic_ms",
+      "post_join_final_verification_monotonic_ms",
+      "heartbeat_verified",
+      "binding_export_verified",
+      "post_export_final_currentness_verified",
+      "post_export_final_verification_monotonic_ms"
+    ],
+    "deadline": "post_edit_deadline_monotonic_ms must equal edit_dispatched_monotonic_ms + 90000, with no extra export grace"
+  },
+  "capture-supervisor.json": {
+    "successful_status": "gui_application_complete",
+    "fields_include": [
+      "arm",
+      "command",
+      "native_gui_capture_only",
+      "standalone_replay",
+      "base_fixture_sha256",
+      "edited_snapshot_sha256",
+      "edited_snapshot_bytes",
+      "edited_snapshot_characters",
+      "expected_memory_limit_bytes",
+      "memory_profile_setup",
+      "gui_started",
+      "timeout",
+      "cleanup",
+      "exit_code",
+      "elapsed_seconds",
+      "observation_exists",
+      "host_evidence_errors",
+      "experiment",
+      "expected_gui_source_sha256",
+      "production_gui_source_sha256",
+      "manifest",
+      "manifest_sha256"
+    ]
+  },
+  "memory-profile.json": {
+    "producer": "Byte-identical approved memory-profile.rkt via profile_setup.py",
+    "accepted_limit_bytes": 268435456,
+    "requirements": "Fresh distinct profile/addon, exactly one public persisted preference delta, effective readback matches, before-timed-gui, no GUI initialization"
+  },
+  "openracket-gui-phase-manifest.json": {
+    "location": "Independent clone root",
+    "fields": [
+      "schema_version",
+      "diagnostic_root",
+      "racket",
+      "source_root",
+      "stock_pins",
+      "diagnostic_sources",
+      "helpers",
+      "helper_paths",
+      "compile_command",
+      "compiled",
+      "compile_exit_code",
+      "arm",
+      "original_pins"
+    ],
+    "paths": "Actual resolved native paths",
+    "required": "compiled true, integer compile_exit_code 0, exact arm original_pins and common stock_pins, actual source/helper hashes, exact helper paths, byte-for-byte undo and reapplication of common transform"
+  },
+  "failure_policy": "Preserve all partial files/logs; cancellation, OOM, timeout, missing/ambiguous endpoints, mismatched identity/counts, malformed data or skipped native gates never mean success.",
+  "arms": [
+    "stock",
+    "candidate"
+  ],
+  "trial_order": [
+    "stock",
+    "candidate",
+    "candidate",
+    "stock",
+    "stock",
+    "candidate"
+  ],
+  "activation.json": {
+    "maximum_bytes": 16384,
+    "kind": "gui_binding_table_activation",
+    "requirements": "Actual already-instantiated resolved GUI module at phase zero, exact transformed GUI source hash from verified manifest, stock export absent/flag unset or candidate export true/flag1, GUI handler thread, producer points off",
+    "fields": [
+      "schema_version",
+      "kind",
+      "arm",
+      "gui_module",
+      "gui_module_already_instantiated",
+      "gui_namespace_base_phase",
+      "source",
+      "source_sha256",
+      "expected_source_sha256",
+      "flag_name",
+      "flag_value",
+      "activation_export",
+      "export_status",
+      "phase_points_enabled",
+      "verified",
+      "gui_handler_thread",
+      "same_gui_module_instance",
+      "binding_index_enabled"
+    ]
+  },
+  "heartbeat.json": {
+    "maximum_bytes": 2097152,
+    "schema_version": 1,
+    "kind": "gui-heartbeat",
+    "period_ms": 50,
+    "max_records": 4096,
+    "scope": "One outstanding low-priority callback, closed-loop interval from previous handler; no physical input latency or typing claim",
+    "fields": [
+      "started_monotonic_ms",
+      "stopped_monotonic_ms",
+      "last_handler_monotonic_ms",
+      "stop_handler_gap_ms",
+      "producer_exited",
+      "joined",
+      "join_timed_out",
+      "submitted_count",
+      "handled_count",
+      "record_count",
+      "outstanding_callbacks",
+      "dropped_records",
+      "error_count",
+      "errors",
+      "records"
+    ],
+    "row_fields": [
+      "sequence",
+      "scheduled_monotonic_ms",
+      "submitted_monotonic_ms",
+      "handler_monotonic_ms",
+      "producer_lateness_ms",
+      "dispatch_latency_ms",
+      "handler_gap_ms",
+      "after_stop"
+    ],
+    "tail_gap": "Frozen at stop against latest pre-stop handler or start; after-stop drain may update last_handler separately",
+    "success": "No errors/drops/outstanding callbacks, joined producer, nonempty actual application-window coverage, exact timestamp arithmetic, post-join final validation inside original deadline"
+  },
+  "pair_acceptance": {
+    "CLI": "accept_binding.py --stock DIR --candidate DIR --stock-manifest PATH --candidate-manifest PATH",
+    "success": "exit0, accepted true, failures empty",
+    "normalization": "Typed verified clone-relative module/hash/export/monitor identity only. Raw module_spec and terminal source association retained.",
+    "source_pins_file": "candidate-source-pins.json",
+    "source_deltas": "Only pinned original GUI production delta; identical common additive transform with exact arm-specific undo and actual installed source verification",
+    "matrix_requirement": "All six export objects must match exactly including canonical digest, key_count and edge_count; six fresh profiles/addons; same normalized verified registry/terminal/monitor/source/prefab/settings"
+  },
+  "binding-export.json": {
+    "maximum_bytes": 65536,
+    "schema_version": 1,
+    "kind": "binding-table-public-exposure",
+    "fields": [
+      "arm",
+      "verified",
+      "status",
+      "scope",
+      "before_state",
+      "first_start",
+      "first_end",
+      "after_first_state",
+      "second_start",
+      "second_end",
+      "after_second_state",
+      "same_public_hash_identity",
+      "export",
+      "verified_monotonic_ms"
+    ],
+    "point_fields": {
+      "monotonic_ms": "finite nonnegative numeric; bool rejected",
+      "allocation_bytes": "exact nonnegative integer",
+      "managed_bytes": "exact nonnegative integer",
+      "gc_ms": "exact nonnegative integer",
+      "cpu_all_places_ms": "exact nonnegative integer"
+    },
+    "stock_state": null,
+    "candidate_state_fields": [
+      "enabled",
+      "active",
+      "accepted",
+      "duplicates",
+      "pending",
+      "materializations",
+      "stock_calls",
+      "unsupported_fallbacks",
+      "generation",
+      "fallback_reason"
+    ],
+    "candidate_state_contract": "Before: enabled/active true, accepted=pending>0, generation>0, materializations/stock_calls/unsupported_fallbacks=0, fallback_reason=false. First: enabled true, active false, pending 0, materializations1, stock_calls=before.pending, fallback_reason public-exposure, accepted/duplicates/generation/unsupported_fallbacks unchanged. Second state identical to first. accepted=edge_count. Counter fields exact nonnegative integers; no bool counters.",
+    "export_fields": [
+      "key_count",
+      "edge_count",
+      "canonical_format",
+      "canonical_sha256",
+      "owning_editor_endpoints",
+      "mutable_strong_equal_hash",
+      "immutable_equal_set_values"
+    ],
+    "export_contract": "Nonempty mutable strong equal? hash, nonempty immutable strong equal? sets, exact in-range owning-editor endpoint triples; counts 1..300000, key_count<=edge_count; full sorted exact-integer quadruples written by Racket then SHA256. No raw payload in evidence.",
+    "command_timing": "Both command start/end snapshots exclude state reads, progress callbacks, full graph walking and reporting; first command begins only after primary completion, heartbeat join and post-join verification. Second getter returns same hash identity.",
+    "final_recheck": "verified_monotonic_ms <= post_export_final_verification_monotonic_ms < original deadline; current request/source/lexer are rechecked after full export validation",
+    "failure": "Partial scalar progress retained with verified false, status failed and bounded exception text when available"
+  }
+}

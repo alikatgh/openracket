@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "package": "openracket-binding-telemetry",
+  "revision": "2026-10-11-reviewed-binding-table-observer",
+  "purpose": "Default-off same-owner binding-table candidate; three interleaved fresh Mac pairs with post-readiness public export timing",
+  "production_source_pins": {
+    "module": "drracket/private/syncheck/gui",
+    "stock_sha256": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e",
+    "candidate_sha256": "1ba5b93e748091888e2f61b1518fe625a86d5b771e471f11204461e9ace02025"
+  },
+  "portable_validation": {
+    "tests": 89,
+    "passed": 89,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "native_executed": false,
+    "command": "python3 -m unittest test_gui_source test_capture test_accept_gui test_telemetry test_accept_binding test_prepared_runtime -v"
+  },
+  "native_gate_status": "Required and not run locally. Candidate host correctness and zero-skip helper preflight must pass before timing.",
+  "required_per_arm": [
+    "capture-host.json",
+    "capture-supervisor.json",
+    "gui-observation.json",
+    "worker-init.json",
+    "worker-phase-1.json",
+    "memory-profile.json",
+    "activation.json",
+    "heartbeat.json",
+    "binding-export.json"
+  ],
+  "files": {
+    "OUTPUT-SCHEMA.json": "e7a5fe17d7fb8eacf66a41377fcf50632245a52a73c17cced1b53abc239f9839",
+    "README.md": "919d05c8562966ac95cbe9056ded98236df35bc20240d5670e4091629d7bc5a4",
+    "accept_binding.py": "7ba6b840e859d4d4f9a3e6a2d4a6de3483205d47db5365b1677d9608591becba",
+    "accept_gui.py": "f7e65e19386dca0c0779e6401088911af636b4e9cd8cdda33c225a5590f41f64",
+    "activation.rkt": "94f42d14f6607192aecb9bc226a0cc258c7652f7faafc9bde2af02d28092aa08",
+    "binding-export.rkt": "513068cb4ff076fcf6417b87768a7a9fc94eb66e14ac947e60f60539a6c496a5",
+    "candidate-source-pins.json": "585688323289b0a7407d775cee5b7f7fbf349148814c856fa5460d4c08f3ce24",
+    "capture-host.rkt": "8f1345903616cee55bf79de4546bff7af4c0bd8316a722e658906ce6bfeafe20",
+    "capture.py": "973ac4111cd8c3e0047eff9ddbc78c088ad87ccdda4572c7ac0b6c694ef93c56",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "gui-observer.rkt": "c74f75d8e1727956a948d7e4ac94c700bd25539ba609d06af44f52bd7ea05e5e",
+    "gui-phase.rkt": "ee05b328cfe494dce75b16b4a4151f73f9939f2d9f6a84e47cc7fa55b0bc9e3a",
+    "heartbeat.rkt": "134b98c1e2d43495db12994267e5d3147b54a8ede12342c8d87d2f639e6297d7",
+    "memory-profile.rkt": "9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0",
+    "native_preflight.py": "e021942d7d96e1644fa64afc5061452075ac7e315068a519be65eeacc67c420a",
+    "prepare_gui.py": "0ee89c0e4c70f21ef4c74eb609e8d5c9bfd83c594ad78938c26ac442be8af4e5",
+    "profile_setup.py": "9bb3dc30255a4effca1a91f2f407e0af3ae0fce298f2fc20ed823544176daddb",
+    "supervise.py": "0505de6044b8e9c389088bf3714cd95a9c0bef501dadddf08d3617fbb5437b58",
+    "test_accept_binding.py": "af2a2938c52001a0deb98805a0865337d0592556abf416301e7dc7675e4c7dad",
+    "test_accept_gui.py": "c1d11954d0e8ca48fef4ca162bf1ed1f7fd344e3914ef86e20e5dbb31c4d9e4f",
+    "test_activation.rkt": "7b5f594a655af1dd19c2d977883a3ad5797fe2fe3641aeb423c6c63187c0c77a",
+    "test_binding_export.rkt": "e664d801ca4e752a099db11718c73003a80721f6fe1ad9025d0eaac5172545ad",
+    "test_capture.py": "c251509c38df769df871b4d0716fc1ccc4e323ca2c118a0a31caff9b8372c958",
+    "test_gui_native.py": "716a847dddd8f4ea7dfb7b93bc7d30f8d2f375e76e96aba60d4551c5feab567f",
+    "test_gui_observer.rkt": "b6d5a245d919f45065d815a02c827ab3707d8e0f14b75a53935640c6c775ea02",
+    "test_gui_phase.rkt": "0fc1cf1547e29a2603d3537c8db20ff5d5958e7d2d29f6cc3db4299e8dd1c459",
+    "test_gui_source.py": "a732743a16b1565d0dc0cb916a73d35af357918d972b29acaad8684d20c4196c",
+    "test_heartbeat.rkt": "cb55904fac366d1d95a75be0ec7f859183c08986c435d7abc1282967edbf3f03",
+    "test_prepared_runtime.py": "00d5989568d70883549cdd574f4cfe8a4f3a7644466f5dd5f708f8300610438a",
+    "test_telemetry.py": "5b17189a5632f4f76829834c581eeea99382af725661dd922eefb5d2c21710a8"
+  },
+  "excluded": [
+    "DESIGN-PENDING.md",
+    "__pycache__",
+    "inherited interval-specific validator/tests"
+  ]
+}
