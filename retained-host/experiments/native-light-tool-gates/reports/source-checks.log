@@ -1,0 +1,68 @@
+COMMAND: python3 scripts/prepare-stock-tool-host.py --check
+Pinned host, patch and metadata verified
+
+COMMAND: python3 scripts/prepare-light-tool-host.py --check
+Exact light host derivation verified
+
+COMMAND: python3 tests/stock-tool-source-test.py
+test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok
+test_failure_payload_keeps_typed_rackunit_info (__main__.StockToolSourceTests.test_failure_payload_keeps_typed_rackunit_info) ... ok
+test_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok
+test_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok
+test_headless_source_contract_refuses_false_navigation_and_progress (__main__.StockToolSourceTests.test_headless_source_contract_refuses_false_navigation_and_progress) ... ok
+test_host_derivative_exact_and_base_unchanged (__main__.StockToolSourceTests.test_host_derivative_exact_and_base_unchanged) ... ok
+test_host_does_not_wrap_new_coordinator_in_gui_callback (__main__.StockToolSourceTests.test_host_does_not_wrap_new_coordinator_in_gui_callback) ... ok
+test_macro_waits_for_real_cursor_and_navigation_progress (__main__.StockToolSourceTests.test_macro_waits_for_real_cursor_and_navigation_progress) ... ok
+test_no_private_callback_bypass_or_fake_tool_models (__main__.StockToolSourceTests.test_no_private_callback_bypass_or_fake_tool_models) ... ok
+test_passing_macro_bytes_and_debugger_source_assertions_preserved (__main__.StockToolSourceTests.test_passing_macro_bytes_and_debugger_source_assertions_preserved) ... ok
+test_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexical_delimiters) ... ok
+test_source_traversal_has_one_twenty_second_launch_budget (__main__.StockToolSourceTests.test_source_traversal_has_one_twenty_second_launch_budget) ... ok
+test_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.026s
+
+OK
+
+COMMAND: python3 tests/coordinator-standalone-source-test.py
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
+
+COMMAND: python3 tests/tool-dispatch-source-test.py
+test_bridge_preserves_real_eventspace_and_handler_pump (__main__.DispatchSourceTests.test_bridge_preserves_real_eventspace_and_handler_pump) ... ok
+test_bridge_returns_or_reraises_after_worker_death_and_always_joins (__main__.DispatchSourceTests.test_bridge_returns_or_reraises_after_worker_death_and_always_joins) ... ok
+test_headless_regression_models_initial_thread_as_handler (__main__.DispatchSourceTests.test_headless_regression_models_initial_thread_as_handler) ... ok
+test_injected_wrong_result_is_real_return_value_and_uncaught_typed_failure (__main__.DispatchSourceTests.test_injected_wrong_result_is_real_return_value_and_uncaught_typed_failure) ... ok
+test_new_racket_lexical_delimiters (__main__.DispatchSourceTests.test_new_racket_lexical_delimiters) ... ok
+test_nonexception_identity_assertion_is_outside_its_exact_call_catch (__main__.DispatchSourceTests.test_nonexception_identity_assertion_is_outside_its_exact_call_catch) ... ok
+test_only_import_and_stock_dispatch_changed_in_host (__main__.DispatchSourceTests.test_only_import_and_stock_dispatch_changed_in_host) ... ok
+test_original_tool_and_strict_coordinator_and_driver_bytes_preserved (__main__.DispatchSourceTests.test_original_tool_and_strict_coordinator_and_driver_bytes_preserved) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.002s
+
+OK
+
+COMMAND: python3 tests/light-tool-source-test.py
+test_all_accepted_source_bytes_unchanged (__main__.SourceTests.test_all_accepted_source_bytes_unchanged) ... ok
+test_bad_native_receipts_refused (__main__.SourceTests.test_bad_native_receipts_refused) ... ok
+test_cocoa_inspection_keys_and_aqua_are_source_supported (__main__.SourceTests.test_cocoa_inspection_keys_and_aqua_are_source_supported) ... ok
+test_exact_palette_matches_read_only_production_source (__main__.SourceTests.test_exact_palette_matches_read_only_production_source) ... ok
+test_hook_brackets_tools_on_actual_handler (__main__.SourceTests.test_hook_brackets_tools_on_actual_handler) ... ok
+test_light_host_is_exact_pinned_derivation (__main__.SourceTests.test_light_host_is_exact_pinned_derivation) ... ok
+test_new_headless_refusals_are_fail_closed (__main__.SourceTests.test_new_headless_refusals_are_fail_closed) ... ok
+test_observer_is_read_only_and_uses_actual_getters (__main__.SourceTests.test_observer_is_read_only_and_uses_actual_getters) ... ok
+test_preflights_and_injected_failures_all_mandatory (__main__.SourceTests.test_preflights_and_injected_failures_all_mandatory) ... ok
+test_racket_lexical_structure (__main__.SourceTests.test_racket_lexical_structure) ... ok
+test_six_synthetic_success_receipts (__main__.SourceTests.test_six_synthetic_success_receipts) ... ok
+test_workflow_body_and_deadlines_byte_identical (__main__.SourceTests.test_workflow_body_and_deadlines_byte_identical) ... ok
+test_wrong_or_missing_light_state_refused (__main__.SourceTests.test_wrong_or_missing_light_state_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.041s
+
+OK
+

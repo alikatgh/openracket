@@ -1,0 +1,11 @@
+{
+  "base_host_sha256": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+  "light_host_sha256": "402c4b4fffbbf03f4593a17a0c13a116d59fb497dfd873030d6ddd3366d22451",
+  "scope": "Six insertion-only test-host substitutions; accepted host and tool workflow modules unchanged",
+  "native_execution": "not run; local preparation only; publication on authorization hold",
+  "cases": [
+    "debugger",
+    "macro-stepper",
+    "teaching-tests"
+  ]
+}

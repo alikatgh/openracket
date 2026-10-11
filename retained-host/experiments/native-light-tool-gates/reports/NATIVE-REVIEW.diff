@@ -1,0 +1,320 @@
+--- accepted-1125/tests/independent-native-host.rkt
++++ light-gate/tests/independent-native-light-tools-host.rkt
+@@ -4,7 +4,8 @@
+ ;; The CI runner supplies a fresh preference profile and external timeout.
+ (require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
+          json mrlib/switchable-button "native-tool-dispatch.rkt"
+-         "native-tool-failure-diagnostics.rkt")
++         "native-tool-failure-diagnostics.rkt"
++         "native-light-state-observer.rkt")
+ 
+ (define checks 0)
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+@@ -15,6 +16,7 @@
+ (define native-appearance-result #f)
+ (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
+ (define follow-on-result #f)
++(define light-tool-states '())
+ (define created-frames '())
+ (define fixture
+   (make-temporary-file "openracket-native-fixture-~a.rkt"))
+@@ -154,6 +156,15 @@
+            (failure-diagnostics! original)))
+         (cleanup!)
+         (exit 1))])
++  ;; This separate entrypoint accepts only the explicit modern-light tool arm.
++  ;; The stock control still runs the byte-identical accepted original host.
++  (unless (and (equal? (getenv "OPENRACKET_UI") "modern")
++               (equal? (getenv "OPENRACKET_HOST_THEME") "1")
++               (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE") "1")
++               (equal? (getenv "OPENRACKET_THEME") "light")
++               (not (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK"))
++               (member follow-on-case '("debugger" "macro-stepper" "teaching-tests")))
++    (error 'independent-native-light-tools-host "Explicit modern-light tool environment required"))
+   ;; Read-only capture before DrRacket's appearance tool can set an app override.
+   (define native-appearance-baseline
+     (and native-appearance-check?
+@@ -299,6 +310,10 @@
+                 (unless (memq created created-frames)
+                   (set! created-frames (cons created created-frames)))))))))
+ 
++  (set! light-tool-states
++        (list (hash 'stage "before-tool"
++                    'observed (on-gui (lambda () (observe-light-state! "before-tool"))))))
++
+   (when follow-on-case
+     (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax" "stop-returning"
+                                              "debugger" "macro-stepper" "teaching-tests"))
+@@ -328,6 +343,11 @@
+                 ((dynamic-require follow-on-module 'run-follow-on-check!)
+                  frame (string->symbol follow-on-case))))])))
+ 
++  (set! light-tool-states
++        (append light-tool-states
++                (list (hash 'stage "after-tool"
++                            'observed (on-gui (lambda () (observe-light-state! "after-tool")))))))
++
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+   (on-gui (lambda ()
+             ;; Capture dimensions only: fit the actual runner display (the macOS
+@@ -348,6 +368,7 @@
+           'theme (or (getenv "OPENRACKET_THEME") "unspecified")
+           'genuine_host #t 'repeated_real_run #t 'geometry geometry
+           'native_appearance_lifecycle (or native-appearance-result 'null)
++          'light_tool_states light-tool-states
+           'follow_on_case (or follow-on-case 'null) 'follow_on_result (or follow-on-result 'null)
+           'complete_stock_parity #f 'physical_input_to_photon_measured #f))
+   (printf "OPENRACKET_NATIVE_RESULT ~a\n" (jsexpr->string report))
+--- /dev/null
++++ light-gate/tests/native-light-state-observer.rkt
+@@ -0,0 +1,54 @@
++#lang racket/base
++;; Test-only read-only observation. Never set, capture or restore appearance.
++(require racket/class racket/gui/base json mrlib/panel-wob
++         "native-light-state-contract.rkt")
++(provide observe-light-state!)
++(define (json-safe value)
++  (cond [(symbol? value) (symbol->string value)]
++        [(hash? value) (for/hasheq ([(key item) (in-hash value)])
++                         (values key (json-safe item)))]
++        [(list? value) (map json-safe value)]
++        [else value]))
++(define (rgb color)
++  (list (send color red) (send color green) (send color blue)))
++(define (observe-light-state! stage)
++  (unless (eq? (current-thread) (eventspace-handler-thread (current-eventspace)))
++    (error 'native-light-state "Existing GUI handler thread required"))
++  (define pref-get (dynamic-require 'framework 'preferences:get))
++  (define scheme-name (dynamic-require 'framework 'color-prefs:get-current-color-scheme-name))
++  (define color-lookup (dynamic-require 'framework 'color-prefs:lookup-in-color-scheme))
++  (define (paint name) (dynamic-require 'mrlib/private/openracket-paint name))
++  (define painter ((paint 'get-modern-host-theme)))
++  (define painter-parameter (paint 'current-modern-theme))
++  (define painter-color (paint 'theme-color))
++  (define make-adapter (dynamic-require 'openracket-appearance/native-appearance-platform
++                                      'make-platform-native-appearance-adapter))
++  (define inspect (dynamic-require 'openracket-appearance/native-appearance
++                                 'native-appearance-adapter-inspect))
++  ;; The factory checks capability but does not own or set an appearance. Its
++  ;; inspector is the only adapter operation invoked, matching the accepted
++  ;; portable-observer path. Missing/unsupported Cocoa is a hard failure.
++  (define adapter (make-adapter #:enabled? #t))
++  (unless adapter (error 'native-light-state "Positive Cocoa inspector capability required"))
++  (define observed
++    (json-safe
++     (hash 'appearance_state (pref-get 'openracket:appearance-state)
++           'mode_preference (pref-get 'framework:white-on-black-mode?)
++           'light_scheme (scheme-name #:wob? #f) 'dark_scheme (scheme-name #:wob? #t)
++           'palette_background (rgb (color-lookup 'framework:basic-canvas-background))
++           'palette_foreground (rgb (color-lookup 'framework:default-text-color))
++           'painter_modern ((paint 'modern-ui?)) 'painter painter
++           'painter_blended ((paint 'get-modern-chrome-blended?))
++           ;; Read the same palette under the ACTUAL retained painter mode, as
++           ;; switchable-button% does. Do not substitute the requested 'light.
++           'painter_palette
++           (parameterize ([painter-parameter painter])
++             (for/hash ([key '(background surface hover pressed text muted border blue green purple red)])
++               (values key (rgb (painter-color key)))))
++           'panel_dark (white-on-black-panel-scheme?)
++           'native ((inspect adapter)))))
++  ;; Preserve the actual snapshot even if a strict assertion subsequently fails.
++  (printf "OPENRACKET_NATIVE_LIGHT_STATE ~a\n"
++          (jsexpr->string (hash 'stage stage 'observed observed)))
++  (flush-output)
++  (validate-light-state! observed))
+--- /dev/null
++++ light-gate/tests/native-light-state-contract.rkt
+@@ -0,0 +1,25 @@
++#lang racket/base
++;; Pure evidence validator shared by the real light host and headless refusals.
++(require rackunit racket/list racket/runtime-path json)
++(provide expected-light-state validate-light-state!)
++(define-runtime-path expected-path "native-light-state-expected.json")
++(define expected-light-state (call-with-input-file expected-path read-json))
++(define (canonical value)
++  ;; JSON readers use hasheq; callers may have ordinary symbol-key hashes.
++  ;; Normalize only hash comparison kind, recursively, never field values/types.
++  (cond [(hash? value) (for/hasheq ([(key item) (in-hash value)])
++                        (values key (canonical item)))]
++        [(list? value) (map canonical value)]
++        [else value]))
++(define (validate-light-state! observed)
++  ;; A missing #f-valued key must fail; never use a #f fallback as evidence.
++  (parameterize ([current-check-handler raise])
++    (check-true (hash? observed) "Light-state observation must be a hash")
++    (check-true (andmap symbol? (hash-keys observed)) "Symbol-key light state required")
++    (check-equal? (sort (hash-keys observed) symbol<?)
++                  (sort (hash-keys expected-light-state) symbol<?)
++                  "Complete exact light-state evidence keys")
++    (for ([key (in-list (sort (hash-keys expected-light-state) symbol<?))])
++      (check-equal? (canonical (hash-ref observed key)) (canonical (hash-ref expected-light-state key))
++                    (format "Actual light state: ~a" key))))
++  observed)
+--- /dev/null
++++ light-gate/tests/native-light-state-standalone.rkt
+@@ -0,0 +1,79 @@
++#lang racket/base
++;; Direct supervised headless entrypoint; no GUI, no native-pass claim.
++(require rackunit racket/list json "native-light-state-contract.rkt"
++         "native-tool-failure-diagnostics.rkt")
++(define arguments (current-command-line-arguments))
++(unless (or (equal? arguments #()) (equal? arguments #("--inject-wrong-painter")))
++  (error 'native-light-state "Unsupported arguments"))
++(define (ordinary-hashes value)
++  (cond [(hash? value) (for/hash ([(key item) (in-hash value)])
++                        (values key (ordinary-hashes item)))]
++        [(list? value) (map ordinary-hashes value)]
++        [else value]))
++(parameterize ([current-check-handler raise])
++  (check-equal? (validate-light-state! expected-light-state) expected-light-state)
++  (define ordinary (ordinary-hashes expected-light-state))
++  (check-true (hash-equal? ordinary))
++  (check-true (hash-equal? (hash-ref ordinary 'native)))
++  (check-true (hash-eq? expected-light-state))
++  (check-not-exn (lambda () (validate-light-state! ordinary)))
++  (define json-roundtrip (read-json (open-input-string (jsexpr->string ordinary))))
++  (check-true (hash-eq? (hash-ref json-roundtrip 'native)))
++  (check-not-exn (lambda () (validate-light-state! json-roundtrip)))
++  (for ([key (in-list (hash-keys expected-light-state))])
++    (check-exn exn:test:check?
++               (lambda () (validate-light-state! (hash-remove expected-light-state key))))
++    (check-exn exn:test:check?
++               (lambda () (validate-light-state! (hash-set expected-light-state key "wrong")))))
++  (for ([key (in-list (hash-keys (hash-ref expected-light-state 'painter_palette)))])
++    (check-exn exn:test:check?
++               (lambda ()
++                 (validate-light-state!
++                  (hash-set expected-light-state 'painter_palette
++                            (hash-set (hash-ref expected-light-state 'painter_palette) key '(0 0 0)))))))
++  (for ([key '(backend explicit-name effective-name increase-contrast?)])
++    (check-exn exn:test:check?
++               (lambda ()
++                 (validate-light-state!
++                  (hash-set expected-light-state 'native
++                            (hash-remove (hash-ref expected-light-state 'native) key)))))
++    (check-exn exn:test:check?
++               (lambda ()
++                 (validate-light-state!
++                  (hash-set expected-light-state 'native
++                            (hash-set (hash-ref expected-light-state 'native) key "wrong"))))))
++  (for ([bad (list #f '() (hash-set expected-light-state 'extra #t)
++                   (hash-set expected-light-state 'mode_preference 'platform)
++                   (hash-set expected-light-state 'mode_preference 0)
++                   (hash-set expected-light-state 'painter_modern 1)
++                   (hash-set expected-light-state 'palette_background '(247.0 248 250))
++                   (hash-set expected-light-state 'palette_background '(23 28 38))
++                   (hash-set expected-light-state 'palette_foreground '(236 240 247)))])
++    (check-exn exn:test:check? (lambda () (validate-light-state! bad))))
++  (when (equal? arguments #("--inject-wrong-painter"))
++    (displayln "OPENRACKET_NATIVE_LIGHT_STATE_INJECTING_FAILURE")
++    (flush-output)
++    (with-handlers
++        ([exn:test:check?
++          (lambda (failure)
++            ;; Diagnostic formatting or flush failure cannot replace the exact
++            ;; original check. The outer gate rejects a missing typed marker.
++            (report-failure!
++             failure
++             (lambda (original)
++              (define infos (exn:test:check-stack original))
++              (define (unique name)
++                (define matches (filter (lambda (info) (eq? (check-info-name info) name)) infos))
++                (and (= (length matches) 1) (check-info-value (car matches))))
++              (define actual (unique 'actual))
++              (define expected (unique 'expected))
++              (when (and (eq? (unique 'name) 'check-equal?)
++                         (pretty-info? actual) (pretty-info? expected)
++                         (equal? (pretty-info-value actual) "dark")
++                         (equal? (pretty-info-value expected) "light"))
++                (displayln "OPENRACKET_NATIVE_LIGHT_STATE_FAILURE exception=exn:test:check check=check-equal? actual=dark expected=light")
++                (flush-output))))
++            (raise failure))])
++      (validate-light-state! (hash-set expected-light-state 'painter "dark")))))
++(displayln "OPENRACKET_NATIVE_LIGHT_STATE_OK exact-palette-painter-cocoa-refusals")
++(exit 0)
+--- /dev/null
++++ light-gate/tests/native-light-state-expected.json
+@@ -0,0 +1,83 @@
++{
++  "appearance_state": "applied",
++  "mode_preference": false,
++  "light_scheme": "OpenRacket Light",
++  "dark_scheme": "OpenRacket Dark",
++  "palette_background": [
++    247,
++    248,
++    250
++  ],
++  "palette_foreground": [
++    37,
++    48,
++    71
++  ],
++  "painter_modern": true,
++  "painter": "light",
++  "painter_blended": true,
++  "painter_palette": {
++    "background": [
++      247,
++      248,
++      250
++    ],
++    "surface": [
++      255,
++      255,
++      255
++    ],
++    "hover": [
++      233,
++      237,
++      244
++    ],
++    "pressed": [
++      220,
++      228,
++      239
++    ],
++    "text": [
++      37,
++      48,
++      71
++    ],
++    "muted": [
++      98,
++      113,
++      138
++    ],
++    "border": [
++      216,
++      223,
++      233
++    ],
++    "blue": [
++      36,
++      94,
++      219
++    ],
++    "green": [
++      22,
++      124,
++      88
++    ],
++    "purple": [
++      121,
++      85,
++      213
++    ],
++    "red": [
++      199,
++      64,
++      77
++    ]
++  },
++  "panel_dark": false,
++  "native": {
++    "backend": "cocoa",
++    "explicit-name": "NSAppearanceNameAqua",
++    "effective-name": "NSAppearanceNameAqua",
++    "increase-contrast?": false
++  }
++}

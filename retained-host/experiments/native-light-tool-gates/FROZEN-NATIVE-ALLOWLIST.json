@@ -1,0 +1,142 @@
+{
+  "status": "local-only source prepared; native reader/compile/headless/GUI acceptance not run; publication held",
+  "baseline_native_source": "accepted 1125 (coordinator acceptance run38140896349)",
+  "files": {
+    "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+    "tests/independent-native-stock-tools.rkt": "e4856aa97d11d25bd82b55541b09ef470b112f968a501c142162ad8760e8612b",
+    "tests/native-tool-failure-diagnostics.rkt": "3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a",
+    "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "tests/native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3",
+    "tests/native-tool-failure-diagnostics-standalone.rkt": "aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa",
+    "tests/native-tool-source-contract-standalone.rkt": "21416fc767eebd65785232ead0457c4d1c77505b87a59c820d3fe2bd9bad2aaa",
+    "tests/native-tool-source-contract.rkt": "6f0dd0514073632a9e3e0ec47c74911b492101f3bf1702e185276c77b7e5388b",
+    "tests/independent-native-light-tools-host.rkt": "402c4b4fffbbf03f4593a17a0c13a116d59fb497dfd873030d6ddd3366d22451",
+    "tests/native-light-state-observer.rkt": "b36e6db63b2bc0d85321b76b3d67d91819604ce19fb86127d332870a116316f4",
+    "tests/native-light-state-contract.rkt": "54b5db77e7954fc49a2ea8e46d95e4fe8741657015fe8180353b4e7c319a90e7",
+    "tests/native-light-state-standalone.rkt": "065e74839e6207aea2ce560df79bc2d637cd0f310f25b6f912058cc9135214a4",
+    "tests/native-light-state-expected.json": "b6e55cb90506ba65478ce44b7d1b228a4a599d5a233f970b2e8721909848904e"
+  },
+  "unchanged_native_files": 11,
+  "new_test_only_files": 5,
+  "mandatory_native_preflights": [
+    {
+      "entrypoint": "native-tool-coordinator-standalone.rkt",
+      "arguments": [],
+      "timeout_seconds": 30,
+      "exit": 0,
+      "required_marker": "OPENRACKET_NATIVE_TOOL_COORDINATOR_OK strict-failures cleanup-complete",
+      "required_injection_marker": null,
+      "forbidden_marker": null
+    },
+    {
+      "entrypoint": "native-tool-coordinator-standalone.rkt",
+      "arguments": [
+        "--inject-outer-failure"
+      ],
+      "timeout_seconds": 30,
+      "exit": "integer 1..123",
+      "required_marker": "OPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong",
+      "required_injection_marker": "OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE",
+      "forbidden_marker": "OPENRACKET_NATIVE_TOOL_COORDINATOR_OK"
+    },
+    {
+      "entrypoint": "native-tool-dispatch-standalone.rkt",
+      "arguments": [],
+      "timeout_seconds": 30,
+      "exit": 0,
+      "required_marker": "OPENRACKET_NATIVE_TOOL_DISPATCH_OK distinct-thread strict-failures cleanup-complete",
+      "required_injection_marker": null,
+      "forbidden_marker": null
+    },
+    {
+      "entrypoint": "native-tool-dispatch-standalone.rkt",
+      "arguments": [
+        "--inject-wrong-result"
+      ],
+      "timeout_seconds": 30,
+      "exit": "integer 1..123",
+      "required_marker": "OPENRACKET_NATIVE_TOOL_DISPATCH_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong",
+      "required_injection_marker": "OPENRACKET_NATIVE_TOOL_DISPATCH_INJECTING_FAILURE",
+      "forbidden_marker": "OPENRACKET_NATIVE_TOOL_DISPATCH_OK"
+    },
+    {
+      "entrypoint": "native-tool-failure-diagnostics-standalone.rkt",
+      "arguments": [],
+      "timeout_seconds": 30,
+      "exit": 0,
+      "required_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_OK typed-payload-preserved output-failures-contained",
+      "required_injection_marker": null,
+      "forbidden_marker": null
+    },
+    {
+      "entrypoint": "native-tool-failure-diagnostics-standalone.rkt",
+      "arguments": [
+        "--inject-failure"
+      ],
+      "timeout_seconds": 30,
+      "exit": "integer 1..123",
+      "required_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong",
+      "required_injection_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_INJECTING_FAILURE",
+      "forbidden_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_OK"
+    },
+    {
+      "entrypoint": "native-tool-source-contract-standalone.rkt",
+      "arguments": [],
+      "timeout_seconds": 30,
+      "exit": 0,
+      "required_marker": "OPENRACKET_NATIVE_TOOL_SOURCE_CONTRACT_OK source-range-progress-budget-refusals",
+      "required_injection_marker": null,
+      "forbidden_marker": null
+    },
+    {
+      "entrypoint": "native-light-state-standalone.rkt",
+      "arguments": [],
+      "timeout_seconds": 30,
+      "exit": 0,
+      "required_marker": "OPENRACKET_NATIVE_LIGHT_STATE_OK exact-palette-painter-cocoa-refusals",
+      "required_injection_marker": null,
+      "forbidden_marker": null
+    },
+    {
+      "entrypoint": "native-light-state-standalone.rkt",
+      "arguments": [
+        "--inject-wrong-painter"
+      ],
+      "timeout_seconds": 30,
+      "exit": "integer 1..123",
+      "required_marker": "OPENRACKET_NATIVE_LIGHT_STATE_FAILURE exception=exn:test:check check=check-equal? actual=dark expected=light",
+      "required_injection_marker": "OPENRACKET_NATIVE_LIGHT_STATE_INJECTING_FAILURE",
+      "forbidden_marker": "OPENRACKET_NATIVE_LIGHT_STATE_OK"
+    }
+  ],
+  "native_matrix": [
+    [
+      "stock",
+      "debugger"
+    ],
+    [
+      "stock",
+      "macro-stepper"
+    ],
+    [
+      "stock",
+      "teaching-tests"
+    ],
+    [
+      "modern-light",
+      "debugger"
+    ],
+    [
+      "modern-light",
+      "macro-stepper"
+    ],
+    [
+      "modern-light",
+      "teaching-tests"
+    ]
+  ],
+  "native_timeout_seconds": 60
+}

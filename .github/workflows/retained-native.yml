@@ -1,4 +1,4 @@
-name: Mac native Quit and unsaved-document acceptance (public free runner)
+name: Mac native modern-light tool gate (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 100
+    timeout-minutes: 90
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -62,21 +62,24 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare exact native Quit sources and independent runtime
-        id: quit_prepare
+      - name: Prepare frozen stock and modern-light callers
+        id: light_prepare
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 15
-        run: python3 retained-host/scripts/ci/run-native-quit.py prepare
-      - name: Real clean, save and discard Quit cases in stock and modern dark
-        if: always() && steps.quit_prepare.outcome == 'success'
-        timeout-minutes: 70
-        run: python3 retained-host/scripts/ci/run-native-quit.py cases
-      - name: Verify complete runtimes, original preferences and file handler
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-light-tools.py prepare
+      - name: Six actual stock and modern-light tool cases
+        # Per-runtime preparation receipts control each independent case.
+        # A failed modern preparation must not hide ready stock prerequisites.
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-native-quit.py verify
-      - name: Report native Quit evidence
+        timeout-minutes: 40
+        run: python3 retained-host/scripts/ci/run-light-tools.py cases
+      - name: Verify original and selected tool runtimes
+        if: always() && steps.runtime.outcome == 'success'
+        timeout-minutes: 4
+        run: python3 retained-host/scripts/ci/run-light-tools.py verify
+      - name: Report stock and modern-light native findings
         if: always()
         run: |
-          if test -f retained-host/reports/native-quit-ci/summary.md; then cat retained-host/reports/native-quit-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
-          echo 'Six independent clean/save/discard cases; natural native child exit and exact modal/disk witnesses required. Stock128 and product256 are UI coverage, not performance arms. Original150s process and20s stage deadlines remain unchanged;270s outer includes separately bounded default queries and failure-only cleanup. No security bypass or default-handler writes.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/light-tools-ci/summary.md; then cat retained-host/reports/light-tools-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'Independent actual stock and modern-light Debugger, Macro Stepper and teaching-test cases. All15 reader/compile checks and all9 direct headless controls per runtime are mandatory. Stock prerequisites, unchanged deadlines and full runtime witnesses remain mandatory.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Each modern profile uses separately bounded local package copy/link/setup before the original60s GUI process window. The case stage allows40minutes and the whole job90minutes as safety ceilings; the prepare stage retains its20minute outer refusal. No native GUI deadline is extended.' >> "$GITHUB_STEP_SUMMARY"

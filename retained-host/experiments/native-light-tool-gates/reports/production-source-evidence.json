@@ -1,0 +1,44 @@
+{
+  "read_only_local_archive": "/workspace/scratch/5923f1aa2055/mac-preview-delivery/OpenRacket-Mac-preview-source.zip",
+  "archive_sha256": "d6b524955cd3c0a7fb181a1fa55c6f6b443bf4d5b78d30ad103e580374656ace",
+  "files": {
+    "tool/info.rkt": {
+      "source_member": "OpenRacket-native-candidate/tool/info.rkt",
+      "sha256": "b5cf6c820be53a5d4b95bb814947638ba49d126410003ea3d4560dae33b0c7d2",
+      "matches_current_accepted_manifest": true
+    },
+    "tool/native-appearance.rkt": {
+      "source_member": "OpenRacket-native-candidate/tool/native-appearance.rkt",
+      "sha256": "f7a0bfc2cc4bc8b6356f7d79c3393b7b23a2dc3ef0cc1924b9a1e88a0c4c2c86",
+      "matches_current_accepted_manifest": true
+    },
+    "tool/native-appearance-platform.rkt": {
+      "source_member": "OpenRacket-native-candidate/tool/native-appearance-platform.rkt",
+      "sha256": "0a2af8a0d8195feb76b18a5884bdb47ba813c37c12c31fb0986be1c0ada4ce2d",
+      "matches_current_accepted_manifest": true
+    },
+    "tool/native-appearance-cocoa.rkt": {
+      "source_member": "OpenRacket-native-candidate/tool/native-appearance-cocoa.rkt",
+      "sha256": "7b5c9068efd32da6adefae2b6f57c640ba5d0a553b148679af37bd74128876b4",
+      "matches_current_accepted_manifest": true
+    },
+    "overlay/mrlib/private/openracket-paint.rkt": {
+      "source_member": "OpenRacket-native-candidate/overlay/mrlib/private/openracket-paint.rkt",
+      "sha256": "38c8f8197ed6f08373b4768a053abf1ff09cc1ff0e475e6d3d72a237775fa354",
+      "matches_current_accepted_manifest": true
+    },
+    "overlay/mrlib/switchable-button.rkt": {
+      "source_member": "OpenRacket-native-candidate/overlay/mrlib/switchable-button.rkt",
+      "sha256": "d80e67b0285da13291d5650b56de4a616db5a217e63c51a6cf95c040603add31",
+      "matches_current_accepted_manifest": true
+    }
+  },
+  "scope": "Production reference copies only; no file from reference/ is in native integration allowlist.",
+  "current_accepted_manifest": {
+    "source": "openracket-recovery/publication-45/retained-host/CONTENTS-SHA256.json",
+    "sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+    "portable_copy": "reference/accepted-0520-CONTENTS-SHA256.json",
+    "all_six_members_match": true,
+    "scope": "Only these six reference members proved equal. No claim that the entire older archive equals the current candidate."
+  }
+}
