@@ -58,6 +58,8 @@
       <p>Requires a full official Racket 9.3 installation and a graphical desktop session. Its setup script prepares an isolated package and preferences profile and can download missing official dependencies.</p>
       <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Retained-host setup and launch instructions</a></p>
 
+      <p>A <a href="https://github.com/alikatgh/openracket/tree/dae4b69d34a793404f1e8ddf35a65948d33ae980/retained-host/experiments/mac-app-builder">Racket-only native Mac app builder</a> is now launch-tested on Apple Silicon macOS 15. Build locally against the installed full Racket and prepared source/profile; these fixed-path dependencies remain required. The app is tethered, unsigned and not notarized. <a href="blog.html#native-app-title">Native app evidence and limits</a>.</p>
+
       <h3>Earlier Rust preview</h3>
       <p>Requires Rust 1.94.0, Racket, and a graphical desktop session. The repository README lists platform prerequisites, build commands, runtime configuration, and the preview’s limitations.</p>
       <p><a href="https://github.com/alikatgh/openracket/blob/main/README.md#build-and-run">Rust preview build instructions</a></p>
@@ -73,6 +75,7 @@
         <li>The earlier Rust preview has documented gaps in debugging, teaching tools, macro stepping, rich documents, and DrRacket integration.</li>
         <li>Performance comparisons must use the same hardware, settings, instrumentation, and workloads. No speed multiplier is claimed.</li>
       </ul>
+      <p><strong>Native Mac app, 2026-10-11:</strong> all 114 app checks in <a href="https://github.com/alikatgh/openracket/actions/runs/38127332821">run 38127332821</a> passed, including nine real native file/window states and app-only relocation. The existing Script Editor handler was preserved; an unset-handler baseline and transferred-app Gatekeeper behavior remain unverified. The overall run is red because a separate tool-test diagnostic blocked its tool cases. This is launch acceptance, not a speed result or full parity. <a href="changelog.html#native-app-title">Details</a>.</p>
       <p><strong>Fresh-profile capacity, 2026-10-11:</strong> new isolated profiles now default to a 256 MiB per-job limit, preserving existing profiles and explicit settings. The tested 1 MiB analysis completed in 3/3 trials at 256 MiB, while stock 128 MiB ran out of memory in 3/3. The Mac installer and eight-launch acceptance run passed. Completion still took about 33–39 seconds and total peak RSS was about 1.5 GB; this is a capacity fix, not an editor speedup. <a href="blog.html#capacity-title">Evidence and limits</a>.</p>
       <p><strong>Earlier autosave result, 2026-10-11:</strong> three matched Mac replacement-autosave pairs for a 1 MiB fixture reduced command medians from 266.735 to 172.400 ms (35.4% between arm medians), with exact recovery checks passing. Actual Mac installation and combined save/recovery gates also passed in a later run whose independent expansion-replay preparation failed. Initial lexer-validity waits were about 34–40 seconds; combined performance has not been retimed. <a href="changelog.html">Changelog and evidence</a> · <a href="blog.html">Measurement details and limits</a>.</p>
       <ul class="resource-links">

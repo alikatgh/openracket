@@ -21,6 +21,12 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <section aria-labelledby="native-app-title">
+      <h2 id="native-app-title">2026-10-11: Native Mac app launch acceptance</h2>
+      <p>All 114 app checks in <a href="https://github.com/alikatgh/openracket/actions/runs/38127332821">run 38127332821</a> passed. Nine real native states covered cold and warm Unicode file opening, duplicate-open tab preservation and moving the app alone. Actual native identity, isolated preferences and original-runtime preservation passed.</p>
+      <p>The <a href="https://github.com/alikatgh/openracket/tree/dae4b69d34a793404f1e8ddf35a65948d33ae980/retained-host/experiments/mac-app-builder">Racket-only builder</a> creates the app on the destination Mac. It requires full official Racket 9.3 and the prepared source/profile at fixed paths; no Python is needed. The app is tethered, unsigned and not notarized. Transferred-app Gatekeeper behavior remains unverified; no security warning was bypassed.</p>
+      <p>The runner's existing Script Editor association stayed unchanged. An initially unset handler was not reproduced. The overall CI run remains red because a separate tool-test negative-control diagnostic omitted required exception details, leaving six tool cases unrun. This milestone adds no speed claim or full-tool-parity claim. <a href="blog.html#native-app-title">Acceptance details and remaining limits</a>.</p>
+    </section>
     <section aria-labelledby="capacity-title">
       <h2 id="capacity-title">2026-10-11: Fresh-profile memory capacity</h2>
       <p>The Mac source preview now initializes genuinely new isolated profiles with a 256 MiB per-job limit. Existing profiles and explicit choices are preserved. The original DrRacket preference affects both Run and background analysis; it is not a whole-application RAM cap.</p>

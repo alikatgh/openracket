@@ -160,6 +160,23 @@ class SiteTests(unittest.TestCase):
             for text in ['38114573816', '38107957744', '1.487–1.543', '33.222–39.155']:
                 self.assertIn(text, source)
 
+    def test_native_app_milestone_scope(self):
+        for name in ['index.html', 'changelog.html', 'blog.html']:
+            source = (ROOT / name).read_text()
+            for text in ['114 app checks', '38127332821', 'tethered', 'unsigned',
+                         'not notarized', 'Script Editor', 'Gatekeeper',
+                         'overall', 'red', 'unset']:
+                self.assertIn(text, source)
+            self.assertIn('dae4b69d34a793404f1e8ddf35a65948d33ae980', source)
+        blog = (ROOT / 'blog.html').read_text()
+        for text in ['CFBundleDocumentTypes', '26,838', 'Normal Quit',
+                     'not a self-contained binary download', 'Six Debugger']:
+            self.assertIn(text, blog)
+        readme = (ROOT.parent / 'README.md').read_text()
+        for text in ['114 app checks', '38127332821', 'unsigned',
+                     'initially unset handler was not tested', 'overall CI run is red']:
+            self.assertIn(text, readme)
+
     def test_css_delimiters(self):
         self.assertEqual(self.css.count('{'), self.css.count('}'))
         self.assertEqual(self.css.count('('), self.css.count(')'))

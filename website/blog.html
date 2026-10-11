@@ -21,6 +21,25 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <article aria-labelledby="native-app-title">
+      <section>
+        <h2 id="native-app-title">A destination-built native Mac app</h2>
+        <p><time datetime="2026-10-11">2026-10-11</time></p>
+        <p><a href="https://github.com/alikatgh/openracket/actions/runs/38127332821">Run 38127332821</a> passed all 114 app checks on Apple Silicon macOS 15 with full official Racket 9.3. The <a href="https://github.com/alikatgh/openracket/tree/dae4b69d34a793404f1e8ddf35a65948d33ae980/retained-host/experiments/mac-app-builder">Racket-only builder</a> uses the official native launcher generator. Setup, building and launching require no Python.</p>
+        <p>Nine native window/file states exercised an empty cold launch followed by a warm file open, a cold file launch followed by a second file, and the file sequence after moving only the app. Each sequence also checked duplicate-open tab preservation. The tests used ordinary macOS Launch Services through <code>open -a</code>, with Unicode, apostrophes and spaces in paths. Native process and bundle identity, exact file contents, retained tabs and language-appropriate stock toolbars were checked.</p>
+      </section>
+      <section aria-labelledby="native-app-isolation-title">
+        <h3 id="native-app-isolation-title">Preserving the installation and file association</h3>
+        <p>Both complete original-runtime witnesses remained unchanged across 26,838 entries, including file contents, modes, modification times and symlinks. Original Racket preferences were unchanged. The app uses its isolated profile and the same previously tested preview core; experimental performance changes remain disabled.</p>
+        <p>The generated bundle omits <code>CFBundleDocumentTypes</code>. This runner began with Script Editor as its .rkt handler, and read-only checks preserved that existing association throughout. The earlier failure began with an unset handler; this run did not reproduce that state. Omitting file-type claims is source-verified, while native preservation of an initially unset handler remains unverified.</p>
+      </section>
+      <section aria-labelledby="native-app-limits-title">
+        <h3 id="native-app-limits-title">What delivery still requires</h3>
+        <p>Build the app on the destination Mac against a full official Racket 9.3 installation and a prepared writable source/profile. It is tethered to those fixed dependency paths. The app alone can move; moving its dependencies requires rebuilding. This is not a self-contained binary download. It is unsigned and not notarized, and transferred-app Gatekeeper behavior was not tested. No security settings were changed or warnings bypassed.</p>
+        <p>The app checks passed independently, but the overall CI run is red: a separate tool-test negative control exited nonzero as intended while omitting the exception details its validator required. Six Debugger, Macro Stepper and teaching workflow cases therefore remain unrun. Normal Quit and unsaved-document prompts, Finder/Dock gestures, full tool compatibility and other platforms need further acceptance.</p>
+        <p>This is a packaging and launch milestone, not a new performance measurement. The earlier autosave improvement and fresh-profile capacity result keep their original measured scope. Large-file responsiveness remains unfinished.</p>
+      </section>
+    </article>
     <article aria-labelledby="capacity-title">
       <section>
         <h2 id="capacity-title">Enough memory to complete the tested analysis</h2>
@@ -43,7 +62,7 @@
         <p><a href="https://github.com/alikatgh/openracket/actions/runs/38114573816">Mac installer run 38114573816</a>, at source commit <a href="https://github.com/alikatgh/openracket/commit/80e51d78526d718a50c45f3662058a042c3038f7">80e51d7</a>, passed all gates. Eight real launches checked fresh 256 MiB behavior, the autosave opt-out, restoration to 128 MiB, explicit 128/384 MiB choices, repeated setup and the separate stock launcher's 128 MiB profile. Both complete original runtime trees remained unchanged.</p>
         <p>The automatic default applies only when setup reserves a previously absent isolated profile. Existing profiles, including empty profiles or those without a saved memory key, retain their behavior. Explicit choices are preserved. A guarded restore is available for an unchanged automatically installed default; close the profile's windows before changing preferences and restart afterward.</p>
         <p>The installed host's save/recovery regression passed with the autosave guard on and off in separate fresh stock-128 test profiles. Those checks do not retime autosave at the new default or establish large-file performance of the combined build. The launcher observer verifies the registered preference in the actual GUI; worker-cap evidence comes from the separate workload experiment.</p>
-        <p>Full official Racket 9.3 is still required. This remains a Mac-first source preview, without signing or a packaged application. Windows is untested. <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Installation, explicit choices and restore instructions</a>.</p>
+        <p>That installer milestone preceded the destination-built app checks above. Full official Racket 9.3 is still required, and Windows is untested. <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Installation, explicit choices and restore instructions</a>.</p>
       </section>
     </article>
     <article aria-labelledby="autosave-title">
@@ -79,7 +98,7 @@
       <section aria-labelledby="installation-title">
         <h2 id="installation-title">Installation progress</h2>
         <p>Later, <a href="https://github.com/alikatgh/openracket/actions/runs/38064415026">run 38064415026</a> passed actual Mac setup, all three launch modes, combined appearance-plus-autosave save/recovery checks and original-runtime preservation. The overall run failed in independent expansion-replay preparation, so that replay was not verified by that run. Combined performance has not been retimed.</p>
-        <p>The current deliverable is a source installer requiring full official Racket 9.3. It is not a signed or packaged app. Windows remains untested and full DrRacket equivalence is not established.</p>
+        <p>Those checks covered the source installer requiring full official Racket 9.3. Later destination-built app acceptance is described above. Windows remains untested and full DrRacket equivalence is not established.</p>
         <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/PERFORMANCE-AUTOSAVE-38061486888.md">Full measurement report, checksums and reproduction details</a> · <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Current installation and opt-outs</a></p>
       </section>
     </article>
