@@ -63,6 +63,22 @@ def coordinator_regression(mode,e,kind="coordinator"):
   record(label,passed,'exit='+str(code)+'; strict marker and outer-failure behavior checked')
   print('::endgroup::',flush=True)
 
+def source_contract_result_valid(code,output):
+ marker='OPENRACKET_NATIVE_TOOL_SOURCE_CONTRACT_OK source-range-progress-budget-refusals'
+ return code==0 and output.splitlines().count(marker)==1 and output.count('OPENRACKET_NATIVE_TOOL_SOURCE_CONTRACT_')==1
+
+def source_contract_regression(mode,e):
+ label=mode+' standalone source/navigation contract'
+ args=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],str(PROOF/'tests/native-tool-source-contract-standalone.rkt')]
+ print('::group::'+label,flush=True)
+ p=subprocess.Popen(args,env=e,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
+ try:output,_=p.communicate(timeout=30);code=p.returncode
+ except subprocess.TimeoutExpired:
+  terminate_group(p);output,_=p.communicate(timeout=5);code=124
+ print(output,flush=True)
+ record(label,source_contract_result_valid(code,output),'exit='+str(code)+'; exact unique source-range/progress/budget/refusal marker required')
+ print('::endgroup::',flush=True)
+
 def tree(operation,root,label,required=True):
  return command(label+' entire original runtime '+operation,[sys.executable,ROOT/'scripts/ci/runtime-tree-check.py',operation,root,TEMP/('stock-tools-'+label+'-tree.json')],timeout=180,required=required)
 
@@ -146,8 +162,8 @@ def native_case(case,modern=False):
 try:
  if PHASE=='prepare':
   tree('baseline',STOCK,'pristine')
-  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='445e1d57732741ebb0331a88234d42540b2f2ea37897a1c5b4be5676a5edbc87'
-  members=json.loads(m.read_text())['files'];assert len(members)==37
+  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='a4fe8c99ea951787e4e5e1b3521ef02c12358120e3887a2ae6188ead6e60830d'
+  members=json.loads(m.read_text())['files'];assert len(members)==46
   for name,h in members.items():
    p=EXP/name;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==h
   command('Portable exact host reproduction',[sys.executable,EXP/'scripts/prepare-stock-tool-host.py','--check'])
@@ -157,8 +173,8 @@ try:
   command('Fresh official addon registration contract checks',[sys.executable,ROOT/'scripts/ci/test-modern-registration.py'])
   command('Stock-tool adapter isolation tests',[sys.executable,ROOT/'scripts/ci/test-stock-tools-adapter.py'])
   CONTRACT.source_copy(ROOT,PROOF,'2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',155)
-  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='02000fbf7adb9a41e34705ef1052d92ee8329f8655f8ef5053d02014cb118ca8'
-  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==9
+  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='9902209df604d4b5d8e5b92b77f39df58e81ed7acd918c93c823d3b19d7ffcea'
+  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==11
   baseline=json.loads((PROOF/'CONTENTS-SHA256.json').read_text());shutil.copy2(PROOF/'CONTENTS-SHA256.json',PROOF/'BASE-0520-CONTENTS.json')
   for name,h in allowed.items():
    assert hashlib.sha256((EXP/name).read_bytes()).hexdigest()==h
@@ -166,11 +182,11 @@ try:
    if dest.exists():dest.unlink()
    shutil.copy2(EXP/name,dest);baseline[name]=h
   (PROOF/'CONTENTS-SHA256.json').write_text(json.dumps(baseline,indent=2)+'\n')
-  record('Complete native candidate assembled from exact0520 plus nine reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
+  record('Complete native candidate assembled from exact0520 plus eleven reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
   command('Independent modern-only tool runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','native-tools'],os.environ.copy(),180)
   tree('baseline',MODERN,'selected-modern')
   command('Actual unchanged setup for modern tool registration',['/bin/sh',PROOF/'scripts/setup-openracket.sh','--install'],env('setup',True,True),720)
-  compile_files=[ROOT/'scripts/ci/verify-modern-tool-registration.rkt']+[PROOF/'tests'/n for n in ('native-tool-failure-diagnostics.rkt','native-tool-failure-diagnostics-standalone.rkt','native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt','native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
+  compile_files=[ROOT/'scripts/ci/verify-modern-tool-registration.rkt']+[PROOF/'tests'/n for n in ('native-tool-source-contract.rkt','native-tool-source-contract-standalone.rkt','native-tool-failure-diagnostics.rkt','native-tool-failure-diagnostics-standalone.rkt','native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt','native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
   for mode,modern in [('stock',False),('modern',True)]:
    e=env('compile-'+mode,modern)
    if modern:
@@ -180,6 +196,7 @@ try:
    coordinator_regression(mode,e)
    coordinator_regression(mode,e,"dispatch")
    coordinator_regression(mode,e,"failure-diagnostics")
+   source_contract_regression(mode,e)
  elif PHASE=='cases':
   for case in ('debugger','macro-stepper','teaching-tests'):
    try:stock_passed=native_case(case)

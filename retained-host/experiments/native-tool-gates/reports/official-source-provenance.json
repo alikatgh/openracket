@@ -1,0 +1,54 @@
+{
+  "scope": "Read-only individual official source files, not executed",
+  "files": [
+    {
+      "path": "drracket/gui-debugger/debug-tool.rkt",
+      "git_blob": "722ddee82a06fecc731774ff059111f119e65f40",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket/gui-debugger/debug-tool.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "sha256": "5a8b030e9ef3c1f57f829f3749673cdedb0938f460ed1d40f162160036759676"
+    },
+    {
+      "path": "drracket/gui-debugger/annotator.rkt",
+      "git_blob": "3ec3bf07d536f6f5416e034cb030988f9e878b70",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket/gui-debugger/annotator.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "sha256": "f73bac12bd4c764f4efa9b3d804d066ced505521e71c70023cb07611b77bfda1"
+    },
+    {
+      "path": "drracket-core-lib/drracket/private/unit.rkt",
+      "git_blob": "8cd041a8382ca99e09c7588180516f686402eeb6",
+      "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/unit.rkt",
+      "ref": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+      "sha256": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5"
+    },
+    {
+      "path": "gui-lib/framework/private/group.rkt",
+      "git_blob": "6eccb44909e3c83edfd61c941e666564d8465f2e",
+      "source_url": "https://github.com/racket/gui/blob/v9.3/gui-lib/framework/private/group.rkt",
+      "ref": "v9.3 (commit 6f0213fa0535d87dd4e35f56c8266d948c8c089e)",
+      "sha256": "a753923bdf328ff3888c0def1d747fb4bbb9f3edd73847b250b5ef438bf72e4a"
+    },
+    {
+      "path": "gui-lib/framework/private/handler.rkt",
+      "git_blob": "7f92202de0ca31932b0ccc584e221f8c4fa9d0d4",
+      "source_url": "https://github.com/racket/gui/blob/v9.3/gui-lib/framework/private/handler.rkt",
+      "ref": "v9.3 (commit 6f0213fa0535d87dd4e35f56c8266d948c8c089e)",
+      "sha256": "1f96b905bfa19d03b8b9de1eed56a803c97666d92afb98495a8cfb84bae86bf9"
+    },
+    {
+      "path": "gui-lib/framework/private/text-basic.rkt",
+      "git_blob": "d0d5b250bd393226382e376988aa1e49b6de04ef",
+      "source_url": "https://github.com/racket/gui/blob/v9.3/gui-lib/framework/private/text-basic.rkt",
+      "ref": "v9.3 (commit 6f0213fa0535d87dd4e35f56c8266d948c8c089e)",
+      "sha256": "7f08c6639cae623a4d38f52061a66d8e58dab574c3616c299563f389242ba341"
+    },
+    {
+      "path": "gui-lib/framework/private/srcloc-snip.rkt",
+      "git_blob": "3f21c6162a8671de423a3d9e366c9df141b7834c",
+      "source_url": "https://github.com/racket/gui/blob/v9.3/gui-lib/framework/private/srcloc-snip.rkt",
+      "ref": "v9.3 (commit 6f0213fa0535d87dd4e35f56c8266d948c8c089e)",
+      "sha256": "42bbdd67c2a78d1e4d8da12a73d108d30c6acb0a53c2d1aae82a8844e06b131d"
+    }
+  ]
+}

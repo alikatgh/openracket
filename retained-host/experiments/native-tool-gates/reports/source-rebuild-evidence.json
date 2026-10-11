@@ -1,0 +1,30 @@
+{
+  "status": "immutable NEW source revision from exact committed1021; final source/API review approved; native reader/compile/standalone/tool execution pending",
+  "baseline_manifest_sha256": "445e1d57732741ebb0331a88234d42540b2f2ea37897a1c5b4be5676a5edbc87",
+  "source_checks": 27,
+  "changed_source_files": {
+    "tests/independent-native-stock-tools.rkt": "e4856aa97d11d25bd82b55541b09ef470b112f968a501c142162ad8760e8612b",
+    "tests/native-tool-source-contract-standalone.rkt": "21416fc767eebd65785232ead0457c4d1c77505b87a59c820d3fe2bd9bad2aaa",
+    "tests/native-tool-source-contract.rkt": "6f0dd0514073632a9e3e0ec47c74911b492101f3bf1702e185276c77b7e5388b",
+    "tests/stock-tool-source-test.py": "3bcc93150e063d6354a5519416604294a3db7f9857d220a8c22cae7dc9b08cf3"
+  },
+  "unchanged_source_files": {
+    "scripts/audit-stock-tool-sources.py": "4e8065baabf6c26449508ffc85d49ce93b7978fd4bcfa21259fc27480bb1484f",
+    "scripts/prepare-stock-tool-host.py": "7c70586ffa34616f567fd6df27ec07141fd0a1bdb716ca3640d28820b11c6537",
+    "tests/coordinator-standalone-source-test.py": "4a102e006ade17722d983b642a1b987362947f808fd1f6d966d6f9f0ec99350e",
+    "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+    "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "tests/native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3",
+    "tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "tests/native-tool-failure-diagnostics-standalone.rkt": "aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa",
+    "tests/native-tool-failure-diagnostics.rkt": "3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a",
+    "tests/reference/independent-native-host-0520.rkt": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+    "tests/tool-dispatch-source-test.py": "49d6c15f9dcba384d2526d250da1fe5479a7b2cd49d9c26c090539638a37021f"
+  },
+  "macro_branch_sha256": "0cf56eac6c88e29d530c21fa8cafacb1ece3d453e12fcab4a44545242548d83d",
+  "debugger_assert_source_sha256": "172b71fbec2ff99f285eea1d68bf9be97dd1bb77726e9e0b89eb377e54aca882",
+  "official_source_provenance_sha256": "af30d120b7bb529ac7fc75e8c1a9228f01d1eacd4f2df56f31a2160b58cb4f57",
+  "native_evidence_run": "38133153111"
+}

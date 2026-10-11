@@ -1,14 +1,13 @@
 # Frozen native payload and portable CLI contract
 
-2026-10-11: current source-only stock-tool UI and typed-diagnostics repair.
-The nine-file native allowlist includes the diagnostic helper and its mandatory
-standalone positive/negative regression. The Debugger assertions are unchanged,
-with read-only pre-assert telemetry; #lang BSL checks its actual inline report and
-source link. There are still exactly three native tool cases. Compilation,
-headless execution and native validation of this revision are pending.
-`UI-REPAIR-API-PROOF.md` is the current finding/API proof. The coordinator and
-initial-handler repair notes are historical evidence; their previously approved
-orchestration modules and negative-control contracts remain unchanged.
+2026-10-11: immutable new source-only revision rebuilt from exact committed 1021. This is
+not recovery of the lost 1108 payload. The current eleven-file integration set
+adds source/range/progress validators and their mandatory standalone gate.
+SOURCE-REBUILD-API-PROOF.md records observed native causes, inferred path-alias
+behavior and fresh version-pinned official API proof. Native reader, compilation, standalone execution and actual tool acceptance
+of this revision remain pending. Earlier coordinator, dispatcher,
+UI/diagnostics and initial-handler notes are historical evidence; their passing
+source bytes and negative-control contracts remain unchanged.
 
 ## Frozen native integration allowlist
 
@@ -23,8 +22,10 @@ orchestration modules and negative-control contracts remain unchanged.
 - `tests/native-tool-dispatch-standalone.rkt`
 - `tests/native-tool-failure-diagnostics.rkt`
 - `tests/native-tool-failure-diagnostics-standalone.rkt`
+- `tests/native-tool-source-contract.rkt`
+- `tests/native-tool-source-contract-standalone.rkt`
 
-Integrate exactly these nine native files into a **new complete candidate** based on
+Integrate exactly these eleven native files into a **new complete candidate** based on
 the preserved tested source. This is not a standalone DrRacket distribution: the
 host's unchanged existing runtime-path dependencies and the prepared official
 runtime/addon setup must still be present. The vendored base fixture is input
@@ -82,13 +83,14 @@ registration, evaluation settings, resource limits, and accepted overlay setting
 Reader check: it parses source without loading the native host or starting a GUI.
 
 ```sh
-"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -e '(parameterize ([read-accept-reader #t]) (for ([f (in-vector (current-command-line-arguments))]) (call-with-input-file f (lambda (in) (read-syntax f in) (unless (eof-object? (read-syntax f in)) (error "Extra form after module" f))))))' -- tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt tests/native-tool-failure-diagnostics.rkt tests/native-tool-failure-diagnostics-standalone.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -e '(parameterize ([read-accept-reader #t]) (for ([f (in-vector (current-command-line-arguments))]) (call-with-input-file f (lambda (in) (read-syntax f in) (unless (eof-object? (read-syntax f in)) (error "Extra form after module" f))))))' -- tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt tests/native-tool-failure-diagnostics.rkt tests/native-tool-failure-diagnostics-standalone.rkt tests/native-tool-source-contract.rkt tests/native-tool-source-contract-standalone.rkt
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-coordinator-standalone.rkt
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-coordinator-standalone.rkt --inject-outer-failure
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-dispatch-standalone.rkt
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-dispatch-standalone.rkt --inject-wrong-result
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-failure-diagnostics-standalone.rkt
 "$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-failure-diagnostics-standalone.rkt --inject-failure
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-source-contract-standalone.rkt
 ```
 
 Run each direct command under the existing 30-second headless supervisor. The
@@ -96,6 +98,14 @@ injected commands must fail with their exact typed diagnostics and no success
 marker; do not treat them as ordinary shell success steps or invoke these tests
 through `raco test`. See `TOOL-DISPATCH-REPAIR.md` and the historical standalone
 repair report for their exact accepted outputs.
+
+The source-contract standalone is mandatory under the existing 30-second headless
+supervisor. Require exit 0 and exactly one
+`OPENRACKET_NATIVE_TOOL_SOURCE_CONTRACT_OK source-range-progress-budget-refusals`.
+It exercises the same source/range/progress/budget validators used on actual
+native observations, including wrong-file, off-by-one, no-progress, unresolved
+source and real filesystem-alias refusal controls. Invoke directly, never via
+`raco test`; this is headless validator proof, not a native tool pass.
 
 The diagnostics standalone is mandatory in both modes:
 
@@ -124,7 +134,7 @@ separate coordinator, exercising value/exception handoff and worker cleanup.
 ## 4. Compile on the native runner
 
 ```sh
-"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l raco -- make tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt tests/native-tool-failure-diagnostics.rkt tests/native-tool-failure-diagnostics-standalone.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l raco -- make tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt tests/native-tool-failure-diagnostics.rkt tests/native-tool-failure-diagnostics-standalone.rkt tests/native-tool-source-contract.rkt tests/native-tool-source-contract-standalone.rkt
 ```
 
 A reader pass does not replace compilation; compilation does not replace native
@@ -165,7 +175,9 @@ profile. The caller owns independent profile/READY paths and all captures.
   `drracket/drracket`, then waits for the stock first shown frame.
 - Existing host startup/basic Run `wait-for` calls retain their 60-second default
   and 25-ms poll interval.
-- Every new tool/coordinator `await` retains its 20-second deadline. GUI actions
+- Debugger startup shares one 20-second budget from before Debug launch through
+  every generated-source Step/wait. Subsequent original Step/Go and other
+  tool/coordinator `await` gates retain separate 20-second deadlines. GUI actions
   fully return before polling; RackUnit's raising handler is parameterized inside
   the actual GUI callback, including predicates.
 - The inherited host has no added per-callback timeout. Preserve the integration

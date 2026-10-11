@@ -3,7 +3,7 @@
 ;; Call from the coordinator, NOT from on-gui. One case per fresh process/profile.
 (require racket/class racket/file racket/gui/base racket/list racket/path
          racket/string json rackunit string-constants mrlib/switchable-button
-         "native-tool-coordinator.rkt")
+         "native-tool-coordinator.rkt" "native-tool-source-contract.rkt")
 (provide run-native-tool-check!)
 
 (define debugger-fixture
@@ -57,7 +57,13 @@
   (define-values (gui await)
     (make-checked-coordinator on-gui wait-for
                               (eventspace-handler-thread (send frame get-eventspace))))
-  (define directory (make-temporary-file "openracket-stock-tool-~a" 'directory))
+  (define raw-directory (make-temporary-file "openracket-stock-tool-~a" 'directory))
+  ;; Canonicalize the existing parent before module loading. Preserve the
+  ;; already-passing Macro Stepper's raw fixture-path behavior exactly.
+  (define directory
+    (if (memq which '(debugger teaching-tests))
+        (normalize-path raw-directory)
+        raw-directory))
   (define file (build-path directory "fixture.rkt"))
   (define initial
     (gui (lambda ()
@@ -147,36 +153,61 @@
          (check-equal? (length endpoints) 2)
          (check-true (and (exact-positive-integer? (car endpoints))
                          (<= (car endpoints) (cadr endpoints) (send defs last-position)))))
+       (define mark-source (dynamic-require 'gui-debugger/marks 'mark-source))
+       (define expected-file (canonical-file-name file))
+       (define (debug-observation)
+         (define frames (send tab get-stack-frames))
+         (define (mark-location mark)
+           (define stx (mark-source mark))
+           (define source (syntax-source stx))
+           (hash 'source (if (path? source) (path->string source) (source-id source))
+                 'canonical_source (canonical-file-name source)
+                 'line (or (syntax-line stx) 'null)
+                 'column (or (syntax-column stx) 'null)
+                 'position (or (syntax-position stx) 'null)
+                 'span (or (syntax-span stx) 'null)))
+         (hash 'state (debug-state)
+               'raw_fixture_directory (path->string raw-directory)
+               'canonical_fixture_directory (path->string directory)
+               'definitions_filename (source-id (send defs get-filename))
+               'definitions_port_name (source-id (send defs get-port-name))
+               'pc_resolves_to_retained_defs (eq? (send tab defs-containing-pc) defs)
+               'frame_resolves_to_retained_defs (eq? (send tab defs-containing-current-frame) defs)
+               'stack_count (length frames)
+               'top_mark (mark-location (car frames))
+               'current_mark (mark-location (list-ref frames (send tab get-frame-num)))))
        (await "shown Debug control enabled" (lambda () (send debug is-enabled?)))
+       ;; One original 20-second budget includes launch and every initial Step.
+       (define startup-deadline (+ (current-inexact-monotonic-milliseconds) 20000.0))
        (gui (lambda () (send debug command)))
-       (await "Debugger suspended at real fixture source" suspended?)
-       ;; Read-only evidence before the unchanged source assertions. A stock
-       ;; generated-expression stop can have a PC but no open source editor.
-       (gui (lambda ()
-              (with-handlers ([exn? (lambda (e)
-                                     (emit "debugger-pre-assert-diagnostic-error"
-                                           (hash 'message (exn-message e))))])
-                (define mark-source (dynamic-require 'gui-debugger/marks 'mark-source))
-                (define frames (send tab get-stack-frames))
-                (define (mark-location mark)
-                  (define stx (mark-source mark))
-                  (hash 'source (source-id (syntax-source stx))
-                        'line (or (syntax-line stx) 'null)
-                        'column (or (syntax-column stx) 'null)
-                        'position (or (syntax-position stx) 'null)
-                        'span (or (syntax-span stx) 'null)))
-                (emit "debugger-before-source-assertions"
-                      (hash 'state (debug-state)
-                            'definitions_filename (source-id (send defs get-filename))
-                            'definitions_port_name (source-id (send defs get-port-name))
-                            'pc_resolves_to_retained_defs (eq? (send tab defs-containing-pc) defs)
-                            'frame_resolves_to_retained_defs
-                            (eq? (send tab defs-containing-current-frame) defs)
-                            'stack_count (length frames)
-                            'top_mark (mark-location (car frames))
-                            'current_mark (mark-location (list-ref frames (send tab get-frame-num))))))))
+       (define initial-stop
+         (await "Debugger reaches a real initial suspension"
+                (lambda () (and (suspended?) (debug-observation)))
+                (remaining-seconds startup-deadline)))
+       (let loop ([stop initial-stop] [steps 0])
+         (emit "debugger-startup-stop"
+               (hash 'step_count steps 'remaining_seconds (remaining-seconds startup-deadline)
+                     'observation stop))
+         (unless (fixture-debug-stop? stop expected-file debugger-fixture)
+           (gui (lambda ()
+                  (check-true (send step is-shown?))
+                  (check-true (send step is-enabled?))
+                  (send step command)))
+           (define next
+             (await "real startup Step reaches a changed suspension"
+                    (lambda ()
+                      (and (suspended?)
+                           (let ([observed (debug-observation)])
+                             (and (debug-stop-progressed? stop observed) observed))))
+                    (remaining-seconds startup-deadline)))
+           (loop next (add1 steps))))
        (define first-state
-         (gui (lambda () (assert-source!) (debug-state))))
+         (gui (lambda ()
+                (define observed (debug-observation))
+                (emit "debugger-before-source-assertions" observed)
+                (check-true (fixture-debug-stop? observed expected-file debugger-fixture))
+                (assert-source!)
+                (debug-state))))
        (emit "debugger-suspended" first-state)
        (focus-preserves! debugger-fixture)
        (gui (lambda ()
@@ -187,7 +218,12 @@
        (await "Debugger Step changes PC/status/endpoints tuple"
               (lambda () (and (suspended?) (not (equal? (debug-state) first-state)))))
        (define next-state
-         (gui (lambda () (assert-source!) (debug-state))))
+         (gui (lambda ()
+                (define observed (debug-observation))
+                (emit "debugger-after-fixture-step" observed)
+                (check-true (fixture-debug-stop? observed expected-file debugger-fixture))
+                (assert-source!)
+                (debug-state))))
        (emit "debugger-stepped" next-state)
        (gui (lambda ()
               (check-true (send resume is-enabled?))
@@ -392,6 +428,21 @@
        (define failing-state (snapshot-tests!))
        (define report ints)
        (define failure-link (gui (lambda () (car (failure-links)))))
+       (define expected-file (canonical-file-name file))
+       (define group ((dynamic-require 'framework 'group:get-the-frame-group)))
+       (define (navigation-observation)
+         (define target (send frame get-definitions-text))
+         (hash 'file (source-id (send target get-filename))
+               'canonical_file (canonical-file-name (send target get-filename))
+               'contents (send target get-text)
+               'selection (list (send target get-start-position) (send target get-end-position))
+               'shown (send frame is-shown?)
+               'canvas_matches (eq? target (send (send frame get-definitions-canvas) get-editor))
+               'target_is_original (eq? target defs)
+               'tab_count (length (send frame get-tabs))))
+       (define (valid-navigation? observed)
+         (navigation-valid? observed expected-file teaching-failing
+                            failure-start (+ failure-start (string-length failure-form))))
        (gui (lambda ()
               (check-equal? (hash-ref failing-state 'tests) 2)
               (check-equal? (hash-ref failing-state 'passed) 1)
@@ -407,22 +458,56 @@
               (check-equal? (location->json (get-field srcloc failure-link)) expected-location)
               (define link-editor (send failure-link get-editor))
               (check-equal? (send link-editor get-text 0 'eof #t) location-label)
+              (define link-source (srcloc-source (get-field srcloc failure-link)))
+              ;; Stock unit.rkt accepts path?/symbol? port names and explicitly
+              ;; converts source strings to paths before port-name-matches?.
+              (define port-source (if (string? link-source) (string->path link-source) link-source))
+              (define canonical-source (canonical-file-name link-source))
+              (define located (and (path-string? link-source) (send group locate-file link-source)))
+              (emit "teaching-source-lookup"
+                    (hash 'raw_fixture_directory (path->string raw-directory)
+                          'canonical_fixture_directory (path->string directory)
+                          'source_type (cond [(path? link-source) "path"]
+                                             [(string? link-source) "string"]
+                                             [(symbol? link-source) "symbol"] [else "other"])
+                          'source (source-id link-source)
+                          'canonical_source canonical-source
+                          'definitions_filename (source-id (send defs get-filename))
+                          'definitions_canonical_file (canonical-file-name (send defs get-filename))
+                          'definitions_port_name (source-id (send defs get-port-name))
+                          'registered_frame (and (memq frame (send group get-frames)) #t)
+                          'located_current_frame (eq? located frame)
+                          'raw_port_matches (and (or (path? port-source) (symbol? port-source))
+                                                 (send defs port-name-matches? port-source))
+                          'canonical_port_matches (and canonical-source
+                                                       (send defs port-name-matches?
+                                                             (string->path canonical-source)))))
+              (check-equal? canonical-source expected-file)
+              (check-eq? located frame "Source link must resolve through the actual already-open lookup")
+              (identities!)
               ;; Invoke the real installed clickback on the actual nested link.
               ;; framework:srcloc-snip selects via handler:edit-file, not the
               ;; legacy test-panel callback that installs error-ranges.
               (send defs set-position 0 0)
               (send link-editor call-clickback 0 (send link-editor last-position))
-              (identities!)))
-       (await "actual inline source link selects the exact retained source range"
-              (lambda ()
-                (and (eq? defs (send frame get-definitions-text))
-                     (eq? tab (send frame get-current-tab))
-                     (= (send defs get-start-position) failure-start)
-                     (= (send defs get-end-position) (+ failure-start (string-length failure-form)))
-                     (send frame is-shown?))))
+              (emit "teaching-source-navigation" (navigation-observation))))
+       (define destination
+         (await "actual inline source link selects exact fixture contents and range"
+                (lambda ()
+                  (define observed (navigation-observation))
+                  (and (valid-navigation? observed) observed))))
        (gui (lambda ()
-              (check-equal? (send defs get-text (send defs get-start-position)
-                                  (send defs get-end-position)) failure-form)
+              (define target (send frame get-definitions-text))
+              (check-true (valid-navigation? (navigation-observation)))
+              (check-equal? (send target get-text (send target get-start-position)
+                                   (send target get-end-position)) failure-form)
+              ;; Preserve the original evaluator/editor for the existing unsaved
+              ;; correction and Run checks even if navigation switched editors.
+              (check-not-false (memq tab (send frame get-tabs)))
+              (check-eq? (send tab get-defs) defs)
+              (check-eq? (send tab get-ints) ints)
+              (check-equal? (send defs get-text) teaching-failing)
+              (send frame change-to-tab tab)
               (identities!)))
        (emit "teaching-failure" failing-state)
        (focus-preserves! teaching-failing)
@@ -463,7 +548,9 @@
        (focus-preserves! teaching-corrected)
        (emit "teaching-corrected" corrected-state)
        (hash 'before failing-state 'after corrected-state
-             'source_link_verified #t 'inline_failure_report_replaced #t
+             'source_link_verified #t 'source_link_exact_range (hash-ref destination 'selection)
+             'source_link_target_same_editor (hash-ref destination 'target_is_original)
+             'inline_failure_report_replaced #t
              'corrected_unsaved_buffer_rerun #t 'retained_focus_and_editors #t)]
       [else (error 'native-tool-gate "Unknown case ~s" which)]))
   (emit "completed" (hash 'case (symbol->string which) 'status "passed" 'result result))

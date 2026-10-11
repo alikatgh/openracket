@@ -151,8 +151,12 @@ class StockToolSourceTests(unittest.TestCase):
                        "(dynamic-require 'framework 'srcloc-snip:snip%)",
                        '(get-field srcloc failure-link)',
                        '(send defs set-position 0 0)',
-                       '(= (send defs get-start-position) failure-start)',
-                       '(= (send defs get-end-position) (+ failure-start (string-length failure-form)))',
+                       '(navigation-valid? observed expected-file teaching-failing',
+                       'failure-start (+ failure-start (string-length failure-form))',
+                       '(send group locate-file link-source)',
+                       '(check-eq? located frame',
+                       '(send frame change-to-tab tab)',
+                       '(if (string? link-source) (string->path link-source) link-source)',
                        '(send defs insert "3" expected-position (add1 expected-position))',
                        '(eq? report (send frame get-interactions-text))',
                        '(string-contains? flat-report failure-detail)',
@@ -199,21 +203,56 @@ class StockToolSourceTests(unittest.TestCase):
                        'output-failures-contained'):
             self.assertIn(phrase, regression)
 
-    def test_passing_macro_bytes_and_all_debugger_assertions_preserved(self):
-        macro = self.tool.split('      [(macro-stepper)')[1].split('      [(teaching-tests)')[0]
-        macro = '      [(macro-stepper)' + macro
+    def test_passing_macro_bytes_and_debugger_source_assertions_preserved(self):
+        macro = '      [(macro-stepper)' + self.tool.split('      [(macro-stepper)')[1].split('      [(teaching-tests)')[0]
         self.assertEqual(hashlib.sha256(macro.encode()).hexdigest(),
                          '0cf56eac6c88e29d530c21fa8cafacb1ece3d453e12fcab4a44545242548d83d')
-        debug = '      [(debugger)' + self.tool.split('      [(debugger)')[1].split('      [(macro-stepper)')[0]
-        start = debug.index('       ;; Read-only evidence before the unchanged source assertions.')
-        end = debug.index('       (define first-state', start)
-        diagnostic = debug[start:end]
-        for phrase in ('debugger-before-source-assertions', 'mark-source',
-                       'pc_resolves_to_retained_defs', 'frame_resolves_to_retained_defs'):
-            self.assertIn(phrase, diagnostic)
-        debug = debug[:start] + debug[end:]
-        self.assertEqual(hashlib.sha256(debug.encode()).hexdigest(),
-                         '7749aca9412cd6cbfe70993fb7adae1e54dde188b6984ed893cc91a1f0f14f22')
+        source = '       (define (assert-source!)' + self.tool.split('       (define (assert-source!)')[1].split('       (define mark-source')[0]
+        self.assertEqual(hashlib.sha256(source.encode()).hexdigest(),
+                         '172b71fbec2ff99f285eea1d68bf9be97dd1bb77726e9e0b89eb377e54aca882')
+        self.assertIn("(if (memq which '(debugger teaching-tests))", self.tool)
+        self.assertIn('(normalize-path raw-directory)\n        raw-directory)', self.tool)
+
+    def test_source_traversal_has_one_twenty_second_launch_budget(self):
+        debug = self.tool.split('      [(debugger)')[1].split('      [(macro-stepper)')[0]
+        self.assertEqual(debug.count('20000.0'), 1)
+        self.assertLess(debug.index('(define startup-deadline'), debug.index('(send debug command)'))
+        self.assertEqual(debug.count('(remaining-seconds startup-deadline)'), 3)
+        self.assertIn('(debug-stop-progressed? stop observed)', debug)
+        self.assertIn('(loop next (add1 steps))', debug)
+        self.assertIn('(check-true (send step is-shown?))', debug)
+        self.assertIn('(emit "debugger-startup-stop"', debug)
+        self.assertEqual(debug.count('(check-true (fixture-debug-stop? observed expected-file debugger-fixture))'), 2)
+        teaching = self.tool.split('      [(teaching-tests)')[1]
+        self.assertLess(teaching.index('(check-eq? located frame'), teaching.index('(send link-editor call-clickback'))
+        self.assertLess(teaching.index('(valid-navigation? observed)'), teaching.index('(send frame change-to-tab tab)'))
+        self.assertIn("'contents (send target get-text)", teaching)
+        self.assertIn("'canonical_file (canonical-file-name (send target get-filename))", teaching)
+        self.assertIn("'selection (list (send target get-start-position) (send target get-end-position))", teaching)
+
+    def test_headless_source_contract_refuses_false_navigation_and_progress(self):
+        helper = (ROOT/'tests/native-tool-source-contract.rkt').read_text()
+        standalone = (ROOT/'tests/native-tool-source-contract-standalone.rkt').read_text()
+        for phrase in ('(path-string? source)', '(with-handlers ([exn:fail? (lambda (_) #f)])',
+                       "'canonical_source #f", '(exact-positive-integer? position)',
+                       '(exact-positive-integer? span)', "'frame_endpoints #f",
+                       "'(state top_mark current_mark)", "'canonical_file #f", "'contents #f",
+                       "'selection #f", "'shown #f", "'canvas_matches #f", '(unless (> remaining 0)',
+                       '(exact-nonnegative-integer? start)', '(exact-positive-integer? end)',
+                       '(< start end)', '(<= end (string-length contents))'):
+            self.assertIn(phrase, helper)
+        for phrase in ('(parameterize ([current-check-handler raise])',
+                       '"/elsewhere/source.rkt"', "(cons 'line 1)", "(cons 'column 1)",
+                       "(cons 'position 0)", "(cons 'span 700)", "'pc 20", "'(19 24)",
+                       "'diagnostic_time 99", "'(0 0)", "'(19 25)", "'(18 24)",
+                       "'(bad 25)", "'(18 #f)", "'(18.0 25)", "'(18 25.0)",
+                       "'(-1 25)", "'(18 18)", "'(25 18)", "'(18 100)",
+                       '(remaining-seconds 20000 20000)', '(remaining-seconds 20000 20001)',
+                       "(list #f 'generated '(not a path))", '"absent" "fixture.rkt"',
+                       '(make-file-or-directory-link real alias)',
+                       'OPENRACKET_NATIVE_TOOL_SOURCE_CONTRACT_OK source-range-progress-budget-refusals'):
+            self.assertIn(phrase, standalone)
+        self.assertNotIn('racket/gui', helper + standalone)
 
     def test_fixture_correction_is_exactly_one_character(self):
         def fixture(name):

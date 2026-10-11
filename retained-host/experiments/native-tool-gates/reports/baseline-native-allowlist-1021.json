@@ -1,0 +1,45 @@
+{
+  "status": "immutable source-only stock-tool UI/diagnostics repair; Racket compilation and native execution pending",
+  "files": {
+    "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
+    "tests/independent-native-stock-tools.rkt": "46d0716f70fe05babe73d339151e9520d20039d26277a296c998e79318c64786",
+    "tests/native-tool-failure-diagnostics.rkt": "3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a",
+    "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+    "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "tests/native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3",
+    "tests/native-tool-failure-diagnostics-standalone.rkt": "aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa"
+  },
+  "mandatory_native_preflight": [
+    {
+      "args": [
+        "racket",
+        "tests/native-tool-failure-diagnostics-standalone.rkt"
+      ],
+      "expected_exit": "zero",
+      "required_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_OK typed-payload-preserved output-failures-contained"
+    },
+    {
+      "args": [
+        "racket",
+        "tests/native-tool-failure-diagnostics-standalone.rkt",
+        "--inject-failure"
+      ],
+      "expected_exit": "nonzero",
+      "required_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong",
+      "required_injection_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_INJECTING_FAILURE",
+      "forbidden_marker": "OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS_OK"
+    }
+  ],
+  "native_cases": [
+    "debugger",
+    "macro-stepper",
+    "teaching-tests"
+  ],
+  "source_checks": "25/25 passed; lexical/static only; pinned host derivative verified",
+  "base_host_fixture": {
+    "path": "tests/reference/independent-native-host-0520.rkt",
+    "sha256": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448"
+  }
+}

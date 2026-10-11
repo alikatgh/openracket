@@ -1,4 +1,4 @@
-name: Mac same-owner eager binding table correctness and matched GUI trials (public free runner)
+name: Mac native Debugger, Macro Stepper and teaching tests (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -62,37 +62,22 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Verify frozen eager binding candidate and independent runtimes
-        id: binding_prepare
-        timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-binding-eager.py prepare
-      - name: Mandatory native telemetry helpers with no skipped gates
-        id: binding_helpers
-        if: always() && steps.binding_prepare.outcome == 'success'
-        timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-binding-eager.py helpers
-      - name: Actual binding methods, complete traces, graph and keymap navigation
-        id: binding_correctness
-        if: always() && steps.binding_prepare.outcome == 'success'
+      - name: Prepare independently frozen stock and modern tool callers
+        id: tools_prepare
+        if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-binding-eager.py correctness
-      - name: Six interleaved genuine GUI application trials
-        if: success() && steps.binding_correctness.outcome == 'success' && steps.binding_helpers.outcome == 'success'
-        timeout-minutes: 38
-        run: python3 retained-host/scripts/ci/run-binding-eager.py telemetry
-      - name: Verify original full runtime including bytecode unchanged
+        run: python3 retained-host/scripts/ci/run-stock-tools.py prepare
+      - name: Actual Debugger, Macro Stepper and teaching tests
+        if: always() && steps.tools_prepare.outcome == 'success'
+        timeout-minutes: 40
+        run: python3 retained-host/scripts/ci/run-stock-tools.py cases
+      - name: Verify original and selected tool runtimes
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-binding-eager.py verify
-      - name: Report same-owner eager binding table gates and complete-work timing
+        run: python3 retained-host/scripts/ci/run-stock-tools.py verify
+      - name: Report stock and modern native tool findings
         if: always()
         run: |
-          if test -f retained-host/reports/binding-eager-ci/summary.md; then
-            cat retained-host/reports/binding-eager-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'Preparation failed before same-owner eager binding table evidence was available.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo 'A default-off syncheck/gui.rkt binding-table candidate in an independent runtime. Correctness gates precede three fresh stock/candidate GUI pairs; both use 256 MiB, original stock tools and 20 ms batching.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Producer phases stay off in both measured arms. All source/metadata, terminal, full current application and final lexer endpoints must pass; failed or incomplete work is retained.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Candidate first public getter must be at most 1.000 ms in every trial, with no pending work or materialization; a failure blocks acceptance and the bound is not widened after measurement.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The first and second public getter costs are measured separately after primary application readiness. No artifact/cache/release upload, paid runner or default product change. Historical release gaps remain separate.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/stock-tools-ci/summary.md; then cat retained-host/reports/stock-tools-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'Independent actual stock and modern-dark Debugger, Macro Stepper and teaching-test cases. Stock prerequisites, unchanged deadlines and full runtime witnesses remain mandatory.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Each modern profile uses separately bounded local package copy/link/setup before the original60s GUI process window. The case stage allows40minutes and the whole job90minutes as safety ceilings; the prepare stage retains its20minute outer refusal. No native GUI deadline is extended.' >> "$GITHUB_STEP_SUMMARY"
