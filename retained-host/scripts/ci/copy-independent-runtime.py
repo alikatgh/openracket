@@ -5,7 +5,7 @@ import json, os, pathlib, shutil, sys
 assert os.environ.get('GITHUB_ACTIONS') == 'true', 'CI only'
 assert os.environ.get('GITHUB_REPOSITORY') == 'alikatgh/openracket'
 assert os.environ.get('GITHUB_REF') == 'refs/heads/prototype/retained-drracket'
-assert sys.argv[1:] in (['scan'], ['budget'], ['autosave'], ['portable'], ['replay'], ['xref-control'], ['xref-candidate'], ['memory-sensitivity'], ['phase256'], ['gui-phase'], ['interval-control'], ['interval-candidate'], ['mac-app']), 'Explicit bounded purpose required'
+assert sys.argv[1:] in (['scan'], ['budget'], ['autosave'], ['portable'], ['replay'], ['xref-control'], ['xref-candidate'], ['memory-sensitivity'], ['phase256'], ['gui-phase'], ['interval-control'], ['interval-candidate'], ['mac-app'], ['annotation-application'], ['native-tools']), 'Explicit bounded purpose required'
 purpose = sys.argv[1]
 temp = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
 source = pathlib.Path(os.environ['OPENRACKET_CI_STOCK_RACKET']).resolve().parents[1]

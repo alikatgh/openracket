@@ -1,7 +1,35 @@
-import pathlib,unittest
+import pathlib,ast,unittest,subprocess,types
 ROOT=pathlib.Path(__file__).parent
 S=(ROOT/'run-mac-app.py').read_text()
 class Adapter(unittest.TestCase):
+ def test_installed_profile_prefix_retains_links_but_builder_prefix_stays_clean(self):
+  nodes=[n for n in ast.parse(S).body if isinstance(n,ast.FunctionDef) and n.name in ('raco_prefix','installed_raco_prefix')]
+  namespace={'RUNTIME':pathlib.Path('/runtime'),'ADDON':pathlib.Path('/private/addon'),'CACHE':pathlib.Path('/private/cache')}
+  exec(compile(ast.Module(body=nodes,type_ignores=[]),'<prefixes>','exec'),namespace)
+  stock=namespace['raco_prefix']();installed=namespace['installed_raco_prefix']()
+  self.assertIn('-U',stock);self.assertNotIn('-U',installed)
+  self.assertEqual([x for x in stock if x!='-U'],installed)
+  self.assertIn("'Register separate CI-only read-only native app observer',installed_raco_prefix()",S)
+  self.assertIn("'Compile observer package registration without main runtime writes',installed_raco_prefix()",S)
+  self.assertIn('resolved==expected.resolve()',S);self.assertIn('actual_sha==expected_sha',S)
+ def test_launch_refusal_captures_and_blocks_alternate_attempts(self):
+  self.assertIn("atomic_json(REPORTS/'launch-blocked.json'",S)
+  self.assertIn('App relocation launch withheld after prior unresolved launch refusal/startup',S)
+  self.assertIn("if not (REPORTS/'launch-blocked.json').exists():launch_sequence",S)
+  self.assertIn('further launch/relocation attempts blocked pending diagnosis',S)
+ def test_open_timeout_is_blocked_before_exception_returns(self):
+  nodes=[n for n in ast.parse(S).body if isinstance(n,ast.FunctionDef) and n.name=='dispatch_open']
+  seen=[]
+  def timeout(*args,**kwargs):raise subprocess.TimeoutExpired(args[0],kwargs['timeout'])
+  namespace={'subprocess':types.SimpleNamespace(run=timeout,TimeoutExpired=subprocess.TimeoutExpired),'REPORTS':pathlib.Path('/reports'),'atomic_json':lambda p,v:seen.append((p,v))}
+  exec(compile(ast.Module(body=nodes,type_ignores=[]),'<dispatch>','exec'),namespace)
+  with self.assertRaises(subprocess.TimeoutExpired):namespace['dispatch_open'](['/usr/bin/open','-a','app'],30,'cold','initial')
+  self.assertEqual(len(seen),1);self.assertEqual(seen[0][0],pathlib.Path('/reports/launch-blocked.json'))
+  self.assertIn('timed out',seen[0][1]['reason'])
+ def test_initial_readiness_block_precedes_fallible_diagnostics(self):
+  block=S[S.index('   if not ready.exists():'):S.index("   assert ready.stat()")]
+  self.assertLess(block.index('atomic_json('),block.index('path=capture('))
+  self.assertIn("if first_pid is None and not (REPORTS/'launch-blocked.json').exists():",S)
  def test_native_footprint_witness_starts_before_builder_tests(self):
   self.assertLess(S.index("witness('baseline','pristine',STOCK)"),S.index("'Twenty actual native Racket builder contract cases'"))
   self.assertLess(S.index("witness('baseline','selected-runtime',RUNTIME)"),S.index("'Twenty actual native Racket builder contract cases'"))

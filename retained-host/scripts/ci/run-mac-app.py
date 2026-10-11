@@ -73,6 +73,11 @@ def verify_builder():
 
 def raco_prefix():return [RUNTIME/'bin/racket','-U','-A',ADDON,'-R',str(CACHE)+':','-l','raco','--']
 
+def installed_raco_prefix():
+ # -U disables user collection links even with-A. This separate prefix is only
+ # for the explicitly isolated installed-profile registration path.
+ return [RUNTIME/'bin/racket','-A',ADDON,'-R',str(CACHE)+':','-l','raco','--']
+
 def default_handler(label):
  code,out=command('Read-only original .rkt default handler '+label,[RUNTIME/'bin/racket','-U',OBSERVER/'default-handler.rkt'],env('default-handler'),30)
  result=json.loads(out);assert result['schema']==1 and result['status']=='observed' and result['defaults_changed'] is False
@@ -154,6 +159,14 @@ def cleanup_app(app):
  record('Bounded app test cleanup',clean,json.dumps({'original_processes':rows,'remaining':app_processes(app)}))
  return clean
 
+def dispatch_open(arguments,timeout,label,step):
+ try:
+  return subprocess.run(arguments,capture_output=True,text=True,timeout=timeout)
+ except subprocess.TimeoutExpired:
+  # Persist the stop condition before any optional diagnostic can fail.
+  atomic_json(REPORTS/'launch-blocked.json',{'label':label,'step':step,'reason':'Launch Services dispatch timed out; startup state unresolved','argv':arguments})
+  raise
+
 def launch_sequence(label,mode,app):
  assert not app_processes(app),'Earlier generated app is still running'
  directory=REPORTS/(label+'-control');assert not directory.exists();directory.mkdir()
@@ -174,15 +187,21 @@ def launch_sequence(label,mode,app):
    arguments=['/usr/bin/open','-a',str(app),*[str(x) for x in target]]
    if time.monotonic()>=sequence_deadline:raise TimeoutError('Independent300s app sequence bound expired')
    started_wall=time.time();started_mono=time.monotonic()
-   p=subprocess.run(arguments,capture_output=True,text=True,timeout=min(30,max(.1,sequence_deadline-time.monotonic())))
+   p=dispatch_open(arguments,min(30,max(.1,sequence_deadline-time.monotonic())),label,step)
    dispatch={'started_unix_seconds':started_wall,'elapsed_seconds':time.monotonic()-started_mono,'argv':arguments,'exit':p.returncode,'stdout':p.stdout,'stderr':p.stderr,'method':'actual Launch Services /usr/bin/open -a'}
    print('OPENRACKET_MAC_APP_DISPATCH '+json.dumps({'run_id':run_id,'label':label,'step':step,**dispatch}),flush=True)
-   if p.returncode:raise RuntimeError('Launch Services rejected '+step+': '+p.stderr)
+   if p.returncode:
+    atomic_json(REPORTS/'launch-blocked.json',{'label':label,'step':step,'reason':'Launch Services rejected ordinary launch','dispatch':dispatch})
+    path=capture(label+'-'+step+'-failure-diagnostic')
+    if path:emit_image(label+'-'+step+'-failure-diagnostic',path)
+    raise RuntimeError('Launch Services rejected '+step+': '+p.stderr+'; further launch/relocation attempts blocked pending diagnosis')
    envelope={'schema':1,'run_id':run_id,'step':step,'token':tokens[step]}
    if index:atomic_json(directory/(run_id+'.'+step+'.sent.json'),{**envelope,'open_exit':0})
    ready=directory/(run_id+'.'+step+'.ready.json');deadline=min(sequence_deadline,time.monotonic()+85)
    while not ready.exists() and time.monotonic()<deadline:time.sleep(.1)
    if not ready.exists():
+    if index==0 and not (REPORTS/'launch-blocked.json').exists():
+     atomic_json(REPORTS/'launch-blocked.json',{'label':label,'step':step,'reason':'Initial native readiness absent; possible startup dialog remains undismissed'})
     path=capture(label+'-'+step+'-timeout-diagnostic')
     if path:emit_image(label+'-'+step+'-timeout-diagnostic',path)
     raise RuntimeError('No native READY for '+step)
@@ -214,6 +233,8 @@ def launch_sequence(label,mode,app):
   emit_document(label,'acceptance.json',result)
   record(label+' observer cleanup complete',True,'Actual process gone; Launch Services exit status is unavailable; normal Quit remains untested')
  except Exception as error:
+  if first_pid is None and not (REPORTS/'launch-blocked.json').exists():
+   atomic_json(REPORTS/'launch-blocked.json',{'label':label,'reason':'Initial native identity/readiness not established','error':str(error)})
   ok=False;record(label+' native sequence',False,str(error))
  finally:
   if not cleanup_app(app):ok=False
@@ -296,12 +317,21 @@ try:
   record('Generation opened no app process',True)
  elif PHASE=='observer':
   assert not (OBSERVER/'observer-config.json').exists()
-  command('Register separate CI-only read-only native app observer',raco_prefix()+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--link','--name','openracket-mac-app-observer',OBSERVER],env('observer',True),90)
-  command('Compile observer package registration without main runtime writes',raco_prefix()+['setup','--avoid-main','--no-docs','--no-launcher','--no-foreign-libs','--no-install','--no-post-install','--pkgs','openracket-mac-app-observer'],env('observer',True),240)
+  command('Register separate CI-only read-only native app observer',installed_raco_prefix()+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--link','--name','openracket-mac-app-observer',OBSERVER],env('observer',True),90)
+  command('Compile observer package registration without main runtime writes',installed_raco_prefix()+['setup','--avoid-main','--no-docs','--no-launcher','--no-foreign-libs','--no-install','--no-post-install','--pkgs','openracket-mac-app-observer'],env('observer',True),240)
+  expression='(display (collection-file-path "tool.rkt" "openracket-mac-app-observer"))'
+  code,out=command('Resolve actual isolated observer collection after registration',[RUNTIME/'bin/racket','-A',ADDON,'-R',str(CACHE)+':','-e',expression],env('observer',True),30)
+  resolved=pathlib.Path(out.strip()).resolve();expected=OBSERVER/'tool.rkt'
+  assert resolved==expected.resolve()
+  expected_sha=json.loads((OBSERVER/'DELIVERABLE-SHA256.json').read_text())['tool.rkt']
+  actual_sha=hashlib.sha256(resolved.read_bytes()).hexdigest();assert actual_sha==expected_sha
+  record('Registered observer resolves to exact private reviewed source',True,json.dumps({'path':str(resolved),'sha256':actual_sha,'private_addon':str(ADDON)}))
  elif PHASE=='launch':
   launch_sequence('mac-app-coldempty','coldempty',APP)
-  launch_sequence('mac-app-coldfile','coldfile',APP)
+  if not (REPORTS/'launch-blocked.json').exists():launch_sequence('mac-app-coldfile','coldfile',APP)
+  else:record('Further app launches withheld',False,'Ordinary launch refusal/unobserved startup requires diagnosis; no alternate launch attempted')
  elif PHASE=='relocate':
+  if (REPORTS/'launch-blocked.json').exists():raise RuntimeError('App relocation launch withheld after prior unresolved launch refusal/startup')
   assert not app_processes(APP),'Cannot relocate a running app'
   before=CONTRACT.snapshot(APP);MOVED.parent.mkdir();APP.rename(MOVED)
   assert CONTRACT.snapshot(MOVED)==before,'Relocation changed bundle bytes/modes/mtime'

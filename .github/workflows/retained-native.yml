@@ -1,4 +1,4 @@
-name: Mac native app generation and real file delivery (public free runner)
+name: Mac annotation attribution, native tools and app file delivery (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 80
+    timeout-minutes: 125
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -62,28 +62,62 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
+      - name: Verify application probe and mandatory native preflight
+        id: annotation_prepare
+        timeout-minutes: 12
+        run: python3 retained-host/scripts/ci/run-annotation-application.py prepare
+      - name: Genuine GUI control with common slice counters
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-annotation-application.py control
+      - name: Genuine GUI with bounded application-type timings
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-annotation-application.py observed
+      - name: Require complete actual application and exact accounting
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 3
+        run: python3 retained-host/scripts/ci/run-annotation-application.py accept
+      - name: Prepare independently frozen stock and modern tool callers
+        id: tools_prepare
+        if: always() && steps.runtime.outcome == 'success'
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-stock-tools.py prepare
+      - name: Actual Debugger, Macro Stepper and teaching tests
+        if: always() && steps.tools_prepare.outcome == 'success'
+        timeout-minutes: 10
+        run: python3 retained-host/scripts/ci/run-stock-tools.py cases
+      - name: Verify original runtime after application diagnostic
+        if: always() && steps.runtime.outcome == 'success'
+        timeout-minutes: 4
+        run: python3 retained-host/scripts/ci/run-annotation-application.py verify
+      - name: Verify original and selected tool runtimes
+        if: always() && steps.runtime.outcome == 'success'
+        timeout-minutes: 4
+        run: python3 retained-host/scripts/ci/run-stock-tools.py verify
       - name: Verify exact preview and builder with full runtime witnesses
         id: app_prepare
+        if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 8
         run: python3 retained-host/scripts/ci/run-mac-app.py prepare
       - name: Actual source setup and twenty native Racket builder cases
         id: app_install
-        if: success() && steps.app_prepare.outcome == 'success'
+        if: always() && steps.app_prepare.outcome == 'success'
         timeout-minutes: 20
         run: python3 retained-host/scripts/ci/run-mac-app.py install
       - name: Generate native app and inspect executable, plist and signature
         id: app_build
-        if: success() && steps.app_install.outcome == 'success'
+        if: always() && steps.app_install.outcome == 'success'
         timeout-minutes: 8
         run: python3 retained-host/scripts/ci/run-mac-app.py build
       - name: Install independently reviewed read-only app observer
         id: app_observer
-        if: success() && steps.app_build.outcome == 'success'
+        if: always() && steps.app_build.outcome == 'success'
         timeout-minutes: 6
         run: python3 retained-host/scripts/ci/run-mac-app.py observer
       - name: Genuine Launch Services cold and warm file events
         id: app_launch
-        if: success() && steps.app_observer.outcome == 'success'
+        if: always() && steps.app_observer.outcome == 'success'
         timeout-minutes: 12
         run: python3 retained-host/scripts/ci/run-mac-app.py launch
       - name: App-only relocation with real file delivery
@@ -94,13 +128,12 @@ jobs:
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 5
         run: python3 retained-host/scripts/ci/run-mac-app.py verify
-      - name: Report actual app construction and native launch evidence
+      - name: Report separate annotation and stock-tool findings
         if: always()
         run: |
-          if test -f retained-host/reports/mac-app-ci/summary.md; then
-            cat retained-host/reports/mac-app-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'Preparation failed before app evidence was available.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo 'Destination-built app tethered to an explicit installed full runtime and the exact tested preview source. Native Racket tests and actual Launch Services file events are separately recorded.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The generated runner-local bundle is test evidence, not a distributable self-contained, Developer ID signed or notarized app. No artifact/cache/release or paid runner.' >> "$GITHUB_STEP_SUMMARY"
+          for report in retained-host/reports/annotation-application-ci/summary.md retained-host/reports/stock-tools-ci/summary.md retained-host/reports/mac-app-ci/summary.md; do
+            if test -f "$report"; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
+          done
+          echo 'One stock256MiB genuineGUI control/observed diagnostic pair. Worker producer points remain off; no heartbeat or optimization candidate.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Separate stock/default128 and modern-dark native tool cases keep original60s bounds and matched stock prerequisites. Failures remain independent, with exact logs/captures.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Independent app registration retry retains exact builder/observer bytes. Unsigned/Gatekeeper assessment stays explicit; no security bypass. No artifact/cache/release, paid runner or new performance adoption.' >> "$GITHUB_STEP_SUMMARY"

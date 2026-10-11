@@ -1,0 +1,19 @@
+{
+  "FROZEN-NATIVE-ALLOWLIST.json": "226ec3054710a95b45e15c2211090000a94f75123515305a1f4a8a27fd156ea7",
+  "reports/NATIVE-CLI-CONTRACT.md": "bb5d803dd344666d2cebb5c8706a68b3bf30fc0956b5b964c053acb2edc082f0",
+  "reports/NATIVE-STOCK-TOOL-GATES.md": "1303c4d201367fd237490d349ea30de967d9eea737c25611841b71b8f98f03c0",
+  "reports/portability-checks.json": "ed6c68057bc113d6395ec0104d8be42b8055df3bbccd5f7c4bb3f92a45a8590d",
+  "reports/source-audit.log": "0332173af81d5f0944e6f7b1a5605c0d931c7fc01d1a58f886959889bd6e51b5",
+  "reports/source-checks.log": "e96dfcb4fc0008e1ff320457d0a1e6167aa0b7023f79a375f900a16b619a289e",
+  "reports/stock-tool-host.json": "7dc09f686c63388d1b92e366562c28108fac2d06ba49532f7be9b7477f026ba9",
+  "reports/stock-tool-host.patch": "251a34440992ee82bc605cbb6434aca87a068355528c5805ded59db7205df1b4",
+  "reports/stock-tool-source-audit.json": "993fd7705efc3b5e0e1f3a790b52271b986dd373d95987dabf7445812091dda7",
+  "scripts/audit-stock-tool-sources.py": "4e8065baabf6c26449508ffc85d49ce93b7978fd4bcfa21259fc27480bb1484f",
+  "scripts/prepare-stock-tool-host.py": "6c321228f7bfe525eff8c6ca4585e9aa375d9cbcbe8be4b73e3879dbde62b4d5",
+  "tests/independent-native-host.rkt": "2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5",
+  "tests/independent-native-stock-tools.rkt": "06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884",
+  "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
+  "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
+  "tests/reference/independent-native-host-0520.rkt": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+  "tests/stock-tool-source-test.py": "b1930432084b3c941421a348785017703958c080fa7e48b9a7b7aacaa28be9f4"
+}

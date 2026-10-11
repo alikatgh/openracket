@@ -1,0 +1,14 @@
+test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok
+test_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok
+test_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok
+test_host_derivative_exact_and_base_unchanged (__main__.StockToolSourceTests.test_host_derivative_exact_and_base_unchanged) ... ok
+test_host_does_not_wrap_new_coordinator_in_gui_callback (__main__.StockToolSourceTests.test_host_does_not_wrap_new_coordinator_in_gui_callback) ... ok
+test_macro_waits_for_real_cursor_and_navigation_progress (__main__.StockToolSourceTests.test_macro_waits_for_real_cursor_and_navigation_progress) ... ok
+test_no_private_callback_bypass_or_fake_tool_models (__main__.StockToolSourceTests.test_no_private_callback_bypass_or_fake_tool_models) ... ok
+test_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexical_delimiters) ... ok
+test_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.010s
+
+OK

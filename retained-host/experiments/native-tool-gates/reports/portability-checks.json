@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "scope": "portable Python preparation/source checks only",
+  "native_files_unchanged": true,
+  "native_compile": "not-run",
+  "native_execution": "not-run",
+  "headless_racket_coordinator": "not-run",
+  "checks": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "<relocated-handoff>/scripts/prepare-stock-tool-host.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "Pinned host, patch and metadata verified\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "<relocated-handoff>/tests/stock-tool-source-test.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok\ntest_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok\ntest_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok\ntest_host_derivative_exact_and_base_unchanged (__main__.StockToolSourceTests.test_host_derivative_exact_and_base_unchanged) ... ok\ntest_host_does_not_wrap_new_coordinator_in_gui_callback (__main__.StockToolSourceTests.test_host_does_not_wrap_new_coordinator_in_gui_callback) ... ok\ntest_macro_waits_for_real_cursor_and_navigation_progress (__main__.StockToolSourceTests.test_macro_waits_for_real_cursor_and_navigation_progress) ... ok\ntest_no_private_callback_bypass_or_fake_tool_models (__main__.StockToolSourceTests.test_no_private_callback_bypass_or_fake_tool_models) ... ok\ntest_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexical_delimiters) ... ok\ntest_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.011s\n\nOK\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "<relocated-handoff>/scripts/prepare-stock-tool-host.py",
+        "--base-host",
+        "<relocated-handoff>/tests/reference/independent-native-host-0520.rkt",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "Pinned host, patch and metadata verified\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "<relocated-handoff>/tests/stock-tool-source-test.py",
+        "--base-host",
+        "<relocated-handoff>/tests/reference/independent-native-host-0520.rkt"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok\ntest_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok\ntest_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok\ntest_host_derivative_exact_and_base_unchanged (__main__.StockToolSourceTests.test_host_derivative_exact_and_base_unchanged) ... ok\ntest_host_does_not_wrap_new_coordinator_in_gui_callback (__main__.StockToolSourceTests.test_host_does_not_wrap_new_coordinator_in_gui_callback) ... ok\ntest_macro_waits_for_real_cursor_and_navigation_progress (__main__.StockToolSourceTests.test_macro_waits_for_real_cursor_and_navigation_progress) ... ok\ntest_no_private_callback_bypass_or_fake_tool_models (__main__.StockToolSourceTests.test_no_private_callback_bypass_or_fake_tool_models) ... ok\ntest_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexical_delimiters) ... ok\ntest_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.010s\n\nOK\n"
+    },
+    {
+      "test": "CRLF-changed explicit input is rejected by its byte digest",
+      "returncode": 1,
+      "expected_rejection": true
+    }
+  ]
+}

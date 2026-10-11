@@ -22,6 +22,7 @@ for line in a.log.read_text().splitlines():
         allowed.update(mode+'-'+case for mode in ('pristine-stock','modern-dark')
                        for case in ('stop','input-eof','wxme','check-syntax'))
         allowed.update('mac-app-'+mode+'-'+step for mode in ('coldempty','coldfile','relocated') for step in ('coldempty','coldfile','warmfile','duplicate'))
+        allowed.update('tools-'+mode+'-'+case for mode in ('pristine-stock','modern-dark') for case in ('debugger','macro-stepper','teaching-tests'))
         assert plain in allowed, 'Unknown screenshot evidence label'
         assert 1024<=int(size)<=300*1024
         active=(label,int(size),digest,[])

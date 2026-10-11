@@ -1,0 +1,214 @@
+# Genuine-GUI annotation-application diagnostic
+
+One **common-observer plus slice-counter control** and one **application-probed** fresh macOS Racket 9.3
+GUI process each open the mixed-1MiB fixture and insert one `x` in its middle
+comment. Stock six-field requests, handler payloads, features, callback order and
+20 ms trace batching remain intact. The registered public child-memory preference
+is 256 MiB in both arms. This is a gross outcome/overhead check, not a precise
+one-pair observer-cost estimate or a production optimization.
+
+No standalone replay, readiness barrier, control channel, logger receiver, GC
+observer, extra observation thread, heartbeat, stack sampling or xref hook is included.
+The worker producer-point flag is OFF in both arms. The separate
+OPENRACKET_GUI_APPLICATION_POINTS flag is enabled only for the observed arm.
+
+## CI order and commands
+
+Native execution/publication belongs to the authorized CI worker. Do not install a
+runtime or attempt a local GUI. Copy the final allowlist from the reviewed immutable
+freeze into a **writable** package directory (`PACKAGE`). Independently clone the
+approved stock distribution into `CLONE`; do not use hardlinked or linked source
+files, patch the stock distribution, or change a previous frozen diagnostic.
+`RACKET` must resolve inside `CLONE`. Use absolute paths. Clear inherited
+`OPENRACKET_*` variables for preparation; capture clears them itself.
+
+1. Before patching, resolve `STOCK_PRIVATE`: run the cloned runtime with
+   `-e '(path->string (collection-file-path "module-language.rkt" "drracket" "private"))'`
+   and use the returned file's parent directory. Retain the four original files
+   for source/native tests. No GUI arm profile is initialized at this step.
+2. From `PACKAGE`, run the mandatory headless gates before patching:
+
+   ```sh
+   python3 native_preflight.py --racket "$RACKET" \
+     --pristine-source "$STOCK_PRIVATE" --profile "$PREFLIGHT_PROFILE"
+   ```
+
+   `PREFLIGHT_PROFILE` is a separate disposable test profile, never an arm profile.
+   All Python and Racket lifecycle/reader/default-off/helper tests must pass with
+   **zero skips**. These headless gates do not establish GUI completion.
+3. Patch and compile only the independent clone:
+
+   ```sh
+   python3 prepare_gui.py --diagnostic-root "$CLONE" --racket "$RACKET"
+   ```
+
+   All four source pins and unique anchors must match. Removing marked insertions
+   reconstructs stock source byte-for-byte. Native `raco make` must pass. Preserve
+   the clone's `openracket-gui-phase-manifest.json`,
+   `openracket-gui-phase-source.diff` and `openracket-gui-phase-compile.log`.
+4. Generate the unchanged fixture and run exactly one process per arm:
+
+   ```sh
+   python3 fixtures.py "$FIXTURES"
+   python3 capture.py --arm control --racket "$RACKET" \
+     --fixture "$FIXTURES/mixed-1mib.rkt" --output "$CONTROL"
+   python3 capture.py --arm observed --racket "$RACKET" \
+     --fixture "$FIXTURES/mixed-1mib.rkt" --output "$OBSERVED"
+   ```
+
+   `CONTROL` and `OBSERVED` must not already exist. **Do not precreate or initialize
+   their profiles.** Each launcher creates its own empty `profile`, configures its
+   distinct empty `addon`, runs the exact proven memory helper once, verifies the
+   persisted one-key delta, and only then creates its diagnostic marker and starts
+   the GUI. It never recreates the profile after writing 256. Do not reuse the
+   preflight profile. Preserve partial evidence when an arm fails; independently
+   run the other arm and always run acceptance to classify the pair.
+5. Run read-only acceptance:
+
+   ```sh
+   python3 accept_gui.py --control "$CONTROL" --observed "$OBSERVED" \
+     --manifest "$CLONE/openracket-gui-phase-manifest.json" > "$ACCEPTANCE_JSON"
+   ```
+
+   Only exit 0 with `accepted: true` passes. Do not adjust the cap, timeouts,
+   settings, expected snapshot or counts to convert a failure into a pass.
+
+## Workload and bounds
+
+- Base: 1,048,576 ASCII characters/bytes, SHA256
+  `766af354720de3e235cd60d9eb511f0469c35b36a99b599a071453d22a1b499e`.
+- Insert `x` at 524139, yielding 1,048,577 characters/bytes, SHA256
+  `f66aacc13f5cec59fd57f20a0fc82fa2c159a3cb4a77cbc57d4eddbd1f107735`.
+- Actual public preference/worker cap 268435456 bytes; actual memory accounting
+  must be available. Online compilation and coloring remain enabled.
+- Existing 90-second startup and 90-second post-edit absolute deadlines, 190-second
+  process limit, 30-second setup, 5-second external process-group cleanup. Application,
+  lexer and worker-report waits share the original terminal deadline without reset.
+- Original fixture stays unchanged on disk. Final editor snapshot and final lexer
+  validity are verified separately and retain separate timestamps.
+
+## Source seams and overhead
+
+`prepare_gui.py` contains the four exact stock pins. It adds guarded marked blocks
+in module-language.rkt, expanding-place.rkt, syncheck/online-comp.rkt and
+syncheck/gui.rkt. With the common flag absent, no helper is dynamically loaded.
+Both arms collect common source/settings/registry/cap/terminal/application proof;
+both collect identical scalar actual-batch/yield/resume counters; only the observed
+arm collects application timing. The successful 0535 common gui-observer.rkt is
+byte-identical. Existing producer helper calls remain, but collect no points in
+either arm.
+
+Candidate snapshots are identified by actual source, length and SHA256 at actual
+request/new-job entry. Worker hashing happens before child-custodian creation.
+Observer state retains bounded scalars, never snapshots, syntax, trace payloads,
+editor objects, channels or continuations. Common correlation hashing and the
+trace-schema walk are observer work and included in gross overhead.
+
+Pending-thread/GUI hooks do no reporting I/O. The host reads the in-memory scalar
+summary and writes it once after endpoints, or once on failure. Complete parsed
+worker-init and phase files are cached, not reread every wait tick. Worker init
+writes one common bounded identity/accounting report before requests.
+
+The existing original-custodian result-forwarder writes worker-phase-1.json after
+its unchanged actual handler-results send returns. Both arms emit this common
+identity report; the control's points list is empty. Post-terminal report writing
+can overlap GUI application and belongs in the disclosed gross overhead.
+
+The source-proven application endpoint is the stock normal empty-trace branch,
+after blue-box/arrow updates, running-color removal and mode reset. The captured
+scalar request/generation token must still be live immediately before stock clears
+its state. Cancellation, replacement and stale queued continuations cannot pass.
+Actual receipt, queue attempt, callback entry/return and application completion
+have distinct labels. Application can finish before terminal arrival, so its
+timeline is checked independently. Completion does not measure painting.
+
+## Acceptance and interpretation
+
+Each arm requires exactly one matching final request/job, actual handler-results
+with positive compiled bytes, positive clean monitor trace with real
+place-channel-bearing rename rows, a current terminal callback, a current normal
+noncancelled application endpoint, unchanged final source, valid lexer and complete
+cleanup. Missing, duplicate, stale, nonfinite, clipped, ambiguous or dropped
+evidence fails closed. Both arms' actual registries/settings, scalar terminal
+shape, monitor message/trace-entry/channel-row counts and source identity must
+agree. Actual source/helper bytes and compilation are checked against the manifest.
+
+The worker report contains no producer points in either arm. Existing common
+GUI endpoint allocation/CPU/GC counters retain their whole-runtime scope, not
+thread ownership or causal attribution. Do not subtract GUI and worker timestamps
+across places/processes. Scalar schema/count agreement
+is not full payload or capability equality. Real channels and stock lifetimes are
+untouched. GUI success with replay OOM does not establish an allocator cause.
+
+OUTPUT-SCHEMA.json describes the bounded outputs. Native reader, lifecycle/helper
+tests, compilation and both GUI trials remain mandatory CI gates. Five native-only
+tests skip without Racket; portable success must not be called native acceptance.
+Previous frozen diagnostics remain untouched.
+
+## Application timing contract
+
+application-profile.json is a separate <=64 KiB final scalar snapshot. The host
+serializes it once after closed GUI work, or once as explicitly nonquiescent partial
+failure evidence. It is not serialized while polling. The helper is GUI-thread-only;
+failed snapshots must never be treated as coherent concurrent measurements.
+At most eight application records retain copied request/generation numbers, fixed
+13 tag accumulators and fixed four final-call accumulators, plus scalar batch and
+queue state. Each accumulator has count, cumulative wall milliseconds and maximum
+wall milliseconds. No per-entry or per-batch rows, payloads, editors, channels,
+continuations, filesystem I/O or memory/GC/CPU samples are retained or generated by
+the application hooks.
+
+The 13 categories are the exact stock process-trace-element dispatch tags, including
+zero-count categories. Before/after scalar calls bracket the one unchanged original
+process-trace-element invocation. There is no new per-entry thunk, exception handler,
+dynamic-wind or parameterization. Original exceptions and escapes propagate unchanged;
+they leave open state and cannot pass acceptance. Classification and counter-update
+work mostly lies outside the sampled call interval, but helper return/entry overhead
+lies inside it. No estimated overhead is subtracted. Call-wall includes preemption,
+GC pauses and nested GUI work if it occurs. Reentrant instrumented calls are recorded
+as invalid and rejected, never assigned exclusive ownership.
+
+The four final synchronous expressions are separately timed, in original order:
+update-blue-boxes (including argument evaluation), update-drawn-arrows, removal of
+the running color, and set-syncheck-running-mode. The reset timer closes before the
+existing common application-complete observation. All four must return exactly once.
+These calls can initiate later coroutine/cache/timer, arrow/paint and running-indicator
+refresh work. Completion is not blue-box-settled, paint completion or all deferred
+GUI work. Selection is left at the original fixture edit, with the unchanged focus,
+scroll and frame setup. Pointer/viewport-dependent final work is unmeasured context;
+no pointer movement or settings changes are introduced to accelerate an arm.
+
+An actual batch starts immediately before the stock initial loop, or at entry to its
+existing queued continuation. The original 20 ms test, current-inexact-milliseconds
+clock, iteration variable, chunk drain, callback closure, #f queue priority and exact
+annotation order remain unchanged. A yielded active interval ends AFTER the original
+queue-callback returns, so scheduling cost belongs to active time. Requeue wait begins
+at that same boundary and ends at callback entry. It includes the old callback's tail
+return, eventspace waiting and any intervening GUI work. It is observed elapsed waiting,
+not scheduler-exclusive attribution. A skipped cancelled continuation closes as cancelled.
+
+Active batch totals contain measured entry calls, four synchronous final calls,
+loop/dispatch overhead, instrumentation and scheduling. Report these separately:
+- measured_entry_call_wall_ms is the sum of the fixed13 call-wall accumulators
+- synchronous_final_calls_wall_ms is the sum of the final4 accumulators
+- other_batch_wall_ms is active minus those measured intervals; it is not a pure
+  observer-cost or CPU estimate
+- requeue_wait is measured separately, without overlap with active intervals
+
+The observed profile's active+wait total must reconcile to its own first_batch_start_ms
+through last_batch_end_ms. The first boundary is AFTER common application-enter and
+the last boundary is AFTER common application-complete, so do not equate this span
+with the common application duration. Floating-point accounting tolerance is 1e-5
+of the span (minimum scale 1 ms), not a performance threshold. Control retains only
+common batch/yield/resume/wait counts, empty tag/final arrays and null timings.
+Per-entry condition guards remain in both patched arms; the observed arm additionally
+performs scalar attribution. Instrumentation may change slice count. Paired slice
+counts are exposed and need not match; both full actual trace counts must still match.
+
+Acceptance additionally requires observed fixed13 sum = entries started = entries
+completed = actual received trace_entries; arrow/name-dup + id-set counts = the
+independent common monitor rename_capability_rows; all four final counts = 1; batches = yields+1;
+waits = resumes = yields; no drops, helper errors, unknown tags, reentrancy, stale events,
+unmatched state, open entry/final/batch or queued wait. An enabled producer flag in
+either arm fails. All original source/settings/cap/currentness/lexer/cleanup checks
+remain mandatory. This is a bounded attribution diagnostic, not a production change.

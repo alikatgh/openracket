@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "scope": "Descriptive scalar-output contract; accept_gui.py is the fail-closed validator",
+  "required_per_arm": [
+    "capture-host.json",
+    "capture-supervisor.json",
+    "gui-observation.json",
+    "worker-init.json",
+    "worker-phase-1.json",
+    "memory-profile.json",
+    "application-profile.json"
+  ],
+  "metrics": {
+    "fields": [
+      "monotonic_ms",
+      "process_allocation_counter_bytes",
+      "gc_counter_ms",
+      "process_cpu_counter_ms_all_places"
+    ],
+    "types": "Finite nonnegative numbers; booleans rejected",
+    "scope": "Same-runtime monotonic clock and whole-runtime cumulative counters"
+  },
+  "gui-observation.json": {
+    "maximum_bytes": 1048576,
+    "fields": [
+      "schema_version",
+      "request_count",
+      "matching_request_ids",
+      "records",
+      "actual_registry",
+      "error_count",
+      "errors",
+      "dropped_records"
+    ],
+    "maximum_records": 8,
+    "accepted_records": 1,
+    "record_fields": [
+      "request_id",
+      "snapshot_sha256",
+      "snapshot_characters",
+      "snapshot_kind",
+      "source",
+      "actual_child_limit_bytes",
+      "actual_prefab",
+      "actual_prefab_truncated",
+      "prefab_annotations_none",
+      "terminal",
+      "gui_points",
+      "point_duplicates",
+      "terminal_callback_current",
+      "application_current",
+      "application_generation",
+      "application_cancelled",
+      "stale_application_events",
+      "monitor_evidence"
+    ],
+    "gui_points": [
+      "request-observed",
+      "monitor-received",
+      "monitor-callback-queue-attempt",
+      "monitor-callback-enter",
+      "monitor-callback-return",
+      "application-enter",
+      "application-complete",
+      "terminal-received",
+      "terminal-callback-queue-attempt",
+      "terminal-callback-enter",
+      "terminal-callback-return"
+    ],
+    "point_values": "metrics object",
+    "terminal_fields": [
+      "tag",
+      "handler_keys",
+      "compiled_bytes"
+    ],
+    "monitor_evidence_fields": [
+      "messages",
+      "trace_batches",
+      "trace_entries",
+      "rename_capability_rows",
+      "error_messages",
+      "invalid_payloads"
+    ],
+    "registry_row_fields": [
+      "module_spec",
+      "export",
+      "monitor",
+      "source",
+      "source_sha256"
+    ]
+  },
+  "worker-init.json": {
+    "maximum_bytes": 16384,
+    "event": "actual-registry-initialized-no-barrier",
+    "fields": [
+      "schema_version",
+      "event",
+      "child_limit_bytes",
+      "memory_accounting_available",
+      "actual_registry",
+      "metrics"
+    ]
+  },
+  "worker-phase-1.json": {
+    "maximum_bytes": 65536,
+    "kind": "genuine-gui-producer-phases",
+    "fields": [
+      "schema_version",
+      "kind",
+      "selected_job_id",
+      "selected_job_count",
+      "dropped_jobs",
+      "observer_failures",
+      "snapshot_sha256",
+      "source",
+      "actual_prefab",
+      "actual_child_limit_bytes",
+      "memory_accounting_available",
+      "terminal",
+      "phase_points_enabled",
+      "emission_after_stock_terminal_send",
+      "phase_points",
+      "scope",
+      "overhead"
+    ],
+    "control_points": [],
+    "observed_points_chronological": [],
+    "point_row_fields": [
+      "phase",
+      "duplicate_writes",
+      "producer_metrics"
+    ],
+    "points_array_order": "Storage order differs from chronological order; index by unique phase name",
+    "maximum_selected_jobs": 8,
+    "fixed_slots_per_job": 10,
+    "accepted_selected_job_count": 1,
+    "activation": "phase_points_enabled false and phase_points [] in BOTH arms"
+  },
+  "capture-host.json": {
+    "maximum_bytes": 65536,
+    "successful_status": "gui_application_complete",
+    "fields_include": [
+      "arm",
+      "racket_version",
+      "os",
+      "fixture",
+      "preserved_preferences",
+      "pending_run_configuration_scope",
+      "pending_run_serialized_settings",
+      "post_edit_deadline_monotonic_ms",
+      "first_final_lexer_valid_observed_monotonic_ms",
+      "terminal_received_monotonic_ms",
+      "terminal_callback_enter_monotonic_ms",
+      "terminal_callback_return_monotonic_ms",
+      "monitor_received_monotonic_ms",
+      "monitor_callback_enter_monotonic_ms",
+      "application_enter_monotonic_ms",
+      "application_complete_monotonic_ms",
+      "matching_request_id",
+      "edited_snapshot_sha256",
+      "final_snapshot_characters",
+      "final_snapshot_sha256",
+      "source_unchanged",
+      "lexer_valid_at_completion",
+      "actual_worker_child_limit_bytes",
+      "actual_worker_memory_accounting_available",
+      "elapsed_ms"
+    ]
+  },
+  "capture-supervisor.json": {
+    "successful_status": "gui_application_complete",
+    "fields_include": [
+      "arm",
+      "command",
+      "native_gui_capture_only",
+      "standalone_replay",
+      "base_fixture_sha256",
+      "edited_snapshot_sha256",
+      "edited_snapshot_bytes",
+      "edited_snapshot_characters",
+      "expected_memory_limit_bytes",
+      "memory_profile_setup",
+      "gui_started",
+      "timeout",
+      "cleanup",
+      "exit_code",
+      "elapsed_seconds",
+      "observation_exists",
+      "host_evidence_errors"
+    ]
+  },
+  "memory-profile.json": {
+    "producer": "Byte-identical approved memory-profile.rkt via profile_setup.py",
+    "accepted_limit_bytes": 268435456,
+    "requirements": "Fresh distinct profile/addon, exactly one public persisted preference delta, effective readback matches, before-timed-gui, no GUI initialization"
+  },
+  "openracket-gui-phase-manifest.json": {
+    "location": "Independent clone root",
+    "fields": [
+      "schema_version",
+      "diagnostic_root",
+      "racket",
+      "source_root",
+      "stock_pins",
+      "diagnostic_sources",
+      "helpers",
+      "helper_paths",
+      "compile_command",
+      "compiled",
+      "compile_exit_code"
+    ],
+    "paths": "Actual resolved native paths",
+    "required": "compiled true, compile_exit_code 0 and exact actual source/helper hashes"
+  },
+  "failure_policy": "Preserve all partial files/logs; cancellation, OOM, timeout, missing/ambiguous endpoints, mismatched identity/counts, malformed data or skipped native gates never mean success.",
+  "application-profile.json": {
+    "maximum_bytes": 65536,
+    "maximum_records": 8,
+    "accepted_records": 1,
+    "fields": [
+      "schema_version",
+      "kind",
+      "probe_enabled",
+      "common_batch_counts",
+      "snapshot_quiescent",
+      "selected_count",
+      "dropped_records",
+      "observer_failures",
+      "records",
+      "scope",
+      "completion_scope"
+    ],
+    "kind": "genuine-gui-annotation-application",
+    "activation": "Separate OPENRACKET_GUI_APPLICATION_POINTS=1 only in observed; common batch counts both arms",
+    "record_fields": [
+      "request_id",
+      "application_generation",
+      "completed",
+      "cancelled",
+      "errors",
+      "unknown_tags",
+      "reentrant_entries",
+      "stale_events",
+      "unmatched_events",
+      "entries_started",
+      "entries_completed",
+      "open_entry_depth",
+      "open_final",
+      "active_batch",
+      "queued_wait",
+      "yield_count",
+      "resume_count",
+      "batch_active",
+      "requeue_wait",
+      "first_batch_start_ms",
+      "last_batch_end_ms",
+      "tag_buckets",
+      "final_updates"
+    ],
+    "accumulator": {
+      "count": "nonnegative exact integer, booleans refused",
+      "wall_ms": "finite nonnegative cumulative inclusive wall ms; null in control",
+      "max_wall_ms": "finite nonnegative maximum inclusive wall ms; null in control"
+    },
+    "fixed_tags": [
+      "syncheck:add-arrow/name-dup/pxpy",
+      "syncheck:add-tail-arrow",
+      "syncheck:add-mouse-over-status",
+      "syncheck:add-text-type",
+      "syncheck:add-background-color",
+      "syncheck:add-jump-to-definition/phase-level+space",
+      "syncheck:add-require-open-menu",
+      "syncheck:add-docs-menu",
+      "syncheck:add-definition-target/phase-level+space",
+      "syncheck:unused-binder",
+      "syncheck:add-id-set",
+      "syncheck:add-prefixed-require-reference",
+      "syncheck:add-unused-require"
+    ],
+    "fixed_final_operations": [
+      "update-blue-boxes",
+      "update-drawn-arrows",
+      "remove-bkg-running-color",
+      "set-syncheck-running-mode"
+    ],
+    "control": "Empty tag/final arrays; entry counters zero; timestamps and durations null; common batch/yield/resume/wait counts only",
+    "reconciliation": [
+      "fixed13 count sum = entries started = entries completed = actual trace_entries",
+      "arrow/name-dup count + id-set count = independently scanned actual rename_capability_rows",
+      "final4 each count 1",
+      "batch count = yield count+1; yield count = resume count = wait count",
+      "sum active + sum wait = last batch end - first batch start, within 1e-5 relative/minimum1 ms numerical tolerance",
+      "entry call-wall sum + final call-wall sum <= active wall sum",
+      "zero errors/drops/unknown/reentrant/stale/unmatched, no open entry/final/batch/wait, current token, completed, not cancelled, snapshot_quiescent true"
+    ],
+    "scope": "Inclusive observed call-wall, not exclusive CPU; includes boundary-hook overhead and pauses. Batch active includes loop/probe/scheduling. Requeue wait starts after queue-callback returns and includes old-callback tail and intervening eventspace work. Deferred paint/docs/indicator work can remain."
+  }
+}

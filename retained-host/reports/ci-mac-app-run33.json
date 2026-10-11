@@ -1,0 +1,399 @@
+{
+  "run_id": 38124351664,
+  "job_id": 114425484151,
+  "commit": "a304077a884fa01f0a9f211e8c96d77e2bc6ee9b",
+  "conclusion": "failure",
+  "log_sha256": "bc5748a786b03e6b466e72ef724899a63e2a640df77b3acacdec9c48d247f3fb",
+  "artifacts": 0,
+  "first_failed_stage": "CI-only observer package setup",
+  "exact_error": "collection-path: collection not found; collection openracket-mac-app-observer",
+  "launch_services_cases": "not run",
+  "native_builder_cases_passed": 20,
+  "native_observer_cases_passed": 21,
+  "native_heartbeat_cases_passed": 16,
+  "OPENRACKET_MAC_APP_RESULT": [
+    {
+      "name": "pristine complete bytes/modes/mtime/symlink witness baseline",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "App CI isolation and byte/mtime witness tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "App adapter source-contract tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless evidence transport tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact builder and separate heartbeat helper sources",
+      "passed": true,
+      "detail": "db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67"
+    },
+    {
+      "name": "Exact tested preview copied to fresh Unicode/apostrophe/spaced source",
+      "passed": true,
+      "detail": "/Users/runner/work/_temp/OpenRacket App Proof \u03bb's"
+    },
+    {
+      "name": "Read-only observer portable source contracts",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Deep-copy independent app runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-runtime complete bytes/modes/mtime/symlink witness baseline",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "Independent corrected heartbeat native regression",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "official-user-preferences complete bytes/modes/mtime/symlink witness baseline",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+    },
+    {
+      "name": "Product profile absent before actual setup",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Actual verified preview setup",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual unchanged preview preflight",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual fresh preview memory ownership status",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Read-only original .rkt default handler before-build",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original .rkt UTI/default handler before-build",
+      "passed": true,
+      "detail": "{\"default_handler\": null, \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": false, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"dyn.age81e45y\"}"
+    },
+    {
+      "name": "Exact builder and separate heartbeat helper sources",
+      "passed": true,
+      "detail": "db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67"
+    },
+    {
+      "name": "Compile actual Racket-only builder, tests and official launcher generator",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Twenty actual native Racket builder contract cases",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All20 actual builder RackUnit cases executed",
+      "passed": true,
+      "detail": "Exact native count required"
+    },
+    {
+      "name": "Twenty-one read-only app observer native contract/state cases",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All21 actual observer RackUnit cases executed",
+      "passed": true,
+      "detail": "Exact native count required"
+    },
+    {
+      "name": "Explicit native app observer and Cocoa/default-reader compilation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "Generate independent untouched official native launcher reference",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual Racket-only destination app build",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Product builder passed its same-object native-byte preservation assertion",
+      "passed": true,
+      "detail": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083"
+    },
+    {
+      "name": "Native plist syntax",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Inspect native executable architecture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Refuse existing output 0",
+      "passed": true,
+      "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+    },
+    {
+      "name": "Refuse existing output 1",
+      "passed": true,
+      "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+    },
+    {
+      "name": "Refuse existing output 2",
+      "passed": true,
+      "detail": "OpenRacket app build stopped: openracket-app: output is a symbolic link\n"
+    },
+    {
+      "name": "Refuse existing output 3",
+      "passed": true,
+      "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+    },
+    {
+      "name": "Generation opened no app process",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Register separate CI-only read-only native app observer",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile observer package registration without main runtime writes",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "observer orchestration",
+      "passed": false,
+      "detail": "Compile observer package registration without main runtime writes failed"
+    },
+    {
+      "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+    },
+    {
+      "name": "official-user-preferences complete bytes/modes/mtime/symlink witness compare",
+      "passed": true,
+      "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+    },
+    {
+      "name": "Read-only original .rkt default handler after-all",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original .rkt UTI/default handler after-all",
+      "passed": true,
+      "detail": "{\"default_handler\": null, \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": false, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"dyn.age81e45y\"}"
+    }
+  ],
+  "OPENRACKET_APP_IMMUTABILITY": [
+    {
+      "operation": "baseline",
+      "label": "pristine",
+      "path": "/Users/runner/work/_temp/openracket-full.RNYq8W/racket",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "baseline",
+      "label": "selected-runtime",
+      "path": "/Users/runner/work/_temp/OpenRacket App Runtime/Racket 9.3",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "baseline",
+      "label": "official-user-preferences",
+      "path": "/Users/runner/Library/Preferences/org.racket-lang.prefs.rktd",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 1,
+      "tree_sha256": "dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2"
+    },
+    {
+      "operation": "compare",
+      "label": "pristine",
+      "path": "/Users/runner/work/_temp/openracket-full.RNYq8W/racket",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "compare",
+      "label": "selected-runtime",
+      "path": "/Users/runner/work/_temp/OpenRacket App Runtime/Racket 9.3",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "compare",
+      "label": "pristine",
+      "path": "/Users/runner/work/_temp/openracket-full.RNYq8W/racket",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "compare",
+      "label": "selected-runtime",
+      "path": "/Users/runner/work/_temp/OpenRacket App Runtime/Racket 9.3",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 26838,
+      "tree_sha256": "32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e"
+    },
+    {
+      "operation": "compare",
+      "label": "official-user-preferences",
+      "path": "/Users/runner/Library/Preferences/org.racket-lang.prefs.rktd",
+      "unchanged": true,
+      "changed_count": 0,
+      "first_changed_paths": [],
+      "entries": 1,
+      "tree_sha256": "dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2"
+    }
+  ],
+  "OPENRACKET_APP_SIGNATURE": [
+    {
+      "label": "codesign-inspect",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "/Users/runner/work/_temp/OpenRacket App Output \u03bb's/OpenRacket Preview.app: code object is not signed at all\n"
+    },
+    {
+      "label": "codesign-verify",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "/Users/runner/work/_temp/OpenRacket App Output \u03bb's/OpenRacket Preview.app: code object is not signed at all\n"
+    },
+    {
+      "label": "gatekeeper-assessment",
+      "exit": 3,
+      "stdout": "",
+      "stderr": "/Users/runner/work/_temp/OpenRacket App Output \u03bb's/OpenRacket Preview.app: rejected\nsource=no usable signature\n"
+    }
+  ],
+  "OPENRACKET_APP_REFERENCE_COMPARISON": [
+    {
+      "reference_sha256": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083",
+      "product_sha256": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083",
+      "equal": true,
+      "independent_generation_determinism_gate": false
+    }
+  ],
+  "OPENRACKET_APP_BUILD": [
+    {
+      "path": "/Users/runner/work/_temp/OpenRacket App Output \u03bb's/OpenRacket Preview.app",
+      "plist": {
+        "CFBundleDevelopmentRegion": "English",
+        "CFBundleDisplayName": "OpenRacket Preview",
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Racket source and editor document",
+            "CFBundleTypeRole": "Editor",
+            "CFBundleTypeExtensions": [
+              "rkt",
+              "rktl",
+              "ss",
+              "scm",
+              "wxme"
+            ],
+            "LSHandlerRank": "Alternate"
+          }
+        ],
+        "CFBundleExecutable": "OpenRacket-launch",
+        "CFBundleIconFile": "Starter",
+        "CFBundleIdentifier": "local.openracket.preview.p751b18fc32abb5fc",
+        "CFBundleInfoDictionaryVersion": "6.0",
+        "CFBundleName": "OpenRacket Preview",
+        "CFBundlePackageType": "APPL",
+        "CFBundleShortVersionString": "0.1.0",
+        "CFBundleSignature": "MrSt",
+        "CFBundleVersion": "1",
+        "LSMinimumSystemVersion": "15.0",
+        "LSMultipleInstancesProhibited": true,
+        "NSHighResolutionCapable": true,
+        "NSPrincipalClass": "NSApplicationMain",
+        "NSRequiresAquaSystemAppearance": false,
+        "NSSupportsAutomaticGraphicsSwitching": true
+      },
+      "build": {
+        "developer_id_signed": false,
+        "native_executable": "OpenRacket Preview",
+        "notarized": false,
+        "profile": "/Users/runner/work/_temp/OpenRacket App Proof \u03bb's/profile",
+        "racket": "/Users/runner/work/_temp/OpenRacket App Runtime/Racket 9.3/bin/racket",
+        "runtime_root": "/Users/runner/work/_temp/OpenRacket App Runtime/Racket 9.3",
+        "self_contained": false,
+        "source": "/Users/runner/work/_temp/OpenRacket App Proof \u03bb's",
+        "source_manifest_sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+        "status": "native acceptance pending",
+        "theme": "dark"
+      },
+      "native_executable": "/Users/runner/work/_temp/OpenRacket App Output \u03bb's/OpenRacket Preview.app/Contents/MacOS/OpenRacket Preview",
+      "native_sha256": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083"
+    }
+  ]
+}

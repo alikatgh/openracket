@@ -17,6 +17,8 @@ class EvidenceTests(unittest.TestCase):
    return lines
  def test_native_app_ready_preserves_failure_and_unicode_tabs(self):
   self.roundtrip({'status':'failed','error':'actual Cocoa failure','identity':{'pid':123,'bundle':'OpenRacket λ'},'tabs':[{'path':f'/tmp/文档 {i}.rkt','sha256':'a'*64,'frame_id':i} for i in range(65)]},filename='ready.json')
+ def test_application_profile_bound_and_failed_accounting_retained(self):
+  self.roundtrip({'status':'incomplete','application_count':1,'tags':[{'tag':str(i),'count':5000,'wall_ms':i/10,'cpu_ms':i/20} for i in range(13)],'phases':[{'name':'slice-'+str(i),'value':i} for i in range(100)]},filename='application-profile.json')
  def test_lossless_nested_gc_rows(self):
   self.roundtrip({'trials':[{'gc':{'records':[{'time':i,'info':'GC λ'} for i in range(97)]}},{'result':'error remains visible'}]})
  def test_under_forty_large_samples(self):

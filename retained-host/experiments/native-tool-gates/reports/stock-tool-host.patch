@@ -1,0 +1,47 @@
+--- a/tests/independent-native-host.rkt
++++ b/tests/independent-native-host.rkt
+@@ -9,6 +9,7 @@
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+ (define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+ (define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")
++(define-runtime-path stock-tool-module "independent-native-stock-tools.rkt")
+ (define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
+ (define native-appearance-result #f)
+ (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
+@@ -294,18 +295,28 @@
+                   (set! created-frames (cons created created-frames)))))))))
+ 
+   (when follow-on-case
+-    (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax" "stop-returning"))
++    (unless (member follow-on-case '("stop" "input-eof" "wxme" "check-syntax" "stop-returning"
++                                             "debugger" "macro-stepper" "teaching-tests"))
+       (error 'independent-native-host "Unsupported follow-on case ~s" follow-on-case))
+     (printf "OPENRACKET_NATIVE_STAGE follow-on=~a\n" follow-on-case)
+     (flush-output)
+     (set! follow-on-result
+-          (if (equal? follow-on-case "stop-returning")
+-              ((dynamic-require returning-stop-module 'run-returning-stop-check!)
+-               frame on-gui wait-for)
+-              (on-gui
+-               (lambda ()
+-                 ((dynamic-require follow-on-module 'run-follow-on-check!)
+-                  frame (string->symbol follow-on-case)))))))
++          (cond
++            [(member follow-on-case '("debugger" "macro-stepper" "teaching-tests"))
++             ;; Return each action to the GUI event loop before coordinator polling.
++             ((dynamic-require stock-tool-module 'run-native-tool-check!)
++              frame (string->symbol follow-on-case) on-gui wait-for
++              (lambda (created)
++                (unless (memq created created-frames)
++                  (set! created-frames (cons created created-frames)))))]
++            [(equal? follow-on-case "stop-returning")
++             ((dynamic-require returning-stop-module 'run-returning-stop-check!)
++              frame on-gui wait-for)]
++            [else
++             (on-gui
++              (lambda ()
++                ((dynamic-require follow-on-module 'run-follow-on-check!)
++                 frame (string->symbol follow-on-case))))])))
+ 
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+   (on-gui (lambda ()

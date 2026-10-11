@@ -1,0 +1,321 @@
+{
+  "status": "source-audited",
+  "native_compile": "not-run",
+  "native_execution": "not-run",
+  "source_count": 15,
+  "sources": [
+    {
+      "module": "gui-debugger/debug-tool.rkt",
+      "cached_source": "/tmp/17916276491791627649681-drracket/gui-debugger/debug-tool.rkt",
+      "sha256": "5a8b030e9ef3c1f57f829f3749673cdedb0938f460ed1d40f162160036759676",
+      "anchors": [
+        {
+          "anchor": "(define-local-member-name debug-callback)",
+          "line": 39
+        },
+        {
+          "anchor": "(callback (λ (button) (send frame debug-callback)))",
+          "line": 58
+        },
+        {
+          "anchor": "(define/public (get-break-status)",
+          "line": 866
+        },
+        {
+          "anchor": "(define/public (get-stack-frames)",
+          "line": 862
+        },
+        {
+          "anchor": "(define/public (get-pc)",
+          "line": 928
+        },
+        {
+          "anchor": "(define/public (get-current-frame-endpoints)",
+          "line": 946
+        },
+        {
+          "anchor": "(define/public (get-step-button)",
+          "line": 1538
+        },
+        {
+          "anchor": "(define/public (get-resume-button)",
+          "line": 1537
+        },
+        {
+          "anchor": ";; the opt-out button handles this language",
+          "line": 1567
+        }
+      ]
+    },
+    {
+      "module": "macro-debugger/tool.rkt",
+      "cached_source": "/tmp/17916276491791627649681-drracket/macro-debugger/tool.rkt",
+      "sha256": "37fdf39522bfb7ba9c9d6a17bc102e80827a6065fad6b0b6a9da79931b89c36c",
+      "anchors": [
+        {
+          "anchor": "(define-local-member-name run-macro-stepper)",
+          "line": 25
+        },
+        {
+          "anchor": "(callback (lambda (button) (send frame run-macro-stepper)))",
+          "line": 106
+        },
+        {
+          "anchor": "(send the-tab disable-evaluation)",
+          "line": 208
+        },
+        {
+          "anchor": "(send the-tab enable-evaluation)",
+          "line": 286
+        }
+      ]
+    },
+    {
+      "module": "macro-debugger/view/stepper.rkt",
+      "cached_source": "/tmp/17916276991791627699800-macro-debugger/macro-debugger/view/stepper.rkt",
+      "sha256": "a7549b7af10fff726884023a441f44cc315cde78a1f1a73558fc397a50acdc95",
+      "anchors": [
+        {
+          "anchor": "(notify:define-notify current-step-index",
+          "line": 87
+        },
+        {
+          "anchor": "(define/public (get-view)",
+          "line": 139
+        },
+        {
+          "anchor": "(define/public-final (navigate-next)",
+          "line": 319
+        },
+        {
+          "anchor": "(define/public-final (navigate-to-end)",
+          "line": 313
+        },
+        {
+          "anchor": "(send/i term term-record<%> has-next?)",
+          "line": 344
+        },
+        {
+          "anchor": "(send/i term term-record<%> get-step-index)",
+          "line": 402
+        },
+        {
+          "anchor": "(list navigate-next-icon \"Step\" 'right)",
+          "line": 238
+        },
+        {
+          "anchor": "(list navigate-previous-icon \"Step\" 'left)",
+          "line": 235
+        }
+      ]
+    },
+    {
+      "module": "macro-debugger/view/term-record.rkt",
+      "cached_source": "/tmp/17916276991791627699800-macro-debugger/macro-debugger/view/term-record.rkt",
+      "sha256": "47fed3d240e197b37004e38e0702ed51ae0a82daa41274ca81de5dbbb4ffc9ab",
+      "anchors": [
+        {
+          "anchor": "(define/public-final (get-step-index)",
+          "line": 203
+        },
+        {
+          "anchor": "(and steps (cursor-position steps))",
+          "line": 205
+        },
+        {
+          "anchor": "(define/public-final (get-step-count)",
+          "line": 206
+        }
+      ]
+    },
+    {
+      "module": "framework/private/notify.rkt",
+      "cached_source": "/tmp/17916293651791629365355-gui-lib/framework/private/notify.rkt",
+      "sha256": "f84081a2d55c1b8cf7e2a4757f614484ba6af7d893dc01cdf3120ca91d29e73c",
+      "anchors": [
+        {
+          "anchor": "(format-id name \"get-~a\"",
+          "line": 16
+        },
+        {
+          "anchor": "(define/public-final (get-name)",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "module": "framework/private/frame.rkt",
+      "cached_source": "/tmp/17916293651791629365355-gui-lib/framework/private/frame.rkt",
+      "sha256": "b8cfd6be40de1b45837ef4042aae4e551847be4f1dbd8a3e5b6045b927590ca3",
+      "anchors": [
+        {
+          "anchor": "(define/public (close)",
+          "line": 221
+        },
+        {
+          "anchor": "(when (can-close?)\n        (on-close)\n        (show #f))",
+          "line": 222
+        }
+      ]
+    },
+    {
+      "module": "mred/private/mritem.rkt",
+      "cached_source": "/tmp/17916293651791629365355-gui-lib/mred/private/mritem.rkt",
+      "sha256": "93a8bf9ff15003e0801375696b0fca91dbdeb6281c9b71d2fba139c61dc2a9a8",
+      "anchors": [
+        {
+          "anchor": "[get-label (lambda () label)]",
+          "line": 58
+        },
+        {
+          "anchor": "[command (lambda (e) (void (callback this e)))",
+          "line": 82
+        }
+      ]
+    },
+    {
+      "module": "mred/private/wxme/text.rkt",
+      "cached_source": "/tmp/17916293651791629365355-gui-lib/mred/private/wxme/text.rkt",
+      "sha256": "e092bd06a21f4779820fc5332e3411bdad5c367c689f6e2b61933a1af2d144ae",
+      "anchors": [
+        {
+          "anchor": "(def/public (call-clickback",
+          "line": 2548
+        }
+      ]
+    },
+    {
+      "module": "drracket/private/rep.rkt",
+      "cached_source": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/rep.rkt",
+      "sha256": "5e9c6f648447fb3004dc0d9f5e36a776a25a26aea6ff3dddfc421fe25c11df93",
+      "anchors": [
+        {
+          "anchor": "(define/public (get-user-namespace)",
+          "line": 905
+        },
+        {
+          "anchor": "(define/public (run-in-evaluation-thread thunk)",
+          "line": 1349
+        },
+        {
+          "anchor": "(define/public (get-error-ranges)",
+          "line": 624
+        },
+        {
+          "anchor": "(make-srcloc definitions-text",
+          "line": 771
+        }
+      ]
+    },
+    {
+      "module": "test-engine/test-tool.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/test-tool.rkt",
+      "sha256": "5128e5c3924ee8a094a4a0ab9f9d7b7d3279e5ea343027423ef0f6acfb224dee",
+      "anchors": [
+        {
+          "anchor": "(define/public (get-test-editor)",
+          "line": 183
+        },
+        {
+          "anchor": "(define/public (get-test-window)",
+          "line": 188
+        }
+      ]
+    },
+    {
+      "module": "test-engine/test-engine.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/test-engine.rkt",
+      "sha256": "cf16633c699b6c92ff0e52e65acec798472b4a26348a946f2b0cf4d54bf85bd5",
+      "anchors": [
+        {
+          "anchor": "(current-test-object (-> test-object?))",
+          "line": 14
+        },
+        {
+          "anchor": "(struct (unequal fail-reason)",
+          "line": 77
+        },
+        {
+          "anchor": "(define (run-tests!)",
+          "line": 198
+        }
+      ]
+    },
+    {
+      "module": "test-engine/syntax.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/syntax.rkt",
+      "sha256": "9ba5b34edf332497d695c7651218e26a68dc0011a5dad28885857374705c3d82",
+      "anchors": [
+        {
+          "anchor": "(syntax-line stx)",
+          "line": 36
+        },
+        {
+          "anchor": "(syntax-column stx)",
+          "line": 37
+        },
+        {
+          "anchor": "(syntax-position stx)",
+          "line": 38
+        },
+        {
+          "anchor": "(syntax-span stx)",
+          "line": 39
+        }
+      ]
+    },
+    {
+      "module": "test-engine/test-markup.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/test-markup.rkt",
+      "sha256": "f0e69b45dab218530df2b63bf7608c21aeb86a85b0e0a1f211642c8c404d5301",
+      "anchors": [
+        {
+          "anchor": "test-engine-m-of-n-tests-failed",
+          "line": 104
+        },
+        {
+          "anchor": "test-engine-in-at-line-column",
+          "line": 164
+        },
+        {
+          "anchor": "test-engine-both-tests-passed",
+          "line": 75
+        }
+      ]
+    },
+    {
+      "module": "test-engine/markup-gui.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/markup-gui.rkt",
+      "sha256": "b15a33eab2271e98a96e2c6c1d4b2d04cdfe475b856938f9177df5dd49c30080",
+      "anchors": [
+        {
+          "anchor": "(send text set-clickback",
+          "line": 19
+        },
+        {
+          "anchor": "(send current-rep highlight-errors",
+          "line": 46
+        }
+      ]
+    },
+    {
+      "module": "test-engine/test-display-gui.rkt",
+      "cached_source": "/tmp/17916276541791627654466-htdp-lib/test-engine/test-display-gui.rkt",
+      "sha256": "fd9979a1641d191e0b422cfc98718704efba960ce7e6827e5295524f3318a01b",
+      "anchors": [
+        {
+          "anchor": "(define (clear-test-display!",
+          "line": 35
+        },
+        {
+          "anchor": "(define/public (clear)",
+          "line": 147
+        },
+        {
+          "anchor": "(send editor delete 0 (send editor get-end-position))",
+          "line": 152
+        }
+      ]
+    }
+  ]
+}
