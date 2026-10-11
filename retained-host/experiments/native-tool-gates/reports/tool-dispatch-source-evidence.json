@@ -1,0 +1,146 @@
+{
+  "status": "cached official 9.3 source inspected; no runtime or native execution performed",
+  "sources": [
+    {
+      "cached_source": "/tmp/17916293651791629365355-gui-lib/mred/private/wx/common/queue.rkt",
+      "sha256": "9c2d8bebe1f0e2fb390393e22a64b1f90d43c80031c2e57e6619722c10d66298",
+      "anchors": [
+        {
+          "anchor": "(define main-eventspace (make-eventspace* (current-thread)))",
+          "lines": [
+            357
+          ]
+        },
+        {
+          "anchor": "(define current-eventspace (make-parameter main-eventspace))",
+          "lines": [
+            358
+          ]
+        },
+        {
+          "anchor": "(thread-cell-set! handler-thread-of main-eventspace)",
+          "lines": [
+            364
+          ]
+        },
+        {
+          "anchor": "[handler? (eq? (current-thread) (eventspace-handler-thread e))]",
+          "lines": [
+            475
+          ]
+        },
+        {
+          "anchor": "(define (queue-callback thunk [high? #t])",
+          "lines": [
+            526
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293681791629368373-gui-doc/scribblings/gui/startup.scrbl",
+      "sha256": "002233af7d205ddc4237c601c3d69aad1f4f1949e9269ef2c29249e30184c27b",
+      "anchors": [
+        {
+          "anchor": "The thread where @racketmodname[racket/gui/base] is instantiated also",
+          "lines": [
+            39
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293681791629368373-gui-doc/scribblings/gui/win-overview.scrbl",
+      "sha256": "cd5128ed7289417b129df76a193f5ee67739995e4bd502a7ed190e08d54a58e4",
+      "anchors": [
+        {
+          "anchor": "not create a new handler thread, but instead uses the thread where",
+          "lines": [
+            879
+          ]
+        },
+        {
+          "anchor": "Calling @racket[yield] with a",
+          "lines": [
+            895
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293661791629366537-racket-doc/scribblings/reference/parameters.scrbl",
+      "sha256": "22dd59f38f7176374076562e4450d43c5a7d42f933851e7f5a0a2ec3fba79d1c",
+      "anchors": [
+        {
+          "anchor": "When a new thread is created, the @tech{parameterization} for the new",
+          "lines": [
+            17
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293661791629366537-racket-doc/scribblings/reference/threads.scrbl",
+      "sha256": "342a7fedb5b62b88a7bc46ecad051cad829dfd078ca9031e0d501922a3e69d1c",
+      "anchors": [
+        {
+          "anchor": "@defproc[(thread-dead-evt [thd thread?]) evt?]",
+          "lines": [
+            252
+          ]
+        },
+        {
+          "anchor": "@defproc[(thread-wait [thd thread?]",
+          "lines": [
+            221
+          ]
+        },
+        {
+          "anchor": "@defproc[(kill-thread [thd thread?]) void?]",
+          "lines": [
+            169
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293641791629364966-drracket-core-lib/drracket/private/init.rkt",
+      "sha256": "d6254fb575a44a3e794104d802e9e9ae97194bab3a1fb91f13718447658b34a7",
+      "anchors": [
+        {
+          "anchor": "(define system-eventspace (current-eventspace))",
+          "lines": [
+            22
+          ]
+        }
+      ]
+    },
+    {
+      "cached_source": "/tmp/17916293641791629364966-drracket-core-lib/drracket/private/main.rkt",
+      "sha256": "2233daa9c6ce5686887b75f6698c4c150379f86889188416dce32292ad4fd24a",
+      "anchors": [
+        {
+          "anchor": ";; Queue a callback here to open the first frame",
+          "lines": [
+            966
+          ]
+        },
+        {
+          "anchor": "(queue-callback",
+          "lines": [
+            984
+          ]
+        }
+      ]
+    }
+  ],
+  "native_run": 38128639264,
+  "native_log_lines": [
+    405,
+    499,
+    593
+  ],
+  "previous_freeze_sha256": "845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624",
+  "previous_manifest_member_count": 20,
+  "previous_manifest_verified": true
+}

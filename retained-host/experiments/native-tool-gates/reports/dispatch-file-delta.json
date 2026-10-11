@@ -1,0 +1,37 @@
+{
+  "baseline_manifest_sha256": "845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624",
+  "baseline_all_20_members_still_verified": true,
+  "changed": [
+    "FROZEN-NATIVE-ALLOWLIST.json",
+    "reports/NATIVE-CLI-CONTRACT.md",
+    "reports/NATIVE-STOCK-TOOL-GATES.md",
+    "reports/stock-tool-host.json",
+    "reports/stock-tool-host.patch",
+    "scripts/prepare-stock-tool-host.py",
+    "tests/coordinator-standalone-source-test.py",
+    "tests/independent-native-host.rkt"
+  ],
+  "unchanged": [
+    "reports/COORDINATOR-STANDALONE-REPAIR.md",
+    "reports/portability-checks.json",
+    "reports/source-audit.log",
+    "reports/source-checks.log",
+    "reports/stock-tool-source-audit.json",
+    "scripts/audit-stock-tool-sources.py",
+    "tests/independent-native-stock-tools.rkt",
+    "tests/native-tool-coordinator-standalone.rkt",
+    "tests/native-tool-coordinator-test.rkt",
+    "tests/native-tool-coordinator.rkt",
+    "tests/reference/independent-native-host-0520.rkt",
+    "tests/stock-tool-source-test.py"
+  ],
+  "new": [
+    "reports/TOOL-DISPATCH-REPAIR.md",
+    "reports/dispatch-only-host.patch",
+    "reports/dispatch-source-checks.log",
+    "reports/tool-dispatch-source-evidence.json",
+    "tests/native-tool-dispatch-standalone.rkt",
+    "tests/native-tool-dispatch.rkt",
+    "tests/tool-dispatch-source-test.py"
+  ]
+}

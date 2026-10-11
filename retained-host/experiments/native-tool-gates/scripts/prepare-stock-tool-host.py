@@ -23,6 +23,8 @@ def derive(source):
     if actual != expected:
         raise ValueError(f"Unexpected frozen host bytes: {actual}; expected {expected}")
     additions = [
+        ('         json mrlib/switchable-button)',
+         '         json mrlib/switchable-button \"native-tool-dispatch.rkt\")'),
         ('(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")',
          '(define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")\n'
          '(define-runtime-path stock-tool-module "independent-native-stock-tools.rkt")'),
@@ -38,12 +40,17 @@ def derive(source):
                   frame (string->symbol follow-on-case)))))))''',
          '''          (cond
             [(member follow-on-case '("debugger" "macro-stepper" "teaching-tests"))
-             ;; Return each action to the GUI event loop before coordinator polling.
-             ((dynamic-require stock-tool-module 'run-native-tool-check!)
-              frame (string->symbol follow-on-case) on-gui wait-for
-              (lambda (created)
-                (unless (memq created created-frames)
-                  (set! created-frames (cons created created-frames)))))]
+             ;; Requiring racket/gui/base made this module's loading thread the
+             ;; initial GUI handler. Merely leaving on-gui does not leave it.
+             (parameterize ([current-eventspace (send frame get-eventspace)])
+               (call-in-tool-coordinator
+                (lambda ()
+                  ((dynamic-require stock-tool-module 'run-native-tool-check!)
+                   frame (string->symbol follow-on-case) on-gui wait-for
+                   (lambda (created)
+                     (unless (memq created created-frames)
+                       (set! created-frames (cons created created-frames))))))
+                yield))]
             [(equal? follow-on-case "stop-returning")
              ((dynamic-require returning-stop-module 'run-returning-stop-check!)
               frame on-gui wait-for)]
@@ -97,7 +104,7 @@ def main():
         "cases": ["debugger", "macro-stepper", "teaching-tests"],
         "native_execution": "pending",
         "base_modified": False,
-        "change_scope": "three surgical host substitutions; existing acceptance/READY/capture retained",
+        "change_scope": "four surgical host substitutions; stock-tool-only worker bridge; existing acceptance/READY/capture retained",
     }, indent=2) + '\n'
     outputs = {target: result,
                ROOT / "reports/stock-tool-host.patch": patch,

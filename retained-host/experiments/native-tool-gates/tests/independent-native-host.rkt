@@ -3,7 +3,7 @@
 ;; No substitute editor, evaluator, disabled tool, changed memory limit or mocked GUI.
 ;; The CI runner supplies a fresh preference profile and external timeout.
 (require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
-         json mrlib/switchable-button)
+         json mrlib/switchable-button "native-tool-dispatch.rkt")
 
 (define checks 0)
 (define-runtime-path follow-on-module "independent-native-workflows.rkt")
@@ -303,12 +303,17 @@
     (set! follow-on-result
           (cond
             [(member follow-on-case '("debugger" "macro-stepper" "teaching-tests"))
-             ;; Return each action to the GUI event loop before coordinator polling.
-             ((dynamic-require stock-tool-module 'run-native-tool-check!)
-              frame (string->symbol follow-on-case) on-gui wait-for
-              (lambda (created)
-                (unless (memq created created-frames)
-                  (set! created-frames (cons created created-frames)))))]
+             ;; Requiring racket/gui/base made this module's loading thread the
+             ;; initial GUI handler. Merely leaving on-gui does not leave it.
+             (parameterize ([current-eventspace (send frame get-eventspace)])
+               (call-in-tool-coordinator
+                (lambda ()
+                  ((dynamic-require stock-tool-module 'run-native-tool-check!)
+                   frame (string->symbol follow-on-case) on-gui wait-for
+                   (lambda (created)
+                     (unless (memq created created-frames)
+                       (set! created-frames (cons created created-frames))))))
+                yield))]
             [(equal? follow-on-case "stop-returning")
              ((dynamic-require returning-stop-module 'run-returning-stop-check!)
               frame on-gui wait-for)]

@@ -2,8 +2,8 @@ import pathlib,ast,unittest
 P=pathlib.Path(__file__).parent;S=(P/'run-stock-tools.py').read_text()
 class ToolAdapter(unittest.TestCase):
  def test_exact_source_and_complete_candidate(self):
-  for pin in ('845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624','3268ebaf470a47c70790055c447e692ae46e5eed6c653ff092fa9c8d566338cb','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
-  self.assertIn('len(allowed)==5',S);self.assertIn('BASE-0520-CONTENTS.json',S)
+  for pin in ('dd22f69d02559c3a8a1b72f1735ef7db942d7466553a9dbcc23650648e17a471','0004bfb07846650f169d12495abad2df2baa42daa543f3b9f46c6c6b77ad66be','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
+  self.assertIn('len(allowed)==7',S);self.assertIn('BASE-0520-CONTENTS.json',S)
  def test_fresh_each_mode_and_original_deadlines(self):
   self.assertIn('assert not home.exists()',S);self.assertIn("shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)",S)
   self.assertIn('deadline=time.monotonic()+60',S);self.assertNotIn('set-mib',S);self.assertNotIn('MEMORY_LIMIT_MIB',S)
@@ -29,6 +29,18 @@ class ToolAdapter(unittest.TestCase):
   self.assertTrue(valid(0,ok,False));self.assertTrue(valid(1,bad,True))
   for code,text,negative in [(1,ok,False),(0,ok+'\n'+ok,False),(0,bad,True),(124,bad,True),(-9,bad,True),(1,'import failed',True),(1,bad+'\n'+ok,True),(1,bad+'\nOPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE',True),(1,bad+'\n'+failure,True),(1,bad.replace('exn:test:check','exn:fail'),True),(1,bad.replace('actual=actual','actual=wrong'),True),(1,bad.replace('expected=deliberately-wrong','expected=actual'),True),(1,bad.replace(failure,''),True),(1,bad.replace(failure,' '+failure),True),(0,ok+'\n'+failure,False),(0,ok+'\nOPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE malformed',False)]:self.assertFalse(valid(code,text,negative))
 
+ def test_dispatch_strict_positive_and_typed_negative(self):
+  node=next(n for n in ast.parse(S).body if isinstance(n,ast.FunctionDef) and n.name=='coordinator_result_valid')
+  ns={};exec(compile(ast.Module(body=[node],type_ignores=[]),'<validator>','exec'),ns);valid=ns['coordinator_result_valid']
+  ok='OPENRACKET_NATIVE_TOOL_DISPATCH_OK distinct-thread strict-failures cleanup-complete'
+  failure='OPENRACKET_NATIVE_TOOL_DISPATCH_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
+  bad='OPENRACKET_NATIVE_TOOL_DISPATCH_INJECTING_FAILURE\n'+failure
+  self.assertTrue(valid(0,ok,False,'dispatch'));self.assertTrue(valid(1,bad,True,'dispatch'))
+  for code,out,negative in [(124,bad,True),(-9,bad,True),(0,bad,True),(1,bad+'\n'+failure,True),(1,bad.replace('exn:test:check','exn:fail'),True),(1,bad.replace('actual=actual','actual=wrong'),True),(1,bad.replace(failure,''),True),(1,bad.replace(failure,' '+failure),True),(0,ok+'\n'+failure,False),(0,ok.replace('distinct-thread ',''),False),(0,ok+'\n'+ok,False)]:self.assertFalse(valid(code,out,negative,'dispatch'))
+  self.assertFalse(valid(0,ok,False,'unknown'))
+  self.assertIn('coordinator_regression(mode,e,"dispatch")',S)
+  for name in ('native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt'):self.assertIn(repr(name),S)
+  self.assertIn("'--inject-wrong-result'",S)
  def test_independent_workflow_and_original_tree_witness(self):
   w=(P.parents[2]/'.github/workflows/retained-native.yml').read_text();self.assertIn("if: always() && steps.tools_prepare.outcome == 'success'",w)
   self.assertIn("tree('baseline',STOCK,'pristine')",S);self.assertIn("tree('baseline',MODERN,'selected-modern')",S)

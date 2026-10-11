@@ -1,0 +1,41 @@
+$ python3 scripts/prepare-stock-tool-host.py --check
+Pinned host, patch and metadata verified
+EXIT 0
+$ python3 tests/stock-tool-source-test.py
+test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok
+test_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok
+test_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok
+test_host_derivative_exact_and_base_unchanged (__main__.StockToolSourceTests.test_host_derivative_exact_and_base_unchanged) ... ok
+test_host_does_not_wrap_new_coordinator_in_gui_callback (__main__.StockToolSourceTests.test_host_does_not_wrap_new_coordinator_in_gui_callback) ... ok
+test_macro_waits_for_real_cursor_and_navigation_progress (__main__.StockToolSourceTests.test_macro_waits_for_real_cursor_and_navigation_progress) ... ok
+test_no_private_callback_bypass_or_fake_tool_models (__main__.StockToolSourceTests.test_no_private_callback_bypass_or_fake_tool_models) ... ok
+test_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexical_delimiters) ... ok
+test_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.013s
+
+OK
+EXIT 0
+$ python3 tests/coordinator-standalone-source-test.py
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK
+EXIT 0
+$ python3 tests/tool-dispatch-source-test.py
+test_bridge_preserves_real_eventspace_and_handler_pump (__main__.DispatchSourceTests.test_bridge_preserves_real_eventspace_and_handler_pump) ... ok
+test_bridge_returns_or_reraises_after_worker_death_and_always_joins (__main__.DispatchSourceTests.test_bridge_returns_or_reraises_after_worker_death_and_always_joins) ... ok
+test_headless_regression_models_initial_thread_as_handler (__main__.DispatchSourceTests.test_headless_regression_models_initial_thread_as_handler) ... ok
+test_injected_wrong_result_is_real_return_value_and_uncaught_typed_failure (__main__.DispatchSourceTests.test_injected_wrong_result_is_real_return_value_and_uncaught_typed_failure) ... ok
+test_new_racket_lexical_delimiters (__main__.DispatchSourceTests.test_new_racket_lexical_delimiters) ... ok
+test_nonexception_identity_assertion_is_outside_its_exact_call_catch (__main__.DispatchSourceTests.test_nonexception_identity_assertion_is_outside_its_exact_call_catch) ... ok
+test_only_import_and_stock_dispatch_changed_in_host (__main__.DispatchSourceTests.test_only_import_and_stock_dispatch_changed_in_host) ... ok
+test_original_tool_and_strict_coordinator_and_driver_bytes_preserved (__main__.DispatchSourceTests.test_original_tool_and_strict_coordinator_and_driver_bytes_preserved) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.002s
+
+OK
+EXIT 0

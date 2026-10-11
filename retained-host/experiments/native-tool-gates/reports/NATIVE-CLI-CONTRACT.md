@@ -1,8 +1,10 @@
 # Frozen native payload and portable CLI contract
 
-2026-10-11: preparation/support-only portability revision. The four native Racket
-files are byte-for-byte unchanged. There are still exactly three cases; native
-compilation, the Racket coordinator regression, and GUI execution remain pending.
+2026-10-11: source-only initial-handler dispatch repair. Only the host import and
+stock-tool dispatch branch change, with two new bridge/driver modules. There are
+still exactly three tool cases. New compilation/headless/native validation is
+pending. `TOOL-DISPATCH-REPAIR.md` is the current finding and refusal contract;
+older standalone repair notes are historical evidence.
 
 ## Frozen native integration allowlist
 
@@ -12,8 +14,11 @@ compilation, the Racket coordinator regression, and GUI execution remain pending
 - `tests/independent-native-stock-tools.rkt`
 - `tests/native-tool-coordinator.rkt`
 - `tests/native-tool-coordinator-test.rkt`
+- `tests/native-tool-coordinator-standalone.rkt`
+- `tests/native-tool-dispatch.rkt`
+- `tests/native-tool-dispatch-standalone.rkt`
 
-Integrate only these four native files into a **new complete candidate** based on
+Integrate only these seven native files into a **new complete candidate** based on
 the preserved tested source. This is not a standalone DrRacket distribution: the
 host's unchanged existing runtime-path dependencies and the prepared official
 runtime/addon setup must still be present. The vendored base fixture is input
@@ -26,9 +31,12 @@ From this handoff's root, on any machine with Python 3:
 ```sh
 python3 scripts/prepare-stock-tool-host.py --check
 python3 tests/stock-tool-source-test.py
+python3 tests/coordinator-standalone-source-test.py
+python3 tests/tool-dispatch-source-test.py
 ```
 
-Both default to `tests/reference/independent-native-host-0520.rkt`, pinned to
+The preparation and stock-tool source commands default to
+`tests/reference/independent-native-host-0520.rkt`, pinned to
 SHA-256 `5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448`.
 Neither searches for a sibling freeze. The input's exact bytes must match; CRLF
 or other byte changes are rejected. To verify another explicitly supplied copy:
@@ -68,19 +76,30 @@ registration, evaluation settings, resource limits, and accepted overlay setting
 Reader check: it parses source without loading the native host or starting a GUI.
 
 ```sh
-"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -e '(parameterize ([read-accept-reader #t]) (for ([f (in-vector (current-command-line-arguments))]) (call-with-input-file f (lambda (in) (read-syntax f in) (unless (eof-object? (read-syntax f in)) (error "Extra form after module" f))))))' -- tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt
-"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l raco -- test tests/native-tool-coordinator-test.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -e '(parameterize ([read-accept-reader #t]) (for ([f (in-vector (current-command-line-arguments))]) (call-with-input-file f (lambda (in) (read-syntax f in) (unless (eof-object? (read-syntax f in)) (error "Extra form after module" f))))))' -- tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-coordinator-standalone.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-coordinator-standalone.rkt --inject-outer-failure
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-dispatch-standalone.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" tests/native-tool-dispatch-standalone.rkt --inject-wrong-result
 ```
 
-The coordinator regression is genuinely headless: it uses a separate ordinary
+Run each direct command under the existing 30-second headless supervisor. The
+injected commands must fail with their exact typed diagnostics and no success
+marker; do not treat them as ordinary shell success steps or invoke these tests
+through `raco test`. See `TOOL-DISPATCH-REPAIR.md` and the historical standalone
+repair report for their exact accepted outputs.
+
+The original coordinator regression is genuinely headless: it uses a separate ordinary
 handler thread to verify RackUnit failures propagate from action/readiness
 callbacks, reject wrong-thread use, and return actions before polling. It does
-not establish any native GUI behavior.
+not establish any native GUI behavior. The new dispatch regression instead
+models the initial thread as handler and uses the real new bridge to create the
+separate coordinator, exercising value/exception handoff and worker cleanup.
 
 ## 4. Compile on the native runner
 
 ```sh
-"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l raco -- make tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt
+"$RACKET" -A "$ADDON" -R "$COMPILED_ROOTS" -l raco -- make tests/native-tool-coordinator.rkt tests/native-tool-coordinator-test.rkt tests/independent-native-stock-tools.rkt tests/independent-native-host.rkt tests/native-tool-coordinator-standalone.rkt tests/native-tool-dispatch.rkt tests/native-tool-dispatch-standalone.rkt
 ```
 
 A reader pass does not replace compilation; compilation does not replace native
@@ -125,7 +144,7 @@ profile. The caller owns independent profile/READY paths and all captures.
   fully return before polling; RackUnit's raising handler is parameterized inside
   the actual GUI callback, including predicates.
 - The inherited host has no added per-callback timeout. Preserve the integration
-  owner's existing external process timeout for stuck GUI actions/modals. This
+  owner's existing 60-second external process timeout for stuck GUI actions/modals. This
   handoff neither increases nor substitutes that bound.
 - Existing final paint settling remains 500 ms.
 

@@ -1,5 +1,11 @@
 # Native stock-tool acceptance candidate
 
+Current 09:39 revision: see `TOOL-DISPATCH-REPAIR.md` for the observed native
+initial-handler dispatch defect, host-only repair, new distinct-thread regression
+and verification status. `NATIVE-CLI-CONTRACT.md` and the seven-file allowlist are
+the current execution contract. The sections below describe the original tool
+gates and their historical preparation status.
+
 Prepared 2026-10-11. This is a new, unpublished candidate. It does not recover or
 claim results from the lost follow-on candidates.
 

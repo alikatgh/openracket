@@ -1,6 +1,6 @@
 {
   "base_host_sha256": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
-  "candidate_host_sha256": "2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5",
+  "candidate_host_sha256": "7e1865190e3052fcbdf6f011822b17ecb1857eefe5fd8a46d9bc2516c65bb5f7",
   "cases": [
     "debugger",
     "macro-stepper",
@@ -8,5 +8,5 @@
   ],
   "native_execution": "pending",
   "base_modified": false,
-  "change_scope": "three surgical host substitutions; existing acceptance/READY/capture retained"
+  "change_scope": "four surgical host substitutions; stock-tool-only worker bridge; existing acceptance/READY/capture retained"
 }

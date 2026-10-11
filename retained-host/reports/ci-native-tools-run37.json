@@ -1,0 +1,140 @@
+{
+  "run_id": 38128639264,
+  "job_id": 114438170568,
+  "commit": "01c9be7c2123910c2a97bd7a9e8bb1796d3aaa23",
+  "conclusion": "failure",
+  "log_sha256": "54c561ff0f9e4119ac0adf8c19722d69bf925ee4b66b5799afbfdfdfc9d6f36c",
+  "rows": [
+    {
+      "name": "pristine entire original runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable exact host reproduction",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable stock-tool source preservation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Standalone driver source preservation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock-tool adapter isolation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Complete native candidate assembled from exact0520 plus five reviewed test files",
+      "passed": true,
+      "detail": "159 source files; production scripts unchanged"
+    },
+    {
+      "name": "Independent modern-only tool runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-modern entire original runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual unchanged setup for modern tool registration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock explicit native tool callers and runtime-path modules compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock standalone coordinator positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone coordinator injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern explicit native tool callers and runtime-path modules compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "modern standalone coordinator positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone coordinator injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "tools-pristine-stock-debugger native real-tool gate",
+      "passed": false,
+      "detail": "exit=1 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=failed case=None"
+    },
+    {
+      "name": "tools-pristine-stock-debugger native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 0f96b1bf36f6e31dc8416f13cea2f49cbce04a10e995af709c81b1b8d4fab7b1"
+    },
+    {
+      "name": "tools-modern-dark-debugger comparison not run",
+      "passed": false,
+      "detail": "Corresponding actual stock gate failed; other independent cases continue"
+    },
+    {
+      "name": "tools-pristine-stock-macro-stepper native real-tool gate",
+      "passed": false,
+      "detail": "exit=1 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=failed case=None"
+    },
+    {
+      "name": "tools-pristine-stock-macro-stepper native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) a09d3604b89d1f3d78c8996390ab202685adec2d47700bef6aff8a7fb8927211"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper comparison not run",
+      "passed": false,
+      "detail": "Corresponding actual stock gate failed; other independent cases continue"
+    },
+    {
+      "name": "tools-pristine-stock-teaching-tests native real-tool gate",
+      "passed": false,
+      "detail": "exit=1 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=failed case=None"
+    },
+    {
+      "name": "tools-pristine-stock-teaching-tests native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 57646c912e1d586e2a73f0a16a5a11c0de35491be5d4d3cf06497228fb2ac213"
+    },
+    {
+      "name": "tools-modern-dark-teaching-tests comparison not run",
+      "passed": false,
+      "detail": "Corresponding actual stock gate failed; other independent cases continue"
+    },
+    {
+      "name": "pristine entire original runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-modern entire original runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "failure": "all three stock tool callers refused coordinator on GUI handler before tool actions; corresponding modern cases skipped"
+}

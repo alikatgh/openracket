@@ -11,11 +11,10 @@ source_tests = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(source_tests)
 
 class StandaloneSourceTests(unittest.TestCase):
-    def test_original_regression_wrapper_host_and_tools_unchanged(self):
+    def test_original_regression_wrapper_and_tools_unchanged(self):
         pins = {
             'native-tool-coordinator-test.rkt': '72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d',
             'native-tool-coordinator.rkt': 'a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384',
-            'independent-native-host.rkt': '2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5',
             'independent-native-stock-tools.rkt': '06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884',
         }
         for name, digest in pins.items():

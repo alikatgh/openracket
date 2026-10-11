@@ -36,28 +36,30 @@ def command(name,args,environment=None,timeout=120,required=True):
  if code and required:raise RuntimeError(name+' failed')
  return code==0
 
-def coordinator_result_valid(code,output,negative):
+def coordinator_result_valid(code,output,negative,kind="coordinator"):
+ if kind not in ("coordinator","dispatch"):return False
+ prefix="OPENRACKET_NATIVE_TOOL_"+kind.upper()
  lines=output.splitlines()
- success='OPENRACKET_NATIVE_TOOL_COORDINATOR_OK strict-failures cleanup-complete'
- injection='OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE'
- failure_prefix='OPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE'
+ success=prefix+('_OK strict-failures cleanup-complete' if kind=='coordinator' else '_OK distinct-thread strict-failures cleanup-complete')
+ injection=prefix+'_INJECTING_FAILURE'
+ failure_prefix=prefix+'_FAILURE'
  failure=failure_prefix+' exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
  if negative:
-  return code>0 and code!=124 and lines.count(injection)==1 and output.count(injection)==1 and 'OPENRACKET_NATIVE_TOOL_COORDINATOR_OK' not in output and lines.count(failure)==1 and output.count(failure_prefix)==1
- return code==0 and lines.count(success)==1 and output.count('OPENRACKET_NATIVE_TOOL_COORDINATOR_OK')==1 and injection not in output and failure_prefix not in output
+  return code>0 and code!=124 and lines.count(injection)==1 and output.count(injection)==1 and prefix+'_OK' not in output and lines.count(failure)==1 and output.count(failure_prefix)==1
+ return code==0 and lines.count(success)==1 and output.count(prefix+'_OK')==1 and injection not in output and failure_prefix not in output
 
-def coordinator_regression(mode,e):
+def coordinator_regression(mode,e,kind="coordinator"):
  for negative in (False,True):
-  label=mode+' standalone coordinator '+('injected-negative' if negative else 'positive')
-  args=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],str(PROOF/'tests/native-tool-coordinator-standalone.rkt')]
-  if negative:args.append('--inject-outer-failure')
+  label=mode+' standalone '+kind+' '+('injected-negative' if negative else 'positive')
+  args=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],str(PROOF/'tests'/('native-tool-'+kind+'-standalone.rkt'))]
+  if negative:args.append('--inject-outer-failure' if kind=='coordinator' else '--inject-wrong-result')
   print('::group::'+label,flush=True)
   p=subprocess.Popen(args,env=e,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
   try:output,_=p.communicate(timeout=30);code=p.returncode
   except subprocess.TimeoutExpired:
    terminate_group(p);output,_=p.communicate(timeout=5);code=124
   print(output,flush=True)
-  passed=coordinator_result_valid(code,output,negative)
+  passed=coordinator_result_valid(code,output,negative,kind)
   record(label,passed,'exit='+str(code)+'; strict marker and outer-failure behavior checked')
   print('::endgroup::',flush=True)
 
@@ -123,17 +125,18 @@ def native_case(case,modern=False):
 try:
  if PHASE=='prepare':
   tree('baseline',STOCK,'pristine')
-  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624'
-  members=json.loads(m.read_text());assert len(members)==20
+  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='dd22f69d02559c3a8a1b72f1735ef7db942d7466553a9dbcc23650648e17a471'
+  members=json.loads(m.read_text());assert len(members)==28
   for name,h in members.items():
    p=EXP/name;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==h
   command('Portable exact host reproduction',[sys.executable,EXP/'scripts/prepare-stock-tool-host.py','--check'])
   command('Portable stock-tool source preservation',[sys.executable,EXP/'tests/stock-tool-source-test.py'])
   command('Standalone driver source preservation',[sys.executable,EXP/'tests/coordinator-standalone-source-test.py'])
+  command('Dispatch bridge and exact caller source preservation',[sys.executable,EXP/'tests/tool-dispatch-source-test.py'])
   command('Stock-tool adapter isolation tests',[sys.executable,ROOT/'scripts/ci/test-stock-tools-adapter.py'])
   CONTRACT.source_copy(ROOT,PROOF,'2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',155)
-  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='3268ebaf470a47c70790055c447e692ae46e5eed6c653ff092fa9c8d566338cb'
-  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==5
+  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='0004bfb07846650f169d12495abad2df2baa42daa543f3b9f46c6c6b77ad66be'
+  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==7
   baseline=json.loads((PROOF/'CONTENTS-SHA256.json').read_text());shutil.copy2(PROOF/'CONTENTS-SHA256.json',PROOF/'BASE-0520-CONTENTS.json')
   for name,h in allowed.items():
    assert hashlib.sha256((EXP/name).read_bytes()).hexdigest()==h
@@ -141,11 +144,11 @@ try:
    if dest.exists():dest.unlink()
    shutil.copy2(EXP/name,dest);baseline[name]=h
   (PROOF/'CONTENTS-SHA256.json').write_text(json.dumps(baseline,indent=2)+'\n')
-  record('Complete native candidate assembled from exact0520 plus five reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
+  record('Complete native candidate assembled from exact0520 plus seven reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
   command('Independent modern-only tool runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','native-tools'],os.environ.copy(),180)
   tree('baseline',MODERN,'selected-modern')
   command('Actual unchanged setup for modern tool registration',['/bin/sh',PROOF/'scripts/setup-openracket.sh','--install'],env('setup',True,True),720)
-  compile_files=[PROOF/'tests'/n for n in ('native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
+  compile_files=[PROOF/'tests'/n for n in ('native-tool-dispatch.rkt','native-tool-dispatch-standalone.rkt','native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
   for mode,modern in [('stock',False),('modern',True)]:
    e=env('compile-'+mode,modern)
    if modern:
@@ -153,6 +156,7 @@ try:
    prefix=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],'-l','raco','--']
    command(mode+' explicit native tool callers and runtime-path modules compile',prefix+['make',*compile_files],e,180)
    coordinator_regression(mode,e)
+   coordinator_regression(mode,e,"dispatch")
  elif PHASE=='cases':
   for case in ('debugger','macro-stepper','teaching-tests'):
    if native_case(case):native_case(case,True)

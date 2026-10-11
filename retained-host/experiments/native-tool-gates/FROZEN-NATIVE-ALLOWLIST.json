@@ -1,20 +1,22 @@
 {
-  "status": "diagnostic-only working copy; repaired driver compilation and execution pending",
+  "status": "source-only dispatch repair candidate; Racket compile and native execution pending",
   "native_cases": [
     "debugger",
     "macro-stepper",
     "teaching-tests"
   ],
   "files": {
-    "tests/independent-native-host.rkt": "2673ccd7ccd62d3dd9b43674120bf20b704b80684faed6487d7383bd317de4f5",
+    "tests/independent-native-host.rkt": "7e1865190e3052fcbdf6f011822b17ecb1857eefe5fd8a46d9bc2516c65bb5f7",
     "tests/independent-native-stock-tools.rkt": "06a9734b272fcfa9a62b4d92e43f3a2f45692b26c22e36e9e9d526482490e884",
     "tests/native-tool-coordinator.rkt": "a86f91cd5d55b27e1f9f7c535f387d935791daa7ba41b2934e6e3810fecf6384",
     "tests/native-tool-coordinator-test.rkt": "72e040a7e14997477a420024714b810b98f6ecd52dc66ef510c6f9572ee1866d",
-    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949"
+    "tests/native-tool-coordinator-standalone.rkt": "1d35e1ad291c45fbfe850aaf75063cf29eb1dc9a00eff8aabd421503859c0949",
+    "tests/native-tool-dispatch.rkt": "5414d0b518fc111f0e5f53ca4367b0e9917dd3769731cae1bbd1b5e9c213215b",
+    "tests/native-tool-dispatch-standalone.rkt": "cceb8a9243159c5848d179ff1c167ddd4095fe7b0e386496b0f01bba67bd75f3"
   },
   "base_host_fixture": {
     "path": "tests/reference/independent-native-host-0520.rkt",
     "sha256": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448"
   },
-  "scope": "Only these five files belong to the native integration allowlist: the original four byte-unchanged files plus the standalone regression driver with injected-failure evidence rendering. Python preparation, vendored input, source evidence and handoff docs are validation support. This is a working copy, not a new native pass."
+  "scope": "Seven native integration files: host with stock-tool-only dispatcher repair, four byte-unchanged original tool/coordinator/driver files, and two new headless bridge/driver files. No runtime or product source changed."
 }
