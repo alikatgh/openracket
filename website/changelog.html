@@ -21,6 +21,12 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <section aria-labelledby="light-quit-title">
+      <h2 id="light-quit-title">2026-10-11: Mac light tools and Quit pass</h2>
+      <p>All 204 result rows in <a href="https://github.com/alikatgh/openracket/actions/runs/38154975508">run 38154975508</a> passed. These cover 12 native cases plus preparation, controls and preservation checks, not 204 separate workflows.</p>
+      <p>Six stock/modern-light cases checked real Debugger stepping/recovery, Macro Stepper navigation/recovery and teaching-test failure links/corrected reruns, with applied light appearance verified. Six stock/modern-dark cases checked clean Quit, Cancel then Save, and Cancel then Don't Save. Actual focus witnesses, the installed application Quit handler and actual dialog callbacks led to natural exit 0 and exact expected disk bytes. Physical Command-Q/menu input and Finder delivery were not tested.</p>
+      <p>Original runtime/preferences witnesses passed. The direct-launch runner's absent <code>.rkt</code> handler stayed <code>null</code> → <code>null</code>; the earlier existing Script Editor/Launch Services proof remains separate. The preview core is unchanged, with no speed claim or self-contained binary added. Full official Racket remains required; the app is tethered, unsigned and not notarized. Gatekeeper and further native Windows/Linux acceptance remain pending. <a href="https://github.com/alikatgh/openracket/blob/7b057270e47fa11e01a62b039adb1bcac7bc6a59/reports/FUNCTIONAL-MAC-38154975508.md">Reviewed report</a> · <a href="blog.html#light-quit-title">Evidence and test boundaries</a>.</p>
+    </section>
     <section aria-labelledby="native-tools-title">
       <h2 id="native-tools-title">2026-10-11: Native Mac tool workflows pass</h2>
       <p>All 57 acceptance rows in <a href="https://github.com/alikatgh/openracket/actions/runs/38140896349">run 38140896349</a> passed. Six fresh GUI cases exercised the real Debugger, Macro Stepper and teaching-test report in pristine stock/light and modern/dark.</p>
@@ -29,7 +35,7 @@
         <li>Macro Stepper: Next/End/Previous/Start navigation, changed derivation, normal close and ordinary Run recovery.</li>
         <li>Teaching tests: a real failure-report source link selected the exact failing form; an unsaved correction and real Run changed one failure to two passing tests.</li>
       </ul>
-      <p>The existing preview core and both complete 26,838-entry original-runtime trees were unchanged. These small cases used fresh stock 128 MiB settings; the separate fresh-preview 256 MiB capacity default is unchanged. This milestone adds no speed claim or full compatibility claim. Normal Quit/unsaved prompts, modern light mode and native Windows coverage remain pending. <a href="blog.html#native-tools-title">Evidence and test boundaries</a>.</p>
+      <p>The existing preview core and both complete 26,838-entry original-runtime trees were unchanged. These small cases used fresh stock 128 MiB settings; the separate fresh-preview 256 MiB capacity default is unchanged. This milestone adds no speed claim or full compatibility claim. <a href="#light-quit-title">Later acceptance</a> adds modern light mode and the tested Quit/unsaved paths; native Windows coverage remains pending. <a href="blog.html#native-tools-title">Evidence and test boundaries</a>.</p>
     </section>
     <section aria-labelledby="native-app-title">
       <h2 id="native-app-title">2026-10-11: Native Mac app launch acceptance</h2>

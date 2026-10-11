@@ -194,6 +194,71 @@ class SiteTests(unittest.TestCase):
         self.assertIn('57 acceptance rows', readme)
         self.assertIn('38140896349', readme)
 
+    def test_light_quit_milestone_scope(self):
+        for path in [ROOT.parent / 'README.md', *[ROOT / name for name in
+                     ['index.html', 'changelog.html', 'blog.html']]]:
+            with self.subTest(page=path.name):
+                source = path.read_text()
+                for text in ['204 result rows', '12 native cases',
+                             'stock/modern-light', 'stock/modern-dark',
+                             'preparation, controls and preservation checks',
+                             'installed', 'actual dialog', 'disk bytes',
+                             'Command-Q', 'menu', 'Finder',
+                             'no speed claim or self-contained binary',
+                             'light-quit-title']:
+                    self.assertIn(text, source)
+                self.assertLess(source.index('38154975508'), source.index('38140896349'))
+        blog = (ROOT / 'blog.html').read_text()
+        for text in ['90 light/tools rows and 114 Quit rows',
+                     'not 204 distinct workflows', 'actual Cocoa Aqua',
+                     'Actual focus and edit-target witnesses',
+                     'exited naturally with code 0',
+                     'Cancel then Save', "Cancel then Don't Save",
+                     '<code>null</code> → <code>null</code>',
+                     'existing Script Editor default through Launch Services',
+                     "combined run's original-preferences witness",
+                     'confirmation preference was enabled', 'save failures',
+                     'historical cause remains unresolved',
+                     'unsigned and not notarized', 'Gatekeeper', 'Windows/Linux']:
+            self.assertIn(text, blog)
+
+    def test_light_quit_evidence_links(self):
+        run = 'https://github.com/alikatgh/openracket/actions/runs/38154975508'
+        report = ('https://github.com/alikatgh/openracket/blob/'
+                  '7b057270e47fa11e01a62b039adb1bcac7bc6a59/'
+                  'reports/FUNCTIONAL-MAC-38154975508.md')
+        for name in ['index.html', 'changelog.html', 'blog.html']:
+            with self.subTest(page=name):
+                links = [a['href'] for t, a in Document((ROOT / name).read_text()).elements
+                         if t == 'a' and 'href' in a]
+                self.assertIn(run, links)
+                self.assertIn(report, links)
+        readme = (ROOT.parent / 'README.md').read_text()
+        for url in [run, report]:
+            self.assertIn(f']({url})', readme)
+        self.assertIn('](website/blog.html#light-quit-title)', readme)
+        self.assertIn('id="light-quit-title"', (ROOT / 'blog.html').read_text())
+        self.assertIn('https://github.com/alikatgh/openracket/commit/'
+                      '96fe2b7f3c614f48a840881b02639f8161f96c38',
+                      (ROOT / 'blog.html').read_text())
+
+    def test_superseded_pending_claims(self):
+        stale = [
+            'modern light mode, normal Quit/unsaved prompts and full compatibility remain pending',
+            'Modern light mode and normal Quit/unsaved prompts remain pending',
+            'Normal Quit/unsaved prompts, modern light mode and native Windows coverage remain pending',
+            'Modern light mode, normal Quit/unsaved-document prompts and native Windows acceptance remain pending',
+            'native preservation of an initially unset handler remains unverified',
+            'an unset-handler baseline and transferred-app Gatekeeper behavior remain unverified',
+        ]
+        for path in [ROOT.parent / 'README.md', *[ROOT / name for name in
+                     ['index.html', 'changelog.html', 'blog.html']]]:
+            with self.subTest(page=path.name):
+                for text in stale:
+                    self.assertNotIn(text, path.read_text())
+        self.assertIn('Launch Services acceptance from that baseline remains unverified',
+                      (ROOT / 'blog.html').read_text())
+
     def test_css_delimiters(self):
         self.assertEqual(self.css.count('{'), self.css.count('}'))
         self.assertEqual(self.css.count('('), self.css.count(')'))
