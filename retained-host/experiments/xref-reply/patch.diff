@@ -1,0 +1,55 @@
+--- official-9.3/xref.rkt
++++ experiment/xref.rkt
+@@ -4,6 +4,11 @@
+          racket/match)
+ (provide get-index-entry-info
+          flush-index-entry-cache)
++
++;; OpenRacket experiment: default-off one-shot replies, no new lookup cache.
++(define openracket-xref-reply-cell-enabled?
++  (equal? (getenv "OPENRACKET_XREF_REPLY_CELL") "1"))
++(provide openracket-xref-reply-cell-enabled?)
+ 
+ (define xref (load-collections-xref))
+ 
+@@ -34,10 +39,17 @@
+             (parameterize ([current-directory cd])
+               (and xref
+                    (hash-ref! cache binding-info (λ () (lookup-binding-info binding-info))))))
+-          (thread
+-           (λ ()
+-             (sync (channel-put-evt resp-chan resp)
+-                   nack-evt)))]
++          (if openracket-xref-reply-cell-enabled?
++              (begin
++                ;; Here resp-chan is a private box and nack-evt is its ready
++                ;; semaphore. Accepted requests retain stock lookup/cache work,
++                ;; even if their caller has since been canceled.
++                (set-box! resp-chan resp)
++                (semaphore-post nack-evt))
++              (thread
++               (λ ()
++                 (sync (channel-put-evt resp-chan resp)
++                       nack-evt))))]
+          [#f (set! cache (make-hash))])
+        (loop)))))
+ 
+@@ -49,9 +61,15 @@
+        (sync
+         (nack-guard-evt
+          (λ (nack-evt)
+-           (define resp-chan (make-channel))
+-           (channel-put req-chan (list binding-info (current-directory) resp-chan nack-evt))
+-           resp-chan)))))
++           (define resp-chan
++             (if openracket-xref-reply-cell-enabled? (box #f) (make-channel)))
++           (define ready
++             (and openracket-xref-reply-cell-enabled? (make-semaphore 0)))
++           (channel-put req-chan
++                        (list binding-info (current-directory) resp-chan (or ready nack-evt)))
++           (if ready
++               (wrap-evt ready (λ (_) (unbox resp-chan)))
++               resp-chan))))))
+ 
+ (define (flush-index-entry-cache)
+   (unless (thread-dead? thd)

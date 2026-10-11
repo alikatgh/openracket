@@ -1,0 +1,27 @@
+test_all_four_captures_require_matching_timeout_bounds (test_compare_trace.CompareTraceTests.test_all_four_captures_require_matching_timeout_bounds) ... ok
+test_default_off_requires_unset_flag (test_compare_trace.CompareTraceTests.test_default_off_requires_unset_flag) ... ok
+test_duplicate_non_docs_entry_is_retained (test_compare_trace.CompareTraceTests.test_duplicate_non_docs_entry_is_retained) ... ok
+test_equal_ordered_logical_trace_passes (test_compare_trace.CompareTraceTests.test_equal_ordered_logical_trace_passes) ... ok
+test_every_rename_query_requires_actual_boolean_response (test_compare_trace.CompareTraceTests.test_every_rename_query_requires_actual_boolean_response) ... ok
+test_failed_or_incomplete_capture_cannot_pass (test_compare_trace.CompareTraceTests.test_failed_or_incomplete_capture_cannot_pass) ... ok
+test_false_or_numeric_activation_is_not_enabled (test_compare_trace.CompareTraceTests.test_false_or_numeric_activation_is_not_enabled) ... ok
+test_handler_source_pin_is_required (test_compare_trace.CompareTraceTests.test_handler_source_pin_is_required) ... ok
+test_invalid_timeout_evidence_fails (test_compare_trace.CompareTraceTests.test_invalid_timeout_evidence_fails) ... ok
+test_labels_paths_definition_tags_and_anchors_are_not_elided (test_compare_trace.CompareTraceTests.test_labels_paths_definition_tags_and_anchors_are_not_elided) ... ok
+test_missing_docs_fails (test_compare_trace.CompareTraceTests.test_missing_docs_fails) ... ok
+test_rename_answers_are_compared (test_compare_trace.CompareTraceTests.test_rename_answers_are_compared) ... ok
+test_reordered_candidate_is_not_sorted (test_compare_trace.CompareTraceTests.test_reordered_candidate_is_not_sorted) ... ok
+test_stock_instability_blocks_before_candidate_interpretation (test_compare_trace.CompareTraceTests.test_stock_instability_blocks_before_candidate_interpretation) ... ok
+test_unicode_positions_are_character_positions (test_compare_trace.CompareTraceTests.test_unicode_positions_are_character_positions) ... ok
+test_apply_idempotent_revert (test_source.ApplyTests.test_apply_idempotent_revert) ... ok
+test_refuse_hardlink (test_source.ApplyTests.test_refuse_hardlink) ... ok
+test_refuse_root_symlink (test_source.ApplyTests.test_refuse_root_symlink) ... ok
+test_refuse_wrong_target_and_missing_ack (test_source.ApplyTests.test_refuse_wrong_target_and_missing_ack) ... ok
+test_exact_bytes_and_only_three_edits (test_source.SourceTests.test_exact_bytes_and_only_three_edits) ... ok
+test_lookup_cache_flush_and_dead_check_unchanged (test_source.SourceTests.test_lookup_cache_flush_and_dead_check_unchanged) ... ok
+test_reject_byte_different_source (test_source.SourceTests.test_reject_byte_different_source) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.118s
+
+OK

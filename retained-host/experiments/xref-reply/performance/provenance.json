@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "baseline": "publication-17/retained-host/experiments/color-budget/contention",
+  "baseline_sha256": {
+    "activation.rkt": "c73dbb0aa51169ad73f074181443c2e7a4e1c9580aaeebb9efbf382d892a4e48",
+    "budget-activation.rkt": "8e7dd28acd59a54e1a0791df49fcc90550d8b0b8cee32884d1d95b69a60d9230",
+    "diagnostics.rkt": "ae9d15a7f556a293a188ae2633157ab9d61133b9c30453ce69965f5df6e15319",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "retained-host.rkt": "01e7ab70522d84d32d1a4f63d629aeb4f6de4655ac3101b4f303ba90f401ebb4",
+    "run.py": "3225d6489e786490e462c16fb14d8212129c2d3368ec94a2ca53cf9de87c3fe3",
+    "settings.rkt": "728c9b4afb53ef6a5e117dbdc7118a5b64744457dffffe65a6b002fb14b7a950",
+    "test_harness.py": "bb70969ce0d809a6fe64f49d54f73c88834646c6cddc1ecd2a096a3bbf81f087"
+  },
+  "candidate_scope": "Only xref reply cell plus common compact observer in matched arms; no other candidate",
+  "stock_xref_sha256": "acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7",
+  "candidate_xref_sha256": "d2db0c6860040909c31c8fa9f7945ad5b94da3a03e751791447faeee7c27105f",
+  "native_status": "not yet compiled or executed in this workspace",
+  "local_checks": "17 Python tests passed",
+  "new_files": [
+    "validate_observation.py",
+    "test_observation.py",
+    "README.md"
+  ]
+}

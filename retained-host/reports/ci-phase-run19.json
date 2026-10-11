@@ -1,0 +1,232 @@
+{
+  "run": 38102050130,
+  "commit": "f0d11231c92e9a8f7f955657673be9eb531607f7",
+  "job": 114359821216,
+  "conclusion": "success",
+  "phase_manifest": "d7187ac4708dde9ae5de9c09ce5e369aacd1fcfd9257a16c6c827a94a7362ace",
+  "log_sha256": "6cb3cd0de23f282bb6019d2f436e531abaac5613678ad2e942042f1eed6b6e47",
+  "results": [
+    {
+      "name": "Frozen diagnostic source hashes",
+      "passed": true,
+      "detail": "d7187ac4708dde9ae5de9c09ce5e369aacd1fcfd9257a16c6c827a94a7362ace"
+    },
+    {
+      "name": "Readable evidence transport unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dedicated independent stock diagnostic clone",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Source boundaries and real-place mock protocol checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Read-only support and preference restore assertions",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile supplied support capture and replay drivers",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pinned diagnostic insertions and actual clone compilation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Generate unchanged deterministic fixture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual native edited-snapshot request and registry capture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Two same-process actual worker expansion replays",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual capture and both replay terminals match",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Separate phase attribution evidence completeness",
+      "passed": true,
+      "detail": "[\"coarse_thread_context_available\", \"coarse_thread_context_available\"]"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime unchanged after diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "source_tests_passed": 61,
+  "transport_tests_passed": 12,
+  "actual_child_limit_bytes": 134217728,
+  "cleanup": {
+    "accepted": true,
+    "control_acknowledgement": "stopped",
+    "control_stopped": true,
+    "diagnostic_custodian_shutdown": true,
+    "errors": [],
+    "place_dead": true,
+    "root_logger_stopped": true
+  },
+  "supervisor_status": "ok",
+  "trials": [
+    {
+      "trial": 1,
+      "terminal": {
+        "explicit_out_of_memory": true,
+        "message": "Expansion thread terminated unexpectedly (out of memory)",
+        "tag": "abnormal-termination"
+      },
+      "terminal_matches_capture": true,
+      "elapsed_ms": 12099.978,
+      "attribution_evidence": {
+        "acceptance_scope": "Registrations and approximate stack evidence only; replay/OOM success alone is not attribution success",
+        "monitor_thread_registered": true,
+        "status": "coarse_thread_context_available",
+        "usable_monitor_frames": true,
+        "working_thread_registered": true
+      },
+      "phases": [
+        "worker-start",
+        "monitor-start",
+        "worker-phase-09",
+        "worker-phase-10",
+        "worker-phase-11",
+        "go-send-expanded",
+        "go-wait-for-monitor",
+        "monitor-build-trace-start"
+      ],
+      "thread_sample_count": 41,
+      "dropped": {
+        "input_events_dropped": 0,
+        "phase_points_dropped": 0,
+        "sample_ticks_dropped": 0,
+        "stale_events_discarded": 0
+      }
+    },
+    {
+      "trial": 2,
+      "terminal": {
+        "explicit_out_of_memory": true,
+        "message": "Expansion thread terminated unexpectedly (out of memory)",
+        "tag": "abnormal-termination"
+      },
+      "terminal_matches_capture": true,
+      "elapsed_ms": 13699.530999999999,
+      "attribution_evidence": {
+        "acceptance_scope": "Registrations and approximate stack evidence only; replay/OOM success alone is not attribution success",
+        "monitor_thread_registered": true,
+        "status": "coarse_thread_context_available",
+        "usable_monitor_frames": true,
+        "working_thread_registered": true
+      },
+      "phases": [
+        "worker-start",
+        "monitor-start",
+        "worker-phase-09",
+        "worker-phase-10",
+        "worker-phase-11",
+        "go-send-expanded",
+        "go-wait-for-monitor",
+        "monitor-build-trace-start"
+      ],
+      "thread_sample_count": 45,
+      "dropped": {
+        "input_events_dropped": 0,
+        "phase_points_dropped": 0,
+        "sample_ticks_dropped": 0,
+        "stale_events_discarded": 0
+      }
+    }
+  ],
+  "actions_artifacts": 0,
+  "pristine_runtime_entries": 26838,
+  "pristine_runtime_tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+  "interpretation": "Diagnostic execution passed; actual stock background expansion reproduced OOM. Coarse observed Check Syntax build-trace phase is not CPU/allocation ownership or a product speedup."
+}

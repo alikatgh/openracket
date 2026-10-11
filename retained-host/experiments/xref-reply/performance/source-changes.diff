@@ -1,0 +1,263 @@
+--- baseline/retained-host.rkt
++++ xref-performance/retained-host.rkt
+@@ -21,6 +21,9 @@
+ (define profile-enabled? (hash-ref config 'profile #f))
+ (define metadata-only? (hash-ref config 'metadata_only #f))
+ (define finish-profile #f)
++(define get-observer-summary #f)
++(define get-observer-final-outcome #f)
++(define expected-final-source #f)
+ (define diagnostic-root-logger (current-logger))
+ (define last-heartbeat-time (now))
+ ;; Stock reads launch arguments later in its initial-frame callback. No benchmark
+@@ -34,7 +37,7 @@
+ (hash-set! report 'os (~a (system-type 'os)))
+ (hash-set! report 'vm (~a (system-type 'vm)))
+ (hash-set! report 'status "running")
+-(hash-set! report 'measurement_kind (cond [metadata-only? "metadata_only"] [profile-enabled? "instrumented_attribution_only"] [else "initial_coloring_typing"]))
++(hash-set! report 'measurement_kind "matched_gui_with_common_compact_observer")
+ (define (persist!)
+   (call-with-output-file output #:exists 'truncate/replace
+     (lambda (port) (write-json report port) (newline port))))
+@@ -116,10 +119,32 @@
+                    (hash-set! report 'status "failed")
+                    (hash-set! report 'error (exn-message e))
+                    (hash-set! report 'heartbeat_samples (reverse heartbeat-samples))
++                   (when get-observer-summary
++                     (with-handlers ([exn:fail? (lambda (_) (void))])
++                       (hash-set! report 'online_expansion_observer (get-observer-summary))))
++                   (when get-observer-final-outcome
++                     (with-handlers ([exn:fail? (lambda (_) (void))])
++                       (hash-set! report 'online_expansion_outcome
++                                  (or (get-observer-final-outcome) 'null))))
+                    (persist!)
+                    (eprintf "PERFORMANCE FAILED: ~a\n" (exn-message e))
+                    (exit 1))])
+   (record! 'memory_before_gui (memory-snapshot))
++  (define observer-support
++    (string->path (or (getenv "OPENRACKET_COMPACT_OBSERVER_SUPPORT")
++                     (error 'observer "Missing reviewed compact observer helper"))))
++  (set! get-observer-summary (dynamic-require observer-support 'observer-summary))
++  (set! get-observer-final-outcome (dynamic-require observer-support 'observer-final-outcome))
++  (define registration-start (now))
++  (set! expected-final-source
++        (string->immutable-string
++         (let ([original (file->string fixture)])
++           (string-append (substring original 0 edit-pos) "x" (make-string 80 #\a)
++                          (substring original edit-pos)))))
++  ((dynamic-require observer-support 'observer-register-final!)
++   expected-final-source #:generation 1 #:source fixture)
++  (record! 'observer_registration_ms (- (now) registration-start))
++  (record! 'observer_support_sha256 (hash-ref config 'observer_support_sha256))
+   (record! 'initial_gui_argv (vector->list (current-command-line-arguments)))
+   ;; Dynamic imports put GUI and DrRacket initialization inside startup timing.
+   (set! queue-callback (dynamic-require 'racket/gui/base 'queue-callback))
+@@ -184,7 +209,9 @@
+              (values (string->symbol key) (or (getenv key) "unset"))))
+   (define editor (send frame get-definitions-text))
+   (define canvas (send frame get-definitions-canvas))
+-  (send frame resize 1200 820)
++  ;; Matched to the verified1024x768 Mac runner desktop. Historical offscreen
++  ;; windows are not a direct comparison for this newly paired workload.
++  (send frame resize 1000 700)
+   (send canvas focus)
+   (fence!) (pause .100)
+   ;; Exactly one pending heartbeat prevents an unbounded backlog. Queue delay
+@@ -342,6 +369,29 @@
+   (unless (hash-ref post-typing-settle 'complete)
+     (error 'post-typing-lexer-settle "lexer did not become valid within 45 seconds"))
+   (record! 'memory_after_post_typing_settle (memory-snapshot))
++  ;; Keep the old lexer endpoint separate from actual final tool observation.
++  ;; This15s wait remains inside the unchanged60s outer trial bound.
++  (set! phase "online_terminal_observation")
++  (define terminal-wait-start (now))
++  (define online-outcome
++    (let loop ()
++      (define outcome (get-observer-final-outcome))
++      (cond [outcome outcome]
++            [(>= (- (now) terminal-wait-start) 15000) #f]
++            [else (pause .020) (loop)])))
++  (define terminal-observed (now))
++  (record! 'online_terminal_wait
++           (hasheq 'complete (and online-outcome #t)
++                   'elapsed_ms (- terminal-observed terminal-wait-start)))
++  (record! 'online_expansion_outcome (or online-outcome 'null))
++  (record! 'open_to_terminal_callback_observed_ms (- terminal-observed initial-open-start))
++  (when online-outcome
++    (record! 'open_to_terminal_callback_ms
++             (- (hash-ref online-outcome 'callback_delivered_ms) initial-open-start)))
++  (record! 'memory_after_terminal_observation (memory-snapshot))
++  (record! 'online_expansion_observer (get-observer-summary))
++  (unless online-outcome
++    (error 'online-terminal "No final-source terminal callback within separate15s observation bound"))
+   (set! phase "idle")
+   (pause .500)
+   (set! heartbeat-running? #f)
+@@ -352,11 +402,7 @@
+   ;; Metadata imports are outside every latency/profile phase.
+   (capture-settings!)
+   ;; Full source comparison is deliberately outside every timed/GC workload.
+-  (define original-source (file->string fixture))
+-  (define expected-source
+-    (string-append (substring original-source 0 edit-pos) "x" (make-string 80 #\a)
+-                   (substring original-source edit-pos)))
+-  (unless (string=? (send editor get-text) expected-source)
++  (unless (string=? (send editor get-text) expected-final-source)
+     (error 'contention-source "Full resulting source differs from the intended edits"))
+   (record! 'exact_resulting_source_verified #t)
+   ;; Explicit collection only after all latency work; do not hide allocation/GC.
+--- baseline/run.py
++++ xref-performance/run.py
+@@ -1,6 +1,7 @@
+ #!/usr/bin/env python3
+ """Single-mode native benchmark supervisor. No installs, patching, or preferences edits."""
+ import argparse
++import hashlib
+ import json
+ import math
+ import os
+@@ -13,6 +14,7 @@
+ import sys
+ import time
+ from fixtures import write_fixtures
++from validate_observation import validate as validate_observation
+ 
+ ROOT = Path(__file__).resolve().parent
+ 
+@@ -36,6 +38,13 @@
+         'memory_after_post_typing_settle',
+         'memory_after_initial_settle', 'memory_after_warm_input',
+         'memory_after_workload', 'memory_after_explicit_gc') if key in report}
++    for key in ('xref_worker_activation', 'online_expansion_outcome',
++                'online_terminal_wait', 'observer_registration_ms',
++                'open_to_terminal_callback_observed_ms', 'open_to_terminal_callback_ms',
++                'memory_after_terminal_observation',
++                'observer_validation', 'worker_observer_overhead'):
++        if key in report:
++            out[key] = report[key]
+     for key in ('initial_coloring_key_samples',):
+         out[key] = {metric: quantiles([row[metric] for row in report.get(key, [])])
+                     for metric in ('command_ms', 'command_plus_low_priority_fence_ms',
+@@ -104,6 +113,23 @@
+     directory.mkdir(parents=True, exist_ok=True)
+     output = directory / 'measurements.json'
+     env = os.environ.copy()
++    xref_flag = env.get('OPENRACKET_XREF_REPLY_CELL')
++    expected_flag = '1' if args.xref_activation == 'candidate' else None
++    if xref_flag != expected_flag:
++        raise ValueError('Caller xref flag does not match the requested timing arm')
++    # Only the one candidate flag survives. Other experiments/appearance/probes
++    # cannot accidentally enter either arm through the CI environment.
++    for key in list(env):
++        if key.startswith('OPENRACKET_'):
++            env.pop(key)
++    if expected_flag:
++        env['OPENRACKET_XREF_REPLY_CELL'] = expected_flag
++    observer_output = directory / 'observer'
++    observer_output.mkdir()
++    helper = args.observer_support.resolve()
++    env.update(OPENRACKET_COMPACT_OBSERVER='1',
++               OPENRACKET_COMPACT_OBSERVER_SUPPORT=str(helper),
++               OPENRACKET_COMPACT_OBSERVER_OUTPUT=str(observer_output))
+     home = directory / 'profile'
+     home.mkdir(exist_ok=True)
+     env['PLTUSERHOME'] = str(home)
+@@ -115,8 +141,10 @@
+         'edit_position': fixture['edit_position'], 'characters': fixture['characters'],
+         'profile': getattr(args, 'profile', False),
+         'metadata_only': getattr(args, 'metadata_only', False),
+-        'scan_activation': getattr(args, 'scan_activation', 'none'),
+-        'budget_activation': getattr(args, 'budget_activation', 'none')})
++        'scan_activation': 'stock', 'budget_activation': 'stock',
++        'xref_activation': args.xref_activation,
++        'xref_source_sha256': args.xref_source_sha256,
++        'observer_support_sha256': hashlib.sha256(helper.read_bytes()).hexdigest()})
+     command = [args.racket, str(ROOT / 'retained-host.rkt')]
+     system = platform.system()
+     resource_file = directory / 'native-resource.txt'
+@@ -146,9 +174,18 @@
+                    'process_wall_ms': (time.monotonic() - started) * 1000,
+                    'native_max_rss_bytes': native_rss(resources, system),
+                    'exit_code': process.returncode, 'timeout': timeout})
++    try:
++        observed = validate_observation(report, observer_output, fixture, args.xref_activation,
++                                        args.xref_source_sha256, args.racket)
++    except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
++        observed = {'verified': False, 'errors': ['Invalid observer evidence: ' + str(error)],
++                    'actual_worker': None}
++    report['observer_validation'] = observed
++    report['xref_worker_activation'] = observed['actual_worker']
++    report['worker_observer_overhead'] = observed.get('worker_observer_overhead')
+     if timeout:
+         report['status'] = 'timeout'
+-    elif process.returncode != 0 or report.get('status') != 'complete':
++    elif process.returncode != 0 or report.get('status') != 'complete' or not observed['verified']:
+         report['status'] = 'failed'
+     if report['status'] != 'complete':
+         report['stderr_tail'] = stderr[-12000:]
+@@ -168,10 +205,21 @@
+     parser.add_argument('--fixture', choices=['all', 'mixed-100k', 'mixed-1mib'], default='all')
+     parser.add_argument('--profile', action='store_true', help='Separate attribution-only trial; adds sampling/logging overhead')
+     parser.add_argument('--metadata-only', action='store_true', help='Open fixture and read settings; no latency workload')
++    parser.add_argument('--xref-activation', required=True, choices=['stock', 'candidate'])
++    parser.add_argument('--xref-source-sha256', required=True)
++    parser.add_argument('--observer-support', required=True, type=Path)
+     parser.add_argument('--budget-activation', choices=['none', 'stock', '4', '8', '12', '20'], default='none')
+     parser.add_argument('--scan-activation', choices=['none', 'stock', 'candidate'], default='none',
+                         help='Read-only assertion of scan helper absence/selection; never enables it')
+     args = parser.parse_args()
++    if not re.fullmatch(r'[0-9a-f]{64}', args.xref_source_sha256):
++        parser.error('xref source SHA-256 must be 64 lowercase hex characters')
++    if not args.observer_support.is_file() or args.observer_support.is_symlink():
++        parser.error('observer support must be the reviewed regular helper file')
++    if args.profile or args.metadata_only:
++        parser.error('this isolated comparison uses the common compact observer only')
++    if args.scan_activation not in ('none', 'stock') or args.budget_activation not in ('none', 'stock'):
++        parser.error('other candidates are prohibited in this isolated comparison')
+     if args.metadata_only and args.profile:
+         parser.error('--metadata-only and --profile are mutually exclusive')
+     if not (1 <= args.repetitions <= 10 and 1 <= args.timeout <= 300):
+@@ -182,8 +230,7 @@
+     if args.fixture != 'all':
+         fixtures = [fixture for fixture in fixtures if fixture['name'] == args.fixture]
+     metadata = {'schema_version': 1, 'mode': args.mode,
+-                'measurement_kind': ('metadata_only' if args.metadata_only else
+-                                     'instrumented_attribution_only' if args.profile else 'initial_coloring_typing'),
++                'measurement_kind': 'matched_gui_with_common_compact_observer',
+                 'platform': platform.platform(),
+                 'machine': platform.machine(), 'logical_cpus': os.cpu_count(),
+                 'runner_os': os.getenv('RUNNER_OS'), 'runner_arch': os.getenv('RUNNER_ARCH'),
+--- baseline/test_harness.py
++++ xref-performance/test_harness.py
+@@ -38,7 +38,8 @@
+     def test_repeated_startup_failure_skips_remaining_trials(self):
+         with tempfile.TemporaryDirectory() as directory:
+             argv = ['run.py', '--mode', 'test-only', '--output', directory,
+-                    '--repetitions', '3']
++                    '--repetitions', '3', '--xref-activation', 'stock',
++                    '--xref-source-sha256', '0' * 64, '--observer-support', __file__]
+             def fake_trial(args, fixture, repetition):
+                 return {'status': 'timeout', 'fixture_metadata': fixture,
+                         'repetition': repetition, 'native_max_rss_bytes': None,
+@@ -88,7 +89,9 @@
+             executable.chmod(0o755)
+             fixture = write_fixtures(root / 'fixtures')[0]
+             args = types.SimpleNamespace(output=root, mode='test-only',
+-                                         racket=str(executable), timeout=.3)
++                                         racket=str(executable), timeout=.3,
++                                         xref_activation='stock', xref_source_sha256='0' * 64,
++                                         observer_support=Path(__file__))
+             with contextlib.redirect_stdout(io.StringIO()):
+                 report = run_trial(args, fixture, 1)
+             self.assertEqual(report['status'], 'timeout')
+@@ -103,7 +106,9 @@
+             executable.chmod(0o755)
+             fixture = write_fixtures(root / 'fixtures')[0]
+             args = types.SimpleNamespace(output=root, mode='test-only',
+-                                         racket=str(executable), timeout=.15)
++                                         racket=str(executable), timeout=.15,
++                                         xref_activation='stock', xref_source_sha256='0' * 64,
++                                         observer_support=Path(__file__))
+             with contextlib.redirect_stdout(io.StringIO()):
+                 report = run_trial(args, fixture, 1)
+             self.assertTrue(report['timeout'])
