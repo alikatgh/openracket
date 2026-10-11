@@ -33,7 +33,7 @@ def fake_macho(deps=(), rpaths=()):
 class Portable(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.base = Path(self.temp.name)
+        self.base = Path(self.temp.name).resolve(strict=True)
 
     def tearDown(self):
         self.temp.cleanup()
@@ -41,6 +41,22 @@ class Portable(unittest.TestCase):
     def test_new_destination_with_unicode_spaces_apostrophe(self):
         p = self.base / "Moved Unicode λ's probe.app"
         self.assertEqual(s.fresh_leaf(p, ".app"), p)
+
+    def test_new_destination_canonicalizes_aliased_parent(self):
+        parent = self.base / "Real parent"; parent.mkdir()
+        alias = self.base / "Parent alias"; alias.symlink_to(parent.name, target_is_directory=True)
+        p = alias / "Moved Unicode λ's probe.app"
+        expected = parent / p.name
+        self.assertNotEqual(p, expected)
+        self.assertEqual(s.fresh_leaf(p, ".app"), expected)
+        self.assertFalse(p.exists())
+        self.assertFalse(expected.exists())
+
+    def test_existing_destination_alias_refused(self):
+        target = self.base / "Existing.app"; target.mkdir()
+        alias = self.base / "Alias.app"; alias.symlink_to(target.name, target_is_directory=True)
+        with self.assertRaisesRegex(s.Refusal, "refusing occupied output"):
+            s.fresh_leaf(alias, ".app")
 
     def test_occupied_destination_refused(self):
         p = self.base / "App.app"
@@ -231,7 +247,7 @@ class Portable(unittest.TestCase):
 
 class ReportValidation(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(); self.base = Path(self.temp.name)
+        self.temp = tempfile.TemporaryDirectory(); self.base = Path(self.temp.name).resolve(strict=True)
         self.app = self.base / "Moved λ's Probe.app"; self.runtime = self.app / "Contents/Resources/runtime"
         self.profile = self.base / "fresh-profile"
         for p in [self.runtime / "collects", self.runtime / "etc", self.runtime / "share/pkgs",
@@ -275,6 +291,13 @@ class ReportValidation(unittest.TestCase):
     def test_external_config_refused(self):
         self.report["paths"]["system"]["config-dir"] = self.rec(self.base)
         with self.assertRaises(s.Refusal): self.validate()
+    def test_external_config_alias_refused(self):
+        outside = self.base / "outside-config"; outside.mkdir()
+        alias = self.runtime / "config-alias"
+        alias.symlink_to(outside, target_is_directory=True)
+        self.report["paths"]["system"]["config-dir"] = self.rec(alias)
+        with self.assertRaisesRegex(s.Refusal, "escaped active path"):
+            self.validate()
     def test_source_module_escape_refused(self):
         p = self.base / "source.rkt"; p.write_text("x")
         self.report["modules"]["gui_base"] = {"path": self.rec(p), "sha256": s.file_digest(p)}

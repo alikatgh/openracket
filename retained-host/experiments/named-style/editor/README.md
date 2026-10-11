@@ -1,5 +1,10 @@
 # Named-style index: small native editor correctness gate
 
+Current derivative: see [RELOAD-DIAGNOSTIC.md](RELOAD-DIAGNOSTIC.md) for failure-only
+observability after run38156051663. The source/API audit found no proven repair.
+44 portable methods pass; the diagnostic native controls remain unexecuted.
+
+
 ## Search-scope repair after run38153992371
 
 This is a separately prepared editor-test derivative of the frozen 14:02

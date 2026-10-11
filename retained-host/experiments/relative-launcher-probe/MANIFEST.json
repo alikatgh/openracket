@@ -84,7 +84,7 @@
     "sha256": "aace243f7136158c3171e27a1c13d6cf00648f906b61f758984e0f0d298c0aef"
   },
   "tests/test_source.py": {
-    "bytes": 22670,
-    "sha256": "3c7ccca3de7015061f1284526fd0cbc2257d9fdd2cbc786cd7014200d5623b0d"
+    "bytes": 23924,
+    "sha256": "d6833e2fd61bb61b59193b8c6f3b3c147b54e58cd1f9b6d4f908a1c5b055cd91"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "reviewed editor-only search repair after run38153992371; native retry pending",
+  "status": "Reviewed failure-only WXME diagnostic after run38156051663; focused native collection pending",
   "packages": {
     "production": {
       "source_freeze": "openracket-named-style-index-freeze-20261011-1322",
@@ -10,10 +10,10 @@
       "all_source_bytes_preserved": true
     },
     "editor": {
-      "source_freeze": "openracket-named-style-editor-search-freeze-20261011-1619",
+      "source_freeze": "openracket-named-style-editor-reload-diagnostic-freeze-20261011-1705",
       "manifest_path": "editor/SHA256SUMS",
-      "manifest_sha256": "4ed63e17e92e093c1eaa9996516bdc1fef30d6fbf86830777ccb9eaae558e72f",
-      "file_count": 34,
+      "manifest_sha256": "17e0880e969e7720a9873088ebacf695273b5b5935fc96e4e393b65cf8a77067",
+      "file_count": 43,
       "all_source_bytes_preserved": true
     },
     "controls": {
@@ -31,5 +31,5 @@
       "all_source_bytes_preserved": true
     }
   },
-  "base_composition_sha256": "15ff0feeb23952ebe826da0472d35bc6a2e150b4256dcb6271c7be5ce5d7cbe1"
+  "base_composition_sha256": "6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273"
 }

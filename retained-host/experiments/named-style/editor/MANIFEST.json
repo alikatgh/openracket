@@ -1,28 +1,33 @@
 {
   "schema": "openracket-named-style-editor-package-v1",
-  "created_utc": "2026-10-11T16:19:00Z",
+  "created_utc": "2026-10-11T17:05:00Z",
   "source_only": true,
   "native_executed": false,
   "racket_compiled": false,
   "published": false,
-  "portable_tests": 36,
-  "derivative": "Explicit whole-editor Unicode search repair after four-arm run38153992371 fixture failure",
-  "base_composition_sha256": "15ff0feeb23952ebe826da0472d35bc6a2e150b4256dcb6271c7be5ce5d7cbe1",
-  "reviewed_patch_sha256": "fcfc6b88b7b8a25213ca7c12f521139640dac8dabaa4945e8304483aa7aa7f06",
+  "portable_tests": 44,
+  "derivative": "Failure-only WXME reload diagnostics after four-arm run38156051663; no proven serialization repair",
+  "base_composition_sha256": "6eb7d2b994519ac2db5c15edc3ec75daf0eadffc17c6dedb7da5ed471f494273",
+  "reviewed_patch_sha256": "d9f577055a8d9fc8ac2cde9153ffb63c45180574c17366333dd75df744ce02b7",
   "independent_reviews": [
-    "modernize_retained_drracket_host: source review and 36 portable tests passed",
-    "profile_retained_editor_performance: source/API/scope review and 36 portable tests passed"
+    "modernize_retained_drracket_host: final source review and44 portable checks passed",
+    "profile_retained_editor_performance: final source review and44 portable checks passed"
   ],
   "files": [
     {
       "path": "PROVENANCE.json",
-      "bytes": 8187,
-      "sha256": "9a521f1e2074accdc2a5d4a01854d248787e94b2db71dcf81b65094655f83881"
+      "bytes": 9964,
+      "sha256": "6c271c991e1db6dea3db6de505930a39d0108ff67d74c66d18b3d5ebd94ea8da"
     },
     {
       "path": "README.md",
-      "bytes": 11169,
-      "sha256": "012008496205749cf8bf1f1f7fdc5271fffa22060eb6f27b7e552ccfcd3823b5"
+      "bytes": 11414,
+      "sha256": "b702cd8246446004ea65f5c9eccb7edab6bc8a8e6f5db00fc42bf81d88165956"
+    },
+    {
+      "path": "RELOAD-DIAGNOSTIC.md",
+      "bytes": 5884,
+      "sha256": "54e9c7d92d296ab87d5157e05f61aa70f47279a3fa821238fa35084fb296f57d"
     },
     {
       "path": "SEARCH-REPAIR.json",
@@ -41,8 +46,18 @@
     },
     {
       "path": "native/editor-gate.rkt",
-      "bytes": 15488,
-      "sha256": "1b0d4462e9342f202fa29724474de1b24e53a187c8088580c20665ec9162b4b3"
+      "bytes": 15711,
+      "sha256": "71bb24d24cb6a0c8844b3b2929a50e796d1d027f2983f6b4a91870a6abfb3c92"
+    },
+    {
+      "path": "native/failure-observation.rkt",
+      "bytes": 5148,
+      "sha256": "9a5e064dee031da3807fdfe6fb5ade9a75df996022339dff36f33bdd957326c7"
+    },
+    {
+      "path": "native/reload-diagnostic.rkt",
+      "bytes": 7861,
+      "sha256": "75ef6a68f8b3987385a227a18a60ab45b4238485be1c52af23ecce9d49223778"
     },
     {
       "path": "native/snapshot.rkt",
@@ -51,13 +66,18 @@
     },
     {
       "path": "reports/STATUS.json",
-      "bytes": 761,
-      "sha256": "b96177d95a4bb39766d30bb54e4ed52c47e654eacebfead9cf0ffbc0cca4078e"
+      "bytes": 800,
+      "sha256": "ba300168e58dc5f8a8f3dc7ba159e0d33d69900fee3de49ed87d5117dc263b54"
     },
     {
       "path": "reports/portable-tests.log",
       "bytes": 3616,
       "sha256": "36c7969a8e258e03d0e94918be938e31b5b17ec9d60452226975c48f2ffd13dc"
+    },
+    {
+      "path": "reports/reload-diagnostic-portable-tests.log",
+      "bytes": 5658,
+      "sha256": "4985c8e97f7c727d1764b80e3fe0bad54ce29b99bb1a8ef81a6b1742d414d9bc"
     },
     {
       "path": "reports/search-repair-portable-tests.log",
@@ -78,6 +98,11 @@
       "path": "tests/test_compare.py",
       "bytes": 12941,
       "sha256": "e107bd1e0f7c7cf781dd0f47f6b85e388859f24b8b3c904df50c1da96b56a595"
+    },
+    {
+      "path": "tests/test_reload_diagnostic.py",
+      "bytes": 5722,
+      "sha256": "99e708b1279b0b15a93d353b7819b8d0782101ccdd882091fb2779b481d23097"
     },
     {
       "path": "tests/test_runner.py",
@@ -135,6 +160,11 @@
       "sha256": "6d59d6829722f2bfe8b61e4f2d6fd518c610cba6290bac810d2900b8ee9d0f3b"
     },
     {
+      "path": "vendor/public-editor.rkt",
+      "bytes": 37539,
+      "sha256": "1eef92a431da2c2cf40d193237d4ab9879adae9518c71b39ba5af0dc6b32f75a"
+    },
+    {
       "path": "vendor/racket.rkt",
       "bytes": 104849,
       "sha256": "fd3ada7890a54f715fc0c7369993d59902fb079a43b00c83a1d5fbd2f0fe4520"
@@ -148,6 +178,16 @@
       "path": "vendor/snip-class.scrbl",
       "bytes": 28243,
       "sha256": "16057edf0aa2e44ff4e9cab759cd47b0066c4bd555af7fa0405c9492fe5a7d37"
+    },
+    {
+      "path": "vendor/snip.rkt",
+      "bytes": 58116,
+      "sha256": "853a825527efb51250e7d3222301777c06824c43fdcf35878e21d6c335f12cf9"
+    },
+    {
+      "path": "vendor/stream.rkt",
+      "bytes": 32900,
+      "sha256": "10695832645bbe124007280a3ca3243e25fed520c18f98029072e66e03b0ce1d"
     },
     {
       "path": "vendor/string-snip-class.scrbl",
@@ -173,6 +213,11 @@
       "path": "vendor/text-class.scrbl",
       "bytes": 77388,
       "sha256": "5f7733143e241f6bdc6a1529fc0d515b7c506fc0f820d4d3b01ac7cefcb9690f"
+    },
+    {
+      "path": "vendor/wxme-text.rkt",
+      "bytes": 287564,
+      "sha256": "e092bd06a21f4779820fc5332e3411bdad5c367c689f6e2b61933a1af2d144ae"
     }
   ]
 }

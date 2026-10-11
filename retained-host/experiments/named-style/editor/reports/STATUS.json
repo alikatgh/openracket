@@ -1,14 +1,14 @@
 {
-  "status": "search-scope-repair-prepared-native-retry-required",
+  "status": "reload-diagnostic-prepared-native-execution-on-hold",
   "native_executed": false,
   "racket_compiled": false,
   "gui_wxme_verified": false,
   "performance_measured": false,
   "published": false,
-  "portable_test_methods": 36,
+  "portable_test_methods": 44,
   "portable_scope": "Typed comparator synthetic records, mocked process/failure capture, source pins/anchors and delimiter lint",
   "required_next_gate": "Freshly authorized native official 9.3 stock, stock-again, patched-off and patched-on actual GUI/editor captures",
-  "claim": "Source-backed test repair only; no native success or speed claim",
-  "historical_run": "38153992371",
-  "historical_outcome": "All four editor arms failed the same cursor-relative fixture lookup before incremental edit or WXME coverage"
+  "claim": "Failure-only diagnostics; no proven serialization repair or native acceptance",
+  "historical_run": "38156051663",
+  "historical_outcome": "All four editor arms passed actual search/incremental stages and rich save, then failed standard WXME load with read-from-file-failed"
 }

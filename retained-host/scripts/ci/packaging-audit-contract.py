@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import stat
 
-FREEZE_PIN = '5c2967fe016ff7d7b1c5acf87de9050e4693ee9fa3f4ccb383b1ad9b6ab268a1'
+FREEZE_PIN = '2e02a8a283b420be3d580328bce739af35ec59d5f050f8c20315156324e5c151'
 CLAIMS = {'CFBundleDocumentTypes', 'UTExportedTypeDeclarations', 'UTImportedTypeDeclarations'}
 NATIVE_TIMEOUT = 120
 CLEANUP_TIMEOUT = 5

@@ -1,7 +1,7 @@
 #lang racket/base
 ;; A real framework Racket editor fixture, NOT a full DrRacket tool workflow.
 (require framework json racket/class racket/exn racket/file racket/gui/base racket/list racket/string
-         "snapshot.rkt")
+         "snapshot.rkt" "reload-diagnostic.rkt")
 (provide run-gate!)
 (define original
   "#lang racket/base\n(define café \"λ\")\n(define (bump x) (+ x 41))\n; comment ☃\n(bump 1)\n")
@@ -199,9 +199,12 @@
               "save preserves actual bitmap and embedded editor object identities")
       (record! 'rich_after_save (editor-view rich))
       (stage! "rich-saved-with-identities")
-      (define restored (new text%))
+      (define-values (restored reader-events) (make-reload-observer))
       (send restored set-style-list (new style-list%))
-      (check! (send restored load-file path 'standard) "actual standard WXME load succeeds")
+      (check! (call/observe-reload-failure
+               (lambda () (send restored load-file path 'standard))
+               path rich restored reader-events record!)
+              "actual standard WXME load succeeds")
       (send canvas set-editor restored)
       (check! (and (eq? (send canvas get-editor) restored)
                   (is-a? (send restored get-style-list) private-list%)) "restored native editor uses actual runtime styles")
@@ -223,6 +226,7 @@
       (stage! "final-gui-readback"))
     (lambda () (send frame show #f))))
 (define (run-gate! output private-list% state record! stage!)
+  (run-failure-observation-controls!)
   (define done (make-semaphore))
   (define failure #f)
   (define callback-errors '())

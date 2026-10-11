@@ -1,0 +1,49 @@
+test_bool_is_not_integer_identity (test_compare.TypedComparison.test_bool_is_not_integer_identity) ... ok
+test_bool_not_numeric_color (test_compare.TypedComparison.test_bool_not_numeric_color) ... ok
+test_candidate_parity_failure_reports_path (test_compare.TypedComparison.test_candidate_parity_failure_reports_path) ... ok
+test_equal_attributes_do_not_erase_identity (test_compare.TypedComparison.test_equal_attributes_do_not_erase_identity) ... ok
+test_false_and_zero_references_are_distinct (test_compare.TypedComparison.test_false_and_zero_references_are_distinct) ... ok
+test_flag_order_retained (test_compare.TypedComparison.test_flag_order_retained) ... ok
+test_full_gate_rejects_mutations (test_compare.TypedComparison.test_full_gate_rejects_mutations) ... ok
+test_huge_number_reports_typed_failure (test_compare.TypedComparison.test_huge_number_reports_typed_failure) ... ok
+test_missing_arm_rejected (test_compare.TypedComparison.test_missing_arm_rejected) ... ok
+test_real_numeric_exactness_allowed (test_compare.TypedComparison.test_real_numeric_exactness_allowed) ... ok
+test_search_negative_controls_require_actual_false (test_compare.TypedComparison.test_search_negative_controls_require_actual_false) ... ok
+test_search_rejects_cursor_relative_miss_and_bad_types (test_compare.TypedComparison.test_search_rejects_cursor_relative_miss_and_bad_types) ... ok
+test_search_requires_exact_selection_queries_and_range (test_compare.TypedComparison.test_search_requires_exact_selection_queries_and_range) ... ok
+test_snip_order_never_sorted (test_compare.TypedComparison.test_snip_order_never_sorted) ... ok
+test_stale_cache_is_observed_not_a_correctness_failure (test_compare.TypedComparison.test_stale_cache_is_observed_not_a_correctness_failure) ... ok
+test_stock_order_instability_blocks_all_acceptance (test_compare.TypedComparison.test_stock_order_instability_blocks_all_acceptance) ... ok
+test_style_order_never_sorted (test_compare.TypedComparison.test_style_order_never_sorted) ... ok
+test_synthetic_schema_sample (test_compare.TypedComparison.test_synthetic_schema_sample) ... ok
+test_workload_hits_cannot_be_synthetic_final_lookup (test_compare.TypedComparison.test_workload_hits_cannot_be_synthetic_final_lookup) ... ok
+test_diagnostics_publish_only_inside_failure_observer (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_diagnostics_publish_only_inside_failure_observer) ... ok
+test_failure_evidence_is_bounded_and_lossless (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_failure_evidence_is_bounded_and_lossless) ... ok
+test_fault_controls_are_mandatory_before_fixture (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_fault_controls_are_mandatory_before_fixture) ... ok
+test_native_fake_stream_controls_guard_tell_perturbation (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_native_fake_stream_controls_guard_tell_perturbation) ... ok
+test_native_fault_controls_cover_malformed_state_and_output (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_native_fault_controls_cover_malformed_state_and_output) ... ok
+test_original_acceptance_is_not_relaxed (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_original_acceptance_is_not_relaxed) ... ok
+test_reader_overloads_forward_once_and_keep_results (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_reader_overloads_forward_once_and_keep_results) ... ok
+test_tell_runs_only_after_reader_has_failed (test_reload_diagnostic.ReloadDiagnosticSourceTests.test_tell_runs_only_after_reader_has_failed) ... ok
+test_environment_contamination_rejected (test_runner.RunnerTests.test_environment_contamination_rejected) ... ok
+test_explicit_flag_and_distinct_profile (test_runner.RunnerTests.test_explicit_flag_and_distinct_profile) ... ok
+test_launch_failure_retains_traceback (test_runner.RunnerTests.test_launch_failure_retains_traceback) ... ok
+test_preserves_raw_failure_output (test_runner.RunnerTests.test_preserves_raw_failure_output) ... ok
+test_rejects_relative_native_paths (test_runner.RunnerTests.test_rejects_relative_native_paths) ... ok
+test_timeout_retains_partial_bytes_and_failure_status (test_runner.RunnerTests.test_timeout_retains_partial_bytes_and_failure_status) ... ok
+test_actual_framework_editor_no_color_simulation (test_source.SourceTests.test_actual_framework_editor_no_color_simulation) ... ok
+test_bootstrap_actual_runtime_source_before_gui (test_source.SourceTests.test_bootstrap_actual_runtime_source_before_gui) ... ok
+test_dependencies_match_vendored_official_bytes (test_source.SourceTests.test_dependencies_match_vendored_official_bytes) ... ok
+test_fixture_search_has_explicit_scope_and_native_negative_controls (test_source.SourceTests.test_fixture_search_has_explicit_scope_and_native_negative_controls) ... ok
+test_native_delimiter_lint (test_source.SourceTests.test_native_delimiter_lint) ... ok
+test_official_style_and_mode_source_anchors (test_source.SourceTests.test_official_style_and_mode_source_anchors) ... ok
+test_official_style_pin (test_source.SourceTests.test_official_style_pin) ... ok
+test_pinned_search_and_insert_contract_explains_caret_scope (test_source.SourceTests.test_pinned_search_and_insert_contract_explains_caret_scope) ... ok
+test_public_documents_cover_operations (test_source.SourceTests.test_public_documents_cover_operations) ... ok
+test_public_style_index_graph_not_first_seen_ids (test_source.SourceTests.test_public_style_index_graph_not_first_seen_ids) ... ok
+test_runner_does_not_install_or_publish (test_source.SourceTests.test_runner_does_not_install_or_publish) ... ok
+
+----------------------------------------------------------------------
+Ran 44 tests in 0.284s
+
+OK

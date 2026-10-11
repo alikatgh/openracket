@@ -158,6 +158,42 @@
       "bytes": 19091,
       "repository": "racket/gui",
       "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e"
+    },
+    {
+      "local": "vendor/wxme-text.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxme/text.rkt",
+      "git_blob": "c9d7c9039ed995cf162814fd97bdb76e956d215b",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "e092bd06a21f4779820fc5332e3411bdad5c367c689f6e2b61933a1af2d144ae",
+      "bytes": 287564
+    },
+    {
+      "local": "vendor/snip.rkt",
+      "source_url": "https://github.com/racket/snip/blob/3e6cf73c7bea6bd292462188e51ebabf8384ae53/snip-lib/racket/snip/private/snip.rkt",
+      "git_blob": "6f5c7ff7a10e5fc5d2e345aa5b2d7f346668df88",
+      "repository": "racket/snip",
+      "ref": "3e6cf73c7bea6bd292462188e51ebabf8384ae53",
+      "sha256": "853a825527efb51250e7d3222301777c06824c43fdcf35878e21d6c335f12cf9",
+      "bytes": 58116
+    },
+    {
+      "local": "vendor/stream.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wxme/stream.rkt",
+      "git_blob": "518e90a4cd9fb29748db543e20203e0ad83e14f6",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "10695832645bbe124007280a3ca3243e25fed520c18f98029072e66e03b0ce1d",
+      "bytes": 32900
+    },
+    {
+      "local": "vendor/public-editor.rkt",
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/editor.rkt",
+      "git_blob": "1564667ccdeb4a72eab299280c2136867faff97e",
+      "repository": "racket/gui",
+      "ref": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "sha256": "1eef92a431da2c2cf40d193237d4ab9879adae9518c71b39ba5af0dc6b32f75a",
+      "bytes": 37539
     }
   ]
 }
