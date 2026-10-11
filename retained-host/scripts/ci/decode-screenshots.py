@@ -17,7 +17,8 @@ for line in a.log.read_text().splitlines():
         label,size,digest=begin.groups()
         plain = label.removesuffix('-failure-diagnostic').removesuffix('-timeout-diagnostic')
         allowed = {'pristine-stock','stock-fallback','modern-light','modern-dark','pristine-stock-stop-returning',
-                   'modern-dark-native-appearance-restored'}
+                   'modern-dark-native-appearance-restored',
+                   'xref-stock-check-syntax','xref-candidate-on-check-syntax'}
         allowed.update(mode+'-'+case for mode in ('pristine-stock','modern-dark')
                        for case in ('stop','input-eof','wxme','check-syntax'))
         assert plain in allowed, 'Unknown screenshot evidence label'

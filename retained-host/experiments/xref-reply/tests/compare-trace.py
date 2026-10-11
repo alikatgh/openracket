@@ -1,221 +1,308 @@
 #!/usr/bin/env python3
-"""Strict actual-handler gate; no sorting, eliding entries, or path rewriting.
+"""Bounded completed-annotation contract; raw order remains an explicit diagnostic.
 
-Capture twice with stock, then candidate default-off and enabled in fresh native
-processes. The native encoder only replaces path-valued descendants of its
-verified runtime/fixture roots and real rename channel identities. Path bytes
-below the roots and every trace entry are retained. A changing stock control
-blocks this gate.
+This does not establish transient GUI replay/paint-order or timing equivalence.
+See TRACE-SEMANTICS.md for the exact consumer-source-backed acceptance boundary.
 """
 import argparse
+from collections import Counter, defaultdict
+import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = "openracket-actual-online-comp-trace/v1"
-PINS = {
-    "traversals": "bfac72f72b6858d809c840a0aa47bdae2652ae084d86ae961b744d683e06da00",
-    "online-comp": "1d78a9aecd0c8c50229083c4c653d58927f43ab1165fef0710e098bbf07240b5",
-}
-FIXTURES = ["repeated-base", "unicode", "phase-one", "import-aliases", "undocumented-binding"]
-QUERIES = ["openracket-fresh-name", "existing", "add1", "λ", "δ"]
-DOC_METHOD = "syncheck:add-docs-menu"
-ARROW_METHOD = "syncheck:add-arrow/name-dup/pxpy"
-ID_SET_METHOD = "syncheck:add-id-set"
+HERE = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location("strict_trace", HERE / "compare-trace-exact.py")
+strict = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(strict)
+GateError = strict.GateError
+require = strict.require
+integer = strict.integer
+method = strict.method
+
+ARROW = strict.ARROW_METHOD
+DOCS = strict.DOC_METHOD
+TEXT = "syncheck:add-text-type"
+REQUIRE = "syncheck:add-require-open-menu"
+TARGET = "syncheck:add-definition-target/phase-level+space"
+JUMP = "syncheck:add-jump-to-definition/phase-level+space"
+HOVER = "syncheck:add-mouse-over-status"
+TAIL = "syncheck:add-tail-arrow"
+PREFIX = "syncheck:add-prefixed-require-reference"
+SIZES = {ARROW: 15, DOCS: 9, TEXT: 5, REQUIRE: 5, TARGET: 7,
+         JUMP: 8, HOVER: 5, TAIL: 4, PREFIX: 7}
 
 
-class GateError(ValueError):
-    pass
+def key(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def require(condition, message):
-    if not condition:
-        raise GateError(message)
+def tagged(value, tag, size=None):
+    return (isinstance(value, list) and bool(value) and value[0] == tag
+            and (size is None or len(value) == size))
 
 
-def integer(value):
-    """Decode the encoder's exact integer without conflating #f and zero."""
-    require(isinstance(value, list) and len(value) == 2 and value[0] == "number",
-            f"expected an encoded number, got {value!r}")
-    require(isinstance(value[1], str), "number spelling must be a string")
-    try:
-        result = int(value[1])
-    except ValueError as error:
-        raise GateError(f"expected an exact integer: {value!r}") from error
-    require(str(result) == value[1], f"noncanonical exact integer: {value!r}")
-    return result
+def path(value):
+    require(tagged(value, "path", 3) and value[1] in ("unix", "windows"),
+            "unsupported encoded path")
+    body = value[2]
+    require(isinstance(body, list)
+            and ((len(body) == 3 and body[:2] in (["root", "runtime"], ["root", "fixture"]))
+                 or (len(body) == 2 and body[0] == "literal"))
+            and isinstance(body[-1], list)
+            and all(type(b) is int and 0 <= b <= 255 for b in body[-1]),
+            "unsupported path normalization")
 
 
-def method(entry):
-    require(isinstance(entry, list) and len(entry) >= 2 and entry[0] == "vector",
-            "each complete handler entry must be an encoded vector")
-    require(isinstance(entry[1], list) and len(entry[1]) == 2 and entry[1][0] == "symbol",
-            "handler method must be an encoded symbol")
-    return entry[1][1]
+def symbols(value):
+    require(tagged(value, "list") and all(tagged(x, "symbol", 2) for x in value[1:]),
+            "unsupported submodule sequence")
 
 
-def first_difference(left, right, location="fixtures"):
-    if type(left) is not type(right):
-        return f"{location}: type {type(left).__name__} != {type(right).__name__}"
-    if isinstance(left, dict):
-        if left.keys() != right.keys():
-            return f"{location}: field set differs"
-        for key in left:
-            found = first_difference(left[key], right[key], f"{location}.{key}")
-            if found:
-                return found
-    elif isinstance(left, list):
-        if len(left) != len(right):
-            return f"{location}: length {len(left)} != {len(right)}"
-        for index, (a, b) in enumerate(zip(left, right)):
-            found = first_difference(a, b, f"{location}[{index}]")
-            if found:
-                return found
-    elif left != right:
-        return f"{location}: {left!r} != {right!r}"
-    return None
+def complete_events(fixture):
+    """Alpha-rename local handles by attaching their own actual tested responses.
+
+    The stock producer creates exactly one channel and a fresh consecutive ID
+    for every arrow (online-comp 83-100). Enforce that bijection before dropping
+    transport names from semantic records. No event or duplicate is discarded.
+    """
+    answers = defaultdict(list)
+    for answer in fixture["rename_answers"]:
+        answers[answer["entry_index"]].append([answer["query"], answer["answer"]])
+    events = []
+    expected_id = 0
+    for index, entry in enumerate(fixture["trace"]):
+        name = method(entry)
+        require(name in SIZES, f"unsupported annotation method: {name}")
+        require(len(entry) == SIZES[name], f"unsupported signature: {name}")
+        if name == ARROW:
+            require(entry[-2] == ["rename-channel", 0] and integer(entry[-1]) == expected_id,
+                    "rename table is not one genuine channel with consecutive unique IDs")
+            require([a[0] for a in answers[index]] == strict.QUERIES,
+                    "rename answers are not attached to their exact original entry")
+            events.append(entry[:-2] + [["tested-rename-answers", answers[index]]])
+            expected_id += 1
+        else:
+            events.append(entry)
+    require(expected_id > 0, "no observed arrow endpoint table")
+    return events
 
 
-def validate(capture, mode, manifest):
-    require(isinstance(capture, dict), "capture must be an object")
-    require(capture.get("schema") == SCHEMA and capture.get("completed") is True,
-            f"{mode}: missing successful actual-handler completion")
-    runtime = capture.get("runtime", {})
-    require(runtime.get("mode") == mode, f"{mode}: wrong capture mode")
-    require(runtime.get("version") == "9.3", f"{mode}: wrong Racket version")
-    expected = {"stock": "unexported", "off": False, "on": True}[mode]
-    require(type(runtime.get("activation")) is type(expected) and runtime.get("activation") == expected,
-            f"{mode}: actual exported activation disagrees")
-    require(runtime.get("flag") == ("1" if mode == "on" else None),
-            f"{mode}: environment flag disagrees")
-    require(isinstance(runtime.get("root"), str) and bool(runtime["root"])
-            and isinstance(runtime.get("executable"), str) and bool(runtime["executable"]),
-            f"{mode}: verified runtime root/executable evidence missing")
-    require(type(runtime.get("fixture_timeout_seconds")) in (int, float)
-            and 0 < runtime["fixture_timeout_seconds"] <= 120
-            and type(runtime.get("suite_timeout_seconds")) is int
-            and runtime.get("suite_timeout_seconds") == 180,
-            f"{mode}: native operation timeout evidence missing")
-    sources = runtime.get("sources", {})
-    pins = {**PINS, "xref": manifest["original_sha256" if mode == "stock" else "patched_sha256"]}
-    require(set(sources) == set(pins), f"{mode}: source evidence incomplete")
-    for name, pin in pins.items():
-        require(sources[name].get("sha256") == pin, f"{mode}: {name} source pin mismatch")
-        require(isinstance(sources[name].get("path"), str) and bool(sources[name]["path"]),
-                f"{mode}: {name} source path missing")
-    fixtures = capture.get("fixtures")
-    require(isinstance(fixtures, list) and [f.get("name") for f in fixtures] == FIXTURES,
-            f"{mode}: fixture set/order differs")
-    all_answers = []
-    for fixture in fixtures:
-        name = fixture["name"]
-        source = fixture.get("source")
-        require(isinstance(source, str) and source.startswith("#lang racket/base\n"),
-                f"{mode}/{name}: original source missing")
-        trace = fixture.get("trace")
-        require(isinstance(trace, list) and bool(trace), f"{mode}/{name}: trace missing")
-        docs = [entry for entry in trace if method(entry) == DOC_METHOD]
-        require(bool(docs) and fixture.get("documentation_count") == len(docs),
-                f"{mode}/{name}: nonempty documentation control failed")
-        repeats = set()
-        prefixed = set()
-        for doc in docs:
-            require(len(doc) == 9, f"{mode}/{name}: documentation signature changed")
-            left, right = integer(doc[2]), integer(doc[3])
-            require(0 <= left <= right <= len(source), f"{mode}/{name}: documentation positions invalid")
-            require(isinstance(doc[4], list) and len(doc[4]) == 2 and doc[4][0] == "symbol",
-                    f"{mode}/{name}: documentation key invalid")
-            key = doc[4][1]
-            require(isinstance(doc[5], str) and bool(doc[5]), f"{mode}/{name}: docs label missing")
-            require(isinstance(doc[6], list) and len(doc[6]) == 3 and doc[6][0] == "path"
-                    and doc[6][1] in ("unix", "windows") and isinstance(doc[6][2], list)
-                    and ((len(doc[6][2]) == 3 and doc[6][2][:2] in (["root", "runtime"], ["root", "fixture"]))
-                         or (len(doc[6][2]) == 2 and doc[6][2][0] == "literal"))
-                    and isinstance(doc[6][2][-1], list) and bool(doc[6][2][-1])
-                    and all(type(byte) is int and 0 <= byte <= 255 for byte in doc[6][2][-1]),
-                    f"{mode}/{name}: full docs path missing")
-            require(doc[7] is not False, f"{mode}/{name}: definition tag missing")
-            if key == fixture.get("repeated_key"):
-                require(source[left:right] == key, f"{mode}/{name}: Unicode/source positions differ")
-                repeats.add(left)
-            if key == "base:add1":
-                prefixed.add(left)
-            require(not fixture.get("no_docs_key") or key != fixture["no_docs_key"],
-                    f"{mode}/{name}: undocumented local binding unexpectedly documented")
-        minimum = fixture.get("repeated_minimum")
-        require(type(minimum) is int and minimum >= 2 and len(repeats) >= minimum,
-                f"{mode}/{name}: documented repeated references missing")
-        if name == "import-aliases":
-            require(len(prefixed) >= 2, f"{mode}/{name}: prefixed alias docs missing")
-        expected_requests = []
-        seen_channels = set()
-        for index, entry in enumerate(trace):
-            if method(entry) in (ARROW_METHOD, ID_SET_METHOD):
-                require(len(entry) == (15 if method(entry) == ARROW_METHOD else 5),
-                        f"{mode}/{name}: rename method signature changed")
-                channel = entry[-2]
-                require(isinstance(channel, list) and len(channel) == 2 and channel[0] == "rename-channel"
-                        and type(channel[1]) is int and channel[1] >= 0,
-                        f"{mode}/{name}: genuine normalized rename channel missing")
-                seen_channels.add(channel[1])
-                request_id = integer(entry[-1])
-                require(request_id >= 0, f"{mode}/{name}: rename request ID invalid")
-                for query in QUERIES:
-                    expected_requests.append({"entry_index": index, "channel": channel[1],
-                                              "request_id": request_id, "query": query})
-        require(bool(expected_requests) and seen_channels == set(range(len(seen_channels))),
-                f"{mode}/{name}: rename channels missing/noncanonical")
-        answers = fixture.get("rename_answers")
-        require(isinstance(answers, list) and len(answers) == len(expected_requests),
-                f"{mode}/{name}: not every real rename endpoint was exercised")
-        for expected_request, answer in zip(expected_requests, answers):
-            require(set(answer) == {*expected_request, "answer"} and type(answer.get("answer")) is bool,
-                    f"{mode}/{name}: actual boolean rename answer missing")
-            require({key: answer[key] for key in expected_request} == expected_request,
-                    f"{mode}/{name}: rename request correspondence differs")
-            all_answers.append(answer["answer"])
-    require(any(all_answers) and not all(all_answers), f"{mode}: both true and false rename answers required")
-    return fixtures
+def project(fixture):
+    """Project only the nine observed methods; reject expansion of this model."""
+    source = fixture["source"]
+    length = len(source)
+    require(0 < length <= 10000, "fixture exceeds bounded per-character review")
+    events = complete_events(fixture)
+    require(len(events) <= 10000, "fixture exceeds bounded event review")
+    lanes = {name: [[] for _ in range(length)] for name in ("menus", "def_links", "colors", "tooltips", "arrows")}
+    menu_keys = [set() for _ in range(length)]
+    docs_map = [None for _ in range(length + 1)]
+    docs_order = [[] for _ in range(length + 1)]
+    target_order = defaultdict(list)
+    targets = {}
+    require_order = []
+    prefix_order = defaultdict(list)
+    endpoint_occurrences = defaultdict(list)
+    retained_edges = {}
+    require_groups = {}
+
+    def span(left, right):
+        left, right = integer(left), integer(right)
+        require(0 <= left <= right <= length, "out-of-source range; refusing implicit repair")
+        return left, right
+
+    def effective(left, right):
+        # gui.rkt 1113-1128. Inputs are already verified in bounds and ordered.
+        if left == right:
+            if right == length:
+                left -= 1
+            else:
+                right += 1
+        return range(left, right)
+
+    def add(lane, left, right, event, menu_key=None):
+        for position in effective(left, right):
+            if menu_key is not None:
+                if menu_key in menu_keys[position]:
+                    continue
+                menu_keys[position].add(menu_key)
+            lanes[lane][position].insert(0, event)
+
+    for index, event in enumerate(events):
+        name = method(event)
+        if name == ARROW:
+            left, right = span(event[2], event[3])
+            end_left, end_right = span(event[6], event[7])
+            require(all(tagged(event[i], "number", 2) for i in (4, 5, 8, 9)),
+                    "unsupported arrow geometry")
+            require(type(event[10]) is bool and tagged(event[11], "number", 2),
+                    "unsupported arrow actual/phase form")
+            integer(event[11])
+            require(event[12] is False or event[12] is True or event[12] == ["symbol", "module-lang"],
+                    "unsupported require-arrow marker")
+            geometry = key([left, right, end_left, end_right])
+            endpoint_occurrences[geometry].append(event)
+            if (left, right) == (end_left, end_right) or geometry in retained_edges:
+                continue
+            retained_edges[geometry] = event
+            if event[12] is not False:
+                # Require arrows alone may permute within their shared binder.
+                # Homogeneous source geometry, phase/type and tested predicate
+                # answers are mandatory; destinations remain in full inventory.
+                group_key = key([left, right])
+                signature = event[4:6] + event[10:13] + [event[-1]]
+                require(group_key not in require_groups or require_groups[group_key] == signature,
+                        "heterogeneous require-source group; order must remain strict")
+                require_groups[group_key] = signature
+            add("arrows", left, right, event)
+            add("arrows", end_left, end_right, event)
+        elif name == TAIL:
+            left, end = integer(event[2]), integer(event[3])
+            require(0 <= left < length and 0 <= end < length, "unsupported tail endpoint")
+            add("arrows", left, left + 1, event)
+            add("arrows", end, end + 1, event)
+        elif name == DOCS:
+            left, right = span(event[2], event[3])
+            require(index > 0 and events[index - 1] == ["vector", ["symbol", TEXT], event[2], event[3], ["symbol", "document-identifier"]],
+                    "documentation is not paired with its actual preceding text-type event")
+            path(event[6])
+            for position in range(left, right + 1):
+                # blueboxes-gui 673-677: exact last-write state includes end+1.
+                docs_map[position] = [left, right + 1, event[7], event[6], event[8]]
+                docs_order[position].append(event)
+            add("menus", left, right, event, key(event[4]))
+        elif name == TEXT:
+            left, right = span(event[2], event[3])
+            require(event[4] == ["symbol", "document-identifier"], "unobserved text-type needs consumer review")
+            require(index + 1 < len(events) and method(events[index + 1]) == DOCS
+                    and events[index + 1][2:4] == event[2:4],
+                    "text-type/docs adjacency changed")
+            add("colors", left, right, event)
+        elif name == REQUIRE:
+            left, right = span(event[2], event[3])
+            path(event[4])
+            require_order.append(event)
+            add("menus", left, right, event, key(event[4]))
+        elif name == JUMP:
+            left, right = span(event[2], event[3])
+            require(tagged(event[4], "symbol", 2), "unsupported definition ID")
+            path(event[5])
+            symbols(event[6])
+            integer(event[7])
+            add("def_links", left, right, event)
+        elif name == HOVER:
+            left, right = span(event[2], event[3])
+            require(isinstance(event[4], str), "unsupported tooltip payload")
+            add("tooltips", left, right, event)
+        elif name == TARGET:
+            left, right = span(event[2], event[3])
+            require(tagged(event[4], "symbol", 2), "unsupported definition target")
+            symbols(event[5])
+            integer(event[6])
+            target_key = key(event[4:6])
+            target_order[target_key].append(event)
+            targets[target_key] = [left, right]
+        elif name == PREFIX:
+            span(event[2], event[3])
+            span(event[5], event[6])
+            require(tagged(event[4], "symbol", 2), "unsupported prefix payload")
+            prefix_order[key(event[2:4])].append(event)
+
+    # These local sequences preserve source choice, local-binding order, and
+    # tail/variable interleaving. Only homogeneous require arrows with exactly
+    # the same binder get the same token, allowing their destination permutation.
+    selection_order = []
+    first_binding = []
+    paint_order = lanes.pop("arrows")
+    for arrows in paint_order:
+        sequence = []
+        for event in arrows:
+            if method(event) == ARROW and event[12] is not False:
+                sequence.append(["same-require-source", event[2:6], event[10:13], event[-1]])
+            else:
+                sequence.append(event)
+        selection_order.append(sequence)
+        variables = [event for event in arrows if method(event) == ARROW]
+        first_binding.append(variables[0][2:4] if variables else None)
+
+    # Unordered maps here represent lookup domains, not trace reordering. Every
+    # full event occurrence survives the Counter; order-sensitive sequences and
+    # first/last-wins consumer state are separately required to agree exactly.
+    contract = {"source": source,
+                "event_inventory": dict(Counter(key(event) for event in events)),
+                "docs_overwrite_map": docs_map, "docs_overlap_order": docs_order,
+                "require_order": require_order, "definition_targets": targets,
+                "definition_target_order": dict(target_order), "prefix_order": dict(prefix_order),
+                "endpoint_occurrences": dict(endpoint_occurrences), "retained_binding_graph": retained_edges,
+                "require_group_signatures": require_groups, "source_selection_order": selection_order,
+                "first_binding_destination": first_binding, **lanes}
+    return contract, paint_order
+
+
+def difference(left, right, label):
+    return strict.first_difference(left, right, label)
 
 
 def compare(stock, stock_again, off, on, manifest):
-    baseline = validate(stock, "stock", manifest)
-    baseline_again = validate(stock_again, "stock", manifest)
-    timeout_fields = ("fixture_timeout_seconds", "suite_timeout_seconds")
-    expected_timeouts = {key: stock["runtime"][key] for key in timeout_fields}
-    repeated_timeouts = {key: stock_again["runtime"][key] for key in timeout_fields}
-    require(first_difference(expected_timeouts, repeated_timeouts, "timeouts") is None,
-            "Stock-to-stock timeout bounds differ; candidate comparison is blocked")
-    difference = first_difference(baseline, baseline_again)
-    if difference:
-        raise GateError("Stock-to-stock control is unstable; candidate comparison is blocked. " + difference)
-    for mode, capture in [("off", off), ("on", on)]:
-        candidate = validate(capture, mode, manifest)
-        candidate_timeouts = {key: capture["runtime"][key] for key in timeout_fields}
-        require(first_difference(expected_timeouts, candidate_timeouts, "timeouts") is None,
-                f"Stock versus {mode} timeout bounds differ")
-        difference = first_difference(baseline, candidate)
-        if difference:
-            raise GateError(f"Stock versus {mode} differs: {difference}")
-    return {"equal": True, "stock_control_stable": True, "fixtures": len(baseline),
-            "ordered_trace_entries": sum(len(f["trace"]) for f in baseline),
-            "documentation_annotations": sum(f["documentation_count"] for f in baseline),
-            "rename_answers": sum(len(f["rename_answers"]) for f in baseline),
-            "actual_enabled_activation": True}
+    captures = [("stock", stock), ("stock-again", stock_again), ("off", off), ("on", on)]
+    expected_timeout = None
+    projections = {}
+    paints = {}
+    for label, capture in captures:
+        strict.validate(capture, "stock" if label.startswith("stock") else label, manifest)
+        timeout = {k: capture["runtime"][k] for k in ("fixture_timeout_seconds", "suite_timeout_seconds")}
+        if expected_timeout is None:
+            expected_timeout = timeout
+        require(difference(expected_timeout, timeout, "timeouts") is None, "capture timeout bounds differ")
+        projections[label], paints[label] = [], []
+        for fixture in capture["fixtures"]:
+            contract, paint = project(fixture)
+            projections[label].append(contract)
+            paints[label].append(paint)
+    diagnostics = []
+    for label, capture in captures[1:]:
+        raw_difference = difference(stock["fixtures"], capture["fixtures"], "fixtures")
+        changed = []
+        for index, fixture in enumerate(stock["fixtures"]):
+            positions = [position for position, (a, b) in enumerate(zip(paints["stock"][index], paints[label][index])) if a != b]
+            if positions:
+                changed.append({"fixture": fixture["name"], "character_positions": positions})
+        diagnostics.append({"left": "stock", "right": label, "exact_raw_order_equal": raw_difference is None,
+                            "first_raw_difference": raw_difference,
+                            "require_arrow_paint_order_variation": changed})
+        found = difference(projections["stock"], projections[label], "annotation_contract")
+        if found:
+            if label == "stock-again":
+                raise GateError("Stock annotation semantics are unstable; candidate interpretation blocked. " + found)
+            raise GateError(f"Stock versus {label} annotation semantics differ: {found}")
+    fixtures = stock["fixtures"]
+    return {"targeted_annotation_semantics_equal": True,
+            "stock_annotation_semantics_stable": True,
+            "exact_raw_order_equal": all(row["exact_raw_order_equal"] for row in diagnostics),
+            "raw_order_diagnostics": diagnostics,
+            "fixtures": len(fixtures), "trace_entries_per_capture": sum(len(f["trace"]) for f in fixtures),
+            "documentation_annotations_per_capture": sum(f["documentation_count"] for f in fixtures),
+            "tested_rename_answers_per_capture": sum(len(f["rename_answers"]) for f in fixtures),
+            "actual_enabled_activation": True,
+            "claim": "Completed annotation, binding/navigation and five-query rename contract only; transient GUI replay/paint ordering and timing remain unproven."}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("stock", "stock_again", "off", "on"):
         parser.add_argument(name, type=Path)
+    parser.add_argument("--manifest", type=Path, default=(HERE.parent / "manifest.json"))
     args = parser.parse_args()
     try:
-        captures = [json.loads(getattr(args, name).read_text(encoding="utf-8"))
-                    for name in ("stock", "stock_again", "off", "on")]
-        manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-        print(json.dumps(compare(*captures, manifest), indent=2))
-    except (GateError, KeyError, TypeError, OSError, json.JSONDecodeError) as error:
+        paths = [getattr(args, name) for name in ("stock", "stock_again", "off", "on")]
+        raw = [path.read_bytes() for path in paths]
+        captures = [json.loads(data) for data in raw]
+        result = compare(*captures, json.loads(args.manifest.read_text(encoding="utf-8")))
+        result["input_sha256"] = {str(path): hashlib.sha256(data).hexdigest() for path, data in zip(paths, raw)}
+        print(json.dumps(result, indent=2))
+    except (GateError, ValueError, KeyError, TypeError, OSError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         return 1
     return 0

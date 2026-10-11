@@ -5,7 +5,9 @@
 ;; Run from any directory:
 ;;   racket tests/independent-reply-test.rkt
 ;; Optional positional arguments: STOCK-XREF.RKT CANDIDATE-XREF.RKT
-;; This file has not been run in the authoring environment (no Racket executable).
+;; No Racket executable is available in the authoring environment. Native run
+;; 38104720998 exercised the initial version; the deterministic break-checkpoint
+;; repair below still requires a native rerun.
 
 (require rackunit
          rackunit/text-ui
@@ -161,7 +163,8 @@
                 (lambda () (custodian-shutdown-all (fixture-custodian f)))))
 
 (define (start-caller f key #:directory [directory (current-directory)]
-                      #:breaks? [breaks? #t] #:returned [returned #f])
+                      #:breaks? [breaks? #t] #:returned [returned #f]
+                      #:break-checkpoint? [break-checkpoint? #f])
   (define cust (make-custodian (fixture-custodian f)))
   (define done (make-async-channel))
   (define dispatched (make-semaphore 0))
@@ -179,6 +182,11 @@
                  (define result ((fixture-get f) key))
                  (when returned (async-channel-put returned (list 'value result)))
                  result)))
+           ;; Leaving parameterize-break restores the previous state; it does
+           ;; not establish an explicit break-delivery synchronization point.
+           ;; A requested checkpoint must receive the pending break, or the
+           ;; caller stays blocked and the fixture's bounded await fails.
+           (when break-checkpoint? (sync/enable-break never-evt))
            (async-channel-put done (list 'value result)))))))
   (caller worker cust done dispatched))
 
@@ -450,19 +458,24 @@
         (request f 'after-ready-break)
         (no-response-leak! f))))
 
-   (test-case "disabled breaks stay deferred until parameterize-break exits"
+   (test-case "disabled lookup returns before pending break at explicit enabled wait"
      (define held (make-gate))
      (define returned (make-async-channel))
      (call-with-fixture
       v #:gates (hash 'deferred-break held)
       (lambda (f)
-        (define c (start-caller f 'deferred-break #:breaks? #f #:returned returned))
+        (define c (start-caller f 'deferred-break
+                                #:breaks? #f #:returned returned
+                                #:break-checkpoint? #t))
         (await (gate-entered held))
         (break-thread (caller-thread c))
         (check-false (sync/timeout quiet-window (caller-done c)))
         (semaphore-post (gate-release held))
-        (check-equal? (caddr (cadr (await returned))) 'deferred-break)
+        (define original-result (cadr (await returned)))
+        (check-equal? (caddr original-result) 'deferred-break)
         (check-equal? (await (caller-done c)) '(break))
+        (check-eq? original-result (request f 'deferred-break))
+        (check-equal? (lookup-count f 'deferred-break) 1)
         (request f 'after-deferred-break)
         (no-response-leak! f))))
 

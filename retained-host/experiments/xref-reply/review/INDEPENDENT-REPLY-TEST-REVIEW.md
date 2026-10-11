@@ -3,10 +3,12 @@
 ## Result and verification limit
 
 The candidate's bounded transport change looks consistent with the upstream
-serial lookup/cache design in source review. **The native Racket test suite is
-prepared, not passed:** this authoring environment has no `racket` executable.
-A delimiter/string/comment scan is a source check only; it is not compilation or
-runtime evidence. Native execution remains a gate before claiming equivalence.
+serial lookup/cache design in source review. Initial native Racket 9.3 run
+`38104720998` reported **51 passing cases and three failures**, all the same
+test-only immediate deferred-break expectation in stock/off/on. The revised
+deterministic break test below has **not yet been rerun natively**. This authoring
+environment has no `racket` executable. A delimiter/string/comment scan is a
+source check only; native execution remains a gate before claiming equivalence.
 
 Reviewed inputs:
 
@@ -67,7 +69,9 @@ The same checks run for stock, candidate-off, and candidate-on:
    no lookup/cache work. This case asserts the observable outcome; its
    pre-call dispatch marker does not prove entry into the blocking primitive.
 8. Enabled breaks during lookup and after ready response; disabled breaks remain
-   deferred until the enclosing `parameterize-break` exits.
+   deferred through lookup, the returned result is recorded, and the queued
+   break must be delivered at an explicit `sync/enable-break` checkpoint. The
+   returned object remains the identical cached result after cancellation.
 9. Lookup exceptions, an unexpected multiple-value backend result (arity error),
    and explicit service kill retain the stock in-flight hang and subsequent-call
    `#f` outcome, with bounded fixture cleanup.
@@ -83,6 +87,28 @@ All fixtures have independent custodians; caller custodians are separate from
 the service custodian. Expected-hang tests have five-second event bounds and
 unconditional custodian shutdown. The short 50 ms negative-observation windows
 are paired with deterministic lookup gates or confirmed service death.
+
+## Native failure diagnosis and minimal repair
+
+The first native log (`openracket-recovery/results/run-38104720998/log-parts/001.json`)
+shows the same correct `deferred-break` result followed by a normal completion
+notification in stock, candidate-off, and candidate-on. No other case failed.
+The test had assumed a queued asynchronous break would necessarily be caught
+between exiting `parameterize-break #f` and a nonblocking completion send.
+Exiting that form restores the previous break parameterization; it is not an
+explicit break-enabled wait, and the harness neither established the restored
+state nor forced delivery before normal completion. The log does not distinguish
+those two reasons for the invalid expectation.
+
+The repair adds an opt-in, test-only `sync/enable-break never-evt` after capturing
+the lookup result and before normal completion. This primitive establishes the
+intended enabled wait independently of ambient break state. The event cannot
+become ready normally: the queued break must reach the existing `exn:break?`
+handler, or the five-second await fails and the fixture is shut down. The test
+still requires no cancellation while lookup is disabled, the correct lookup
+result, exact break completion, same-object cache identity afterward, one backend
+lookup, service usability, and no response-helper leak. All three variants run
+this identical assertion. Production source and frozen copies were not edited.
 
 ## Native commands to preserve
 

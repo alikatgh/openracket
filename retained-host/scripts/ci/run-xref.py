@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draft adapter: exact xref-only correctness before separately frozen telemetry."""
+"""Exact xref-only correctness before separately frozen telemetry."""
 import base64,hashlib,importlib.util,json,os,pathlib,platform,shutil,struct,subprocess,sys,time
 ROOT=pathlib.Path(__file__).resolve().parents[2];os.chdir(ROOT)
 EXP=ROOT/'experiments/xref-reply';TEMP=pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
@@ -97,7 +97,6 @@ def host_check(mode):
 
 try:
  if PHASE=='prepare':
-  # Source/CLI details below remain deliberately pending the owner's immutable freeze.
   manifest=json.loads((EXP/'CONTENTS-SHA256.json').read_text())
   for name,h in manifest.items():
    p=EXP/name;assert not pathlib.Path(name).is_absolute() and '..' not in pathlib.Path(name).parts
@@ -116,24 +115,28 @@ try:
   for mode in ('stock','candidate-off','candidate-on'):
    command(mode+' compile actual xref module',[runtime(mode)/'bin/racket','-l','raco','make',collection(mode,('xref.rkt','drracket','private','syncheck')),EXP/'tests/independent-reply-test.rkt',EXP/'tests/native-trace.rkt',ROOT/'scripts/ci/xref-native-host.rkt',ROOT/'tests/independent-native-host.rkt',ROOT/'tests/independent-native-workflows.rkt'],mode=mode,purpose='compile',timeout=120)
  elif PHASE=='correctness':
+  # Independent helper checks collect before product gates; timing still requires every gate.
+  perf=TELEMETRY/'performance';observer=TELEMETRY/'observer'
+  private=collection('stock',('module-language.rkt','drracket','private')).parent
+  e=env('stock','observer-source-tests');e['OPENRACKET_TEST_STOCK_PRIVATE']=str(private)
+  command('Exact observer source boundaries',[sys.executable,observer/'test_source.py'],environment=e,timeout=90,cwd=observer,required=False)
+  command('Telemetry supervisor and observation rejection tests',[sys.executable,'-m','unittest','-v','test_harness','test_observation'],purpose='telemetry-python-tests',timeout=90,cwd=perf,required=False)
+  command('Native observer protocol and kill-safety tests',[STOCK/'bin/racket',observer/'test_support.rkt'],purpose='observer-helper-tests',timeout=180,cwd=observer,required=False)
+  for mode in ('stock','candidate-on'):
+   command(mode+' uninstrumented telemetry caller/helper compile',[runtime(mode)/'bin/racket','-l','raco','make',perf/'retained-host.rkt',perf/'settings.rkt',perf/'activation.rkt',perf/'budget-activation.rkt',observer/'support.rkt'],mode=mode,purpose='telemetry-precompile',timeout=120,required=False)
   command('Actual stock/off/on reply concurrency and cancellation suite',[STOCK/'bin/racket',EXP/'tests/independent-reply-test.rkt'],purpose='service-correctness',timeout=180,required=False)
   captures=[]
   for label,mode,trace_mode in (('stock','stock','stock'),('stock-again','stock','stock'),('off','candidate-off','off'),('on','candidate-on','on')):
    directory=REPORTS/('trace-'+label);directory.mkdir();output=directory/'trace.json';captures.append(output)
    command(label+' full actual monitor/go trace and rename endpoints',[runtime(mode)/'bin/racket',EXP/'tests/native-trace.rkt','--mode',trace_mode,'--runtime-root',runtime(mode),'--output',output],mode=mode,purpose='trace-'+label,timeout=200,required=False)
    if output.is_file():command(label+' exact trace log evidence',[sys.executable,ROOT/'scripts/ci/emit-replay-evidence.py',output],timeout=30,required=False)
-  command('Stock stability and stock/off/on complete ordered trace equality',[sys.executable,EXP/'tests/compare-trace.py',*captures],purpose='compare-traces',required=False)
+  command('Stock/off/on complete semantic trace and rename equivalence; raw order diagnostic',[sys.executable,EXP/'tests/compare-trace.py',*captures],purpose='compare-traces',required=False)
   for mode in ('stock','candidate-on'):
    try:host_check(mode)
    except Exception as error:record(mode+' native host supervisor',False,str(error))
  elif PHASE=='telemetry':
   assert ROWS and all(r['passed'] for r in ROWS),'Any earlier correctness failure blocks measurements'
   perf=TELEMETRY/'performance';observer=TELEMETRY/'observer'
-  private=collection('stock',('module-language.rkt','drracket','private')).parent
-  e=env('stock','observer-source-tests');e['OPENRACKET_TEST_STOCK_PRIVATE']=str(private)
-  command('Exact observer source boundaries',[sys.executable,observer/'test_source.py'],environment=e,timeout=90,cwd=observer)
-  command('Telemetry supervisor and observation rejection tests',[sys.executable,'-m','unittest','-v','test_harness','test_observation'],purpose='telemetry-python-tests',timeout=90,cwd=perf)
-  command('Native observer protocol and kill-safety tests',[STOCK/'bin/racket',observer/'test_support.rkt'],purpose='observer-helper-tests',timeout=180,cwd=observer)
   manifests=[]
   for mode in ('stock','candidate-on'):
    try:command(mode+' identical compact observer installation and actual module compile',[sys.executable,observer/'prepare.py','--diagnostic-root',runtime(mode),'--racket',runtime(mode)/'bin/racket'],mode=mode,purpose='observer-prepare',timeout=260)

@@ -1,0 +1,170 @@
+{
+  "run_id": 38104720998,
+  "commit": "9c5c689530787e03ce5a69a15fd0b6ec1127d229",
+  "job_id": 114367666144,
+  "conclusion": "failure",
+  "log_sha256": "3c29c934736583b7105a2bdea4547aa4e79d2f7ff2efd27ba85a1d136579918b",
+  "results": [
+    {
+      "name": "Reviewed frozen xref source hashes",
+      "passed": true,
+      "detail": "41"
+    },
+    {
+      "name": "CI isolation contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless xref and diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict paired metadata and outcome classifier checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent xref-control runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent xref-candidate runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "Pinned xref-only application",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "Pinned source and installer refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual stock/off/on reply concurrency and cancellation suite",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "stock full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock stability and stock/off/on complete ordered trace equality",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "xref-stock-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17916853501791685350280\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "xref-candidate-on-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17916853611791685361948\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "service_cases": {
+    "passed": 51,
+    "failed": 3,
+    "errors": 0
+  },
+  "trace_captures_passed": 4,
+  "host_check_syntax_passed": [
+    "stock",
+    "candidate-on"
+  ],
+  "telemetry": "skipped after correctness failures",
+  "artifacts": 0,
+  "exact_failures": [
+    "independent-reply-test.rkt:465: deferred-break returns value instead of expected break identically in stock/off/on",
+    "Stock-to-stock control unstable at fixtures[0].rename_answers[10].entry_index: 10 != 6"
+  ],
+  "screenshots": {
+    "xref-stock-check-syntax.png": "ad1b8134b0bc50cbce4012f029a64dda2d23e98fbaf554ab639cd8a93d517560",
+    "xref-candidate-on-check-syntax.png": "2e490402705b66e1ce3e1eec152c8598ff87594f90ed2bdb4b9419282d1d51b2"
+  },
+  "screenshot_note": "Exact native OS images decoded and visually inspected; genuine stock-style frame and synthetic fixture visible. Images were transported through job logs only."
+}

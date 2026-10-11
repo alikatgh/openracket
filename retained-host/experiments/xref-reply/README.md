@@ -2,8 +2,10 @@
 
 This default-off Racket 9.3 experiment changes only the private reply transport in
 `drracket/private/syncheck/xref.rkt`. It is separate from the delivered Mac preview.
-No native compilation, output equivalence, allocation reduction or speedup is
-claimed by the current local source checks.
+The first Mac run compiled the actual modules and passed both real-host Check
+Syntax cases. Two test assumptions have been repaired as documented below; the
+combined native rerun is pending. No allocation reduction or speedup has been
+measured.
 
 ## Why test this
 
@@ -76,7 +78,10 @@ Native test commands, using the executable of each selected disposable runtime:
     "$RACKET" tests/independent-reply-test.rkt
 
 The service suite executes 54 named cases over the actual stock/off/on source
-forms with deterministic injected lookup primitives. It is headless. The real
+forms with deterministic injected lookup primitives. In the first native run,
+51 passed; the same immediate deferred-break assertion failed in all three
+modes. A deterministic, test-only enabled-wait checkpoint is prepared for a
+native rerun. The service suite is headless. The real
 documentation/handler gate runs four fresh processes and profiles:
 
     "$STOCK_RACKET" tests/native-trace.rkt --mode stock --runtime-root "$STOCK_COPY" --output stock.json
@@ -90,11 +95,24 @@ requires installed official documentation, positive repeated documentation
 annotations, complete ordered traces and live rename-channel answers. Only
 path-valued descendants of verified installation/fixture roots and genuine
 channel identities are normalized. Labels, definition tags, anchors, all other
-values and duplicate entries remain. A differing stock-to-stock control blocks
-candidate interpretation rather than silently sorting the trace. Default bounds
+values and duplicate entries remain. The comparator requires a stable completed
+annotation contract in the two stock captures before interpreting the candidate.
+It validates every real rename answer against its logical event and compares
+order-sensitive documentation, menu, tooltip and navigation state. Only the
+reviewed shared-binder require-arrow permutations are allowed; original raw
+ordering and paint-order differences remain explicit diagnostics. Unknown
+methods or unreviewed shapes fail closed. See `tests/TRACE-SEMANTICS.md` for the
+source-backed boundary and mutation tests. This does not certify transient
+painting order, rendered pixels or general release parity. Default bounds
 are 30 seconds per fixture and 180 seconds for the suite; CI supplies an outer
-process bound and unconditional cleanup. Actual native compilation/execution is
-still unrun at this local freeze.
+process bound and unconditional cleanup. The first native run completed all
+four captures but detected pristine stock-to-stock trace-order variation, so
+the original exact comparison rejected the control and blocked timing. That
+comparison remains available as `tests/compare-trace-exact.py` and still reports
+the mismatch. The bounded completed-annotation comparison passes those same
+unchanged captures: 436 entries, 71 documentation annotations and 535 actual
+rename replies per capture. The complete raw traces remain evidence; see
+`reports/NATIVE-CORRECTNESS-38104720998.md`.
 
 CI also exercises the existing real-host Check Syntax case in stock/on modes.
 All native gates precede Mac timing. An allocation or latency change that

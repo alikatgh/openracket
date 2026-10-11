@@ -1,0 +1,382 @@
+{
+  "targeted_annotation_semantics_equal": true,
+  "stock_annotation_semantics_stable": true,
+  "exact_raw_order_equal": false,
+  "raw_order_diagnostics": [
+    {
+      "left": "stock",
+      "right": "stock-again",
+      "exact_raw_order_equal": false,
+      "first_raw_difference": "fixtures[0].rename_answers[10].entry_index: 10 != 6",
+      "require_arrow_paint_order_variation": [
+        {
+          "fixture": "repeated-base",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "unicode",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "phase-one",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ]
+        },
+        {
+          "fixture": "import-aliases",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ]
+        },
+        {
+          "fixture": "undocumented-binding",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ]
+        }
+      ]
+    },
+    {
+      "left": "stock",
+      "right": "off",
+      "exact_raw_order_equal": false,
+      "first_raw_difference": "fixtures[0].rename_answers[10].entry_index: 10 != 9",
+      "require_arrow_paint_order_variation": [
+        {
+          "fixture": "repeated-base",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "unicode",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "phase-one",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ]
+        },
+        {
+          "fixture": "import-aliases",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ]
+        },
+        {
+          "fixture": "undocumented-binding",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ]
+        }
+      ]
+    },
+    {
+      "left": "stock",
+      "right": "on",
+      "exact_raw_order_equal": false,
+      "first_raw_difference": "fixtures[0].rename_answers[65].entry_index: 52 != 53",
+      "require_arrow_paint_order_variation": [
+        {
+          "fixture": "repeated-base",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "unicode",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "fixture": "phase-one",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49
+          ]
+        },
+        {
+          "fixture": "import-aliases",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ]
+        },
+        {
+          "fixture": "undocumented-binding",
+          "character_positions": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ]
+        }
+      ]
+    }
+  ],
+  "fixtures": 5,
+  "trace_entries_per_capture": 436,
+  "documentation_annotations_per_capture": 71,
+  "tested_rename_answers_per_capture": 535,
+  "actual_enabled_activation": true,
+  "claim": "Completed annotation, binding/navigation and five-query rename contract only; transient GUI replay/paint ordering and timing remain unproven.",
+  "input_sha256": {
+    "../openracket-recovery/results/run-38104720998/decoded/trace-stock-trace.json": "902da88fb254153c40cfc30300190724c5c275da32ddc1d97b8e5d68480b4593",
+    "../openracket-recovery/results/run-38104720998/decoded/trace-stock-again-trace.json": "3fea2a26da617634b339c180dbeedf0b9ef52a08a82e5c88777b1f7b5f37e1eb",
+    "../openracket-recovery/results/run-38104720998/decoded/trace-off-trace.json": "1648807125253d6e80efc3078cb4920130667129cc4a4ac6082e8fe55ceb71af",
+    "../openracket-recovery/results/run-38104720998/decoded/trace-on-trace.json": "e09ce16070f73e670a9ebb07396113d6ede11e5c29019b51d26189456d2ed194"
+  }
+}

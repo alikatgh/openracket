@@ -1,9 +1,14 @@
 # Actual Check Syntax handler gate
 
-Status: prepared and source-reviewed; native Racket compilation and execution
-have **not run** in this workspace. There is no local Racket executable. The
-portable comparator tests use synthetic JSON solely to test rejection behavior;
-they are not evidence of native parity.
+Status: all four actual monitor/go captures completed in macOS native run
+38104720998. They contain 436 trace entries, 71 docs annotations and 535 successful
+actual rename answers each. Exact ordered stock-to-stock equality fails because
+stock reorders hash-enumerated annotation groups. The bounded annotation contract
+passes all four preserved captures; its output explicitly retains
+`exact_raw_order_equal: false`. See `TRACE-SEMANTICS.md` for source-backed scope.
+
+There is still no local Racket executable. Portable tests use synthetic JSON
+solely to test comparator behavior; native claims come from the actual CI files.
 
 ## What runs
 
@@ -24,6 +29,9 @@ Source-reviewed signatures:
 - Every emitted rename endpoint is queried using `(list request-id query)` and
   the actual answerer thread. Both true and false replies must be observed.
 
+The bounded comparator recognizes only the nine methods observed in this native
+run. Other methods, including future ID-set emissions, fail closed pending review.
+
 Fixtures cover repeated documented `racket/base` bindings, Unicode before source
 positions, phase-one references, renamed and prefixed imports, and an imported
 local submodule binding with no documentation. Each fixture requires nonempty
@@ -41,9 +49,12 @@ root and the supplied disposable runtime root. The latter must contain the
 resolved actual executable and all three resolved, pinned module sources. The
 encoded path retains its Unix/Windows convention and every suffix byte. Paths
 elsewhere retain every original byte. No global string replacement is used.
-Genuine rename channel identities receive encounter-order IDs; their request IDs
-and actual answers remain part of the comparison. Unsupported values fail rather
-than receiving an opaque printable placeholder.
+Genuine rename channel identities receive encounter-order IDs in the capture;
+request IDs and actual answers remain in unchanged raw evidence. The bounded
+comparator validates the actual one-channel, consecutive-ID table, then associates
+each logical event with its own exact ordered answer vector. No answers are pooled
+or detached from their original source/target. Unsupported values fail rather than
+receiving an opaque printable placeholder.
 
 ## Native commands
 
@@ -74,12 +85,19 @@ The fixture limit is recorded and can be explicitly set with `--timeout`; the
 whole-suite limit remains 180 seconds. Apply an external subprocess timeout too
 when scheduling native CI. Failure does not produce a successful capture file.
 
-The comparator first demands exact ordered stock-to-stock equality. If stock
-ordering itself varies, it reports the first differing location and blocks
-interpretation of candidate differences. Do not sort away that evidence. It then
-demands exact stock/off/on logical equality, successful completion, pinned native
-source hashes, absent stock export, false default-off activation, and true enabled
-activation.
+The comparator demands stable stock-to-stock bounded annotation semantics before
+interpreting off/on. It preserves the complete duplicate-bearing typed inventory,
+real-answer associations, order-sensitive docs/menu/color/tooltip/navigation
+states, first retained binding metadata, and local/tail/different-binder ordering.
+Only homogeneous require-arrow permutations within the identical binder range are
+allowed. Native completion, source pins, activation and matching timeouts remain
+mandatory. Exact raw-order comparisons and residual require-arrow paint positions
+are always reported separately; no deterministic transient rendering or timing
+claim is made.
+
+The original exact-order comparator is preserved as `compare-trace-exact.py` with
+the same four arguments. It intentionally continues to fail on this native stock
+control. Neither raw traces nor native capture code were changed to make it pass.
 
 ## Pins and portable checks
 
@@ -92,13 +110,15 @@ activation.
 
 ```sh
 python3 -m unittest discover -s tests -p test_compare_trace.py -v
-python3 -m py_compile tests/compare-trace.py tests/test_compare_trace.py
+python3 -m unittest discover -s tests -p 'test*.py' -v
+python3 -m py_compile tests/compare-trace.py tests/compare-trace-exact.py
 ```
 
-Prepared result: 15 portable comparator tests passed. They cover preservation of
-docs labels, path bytes and path convention, tags and anchors, stock ordering
-instability, candidate reordering, duplicates, Unicode positions, activation,
-source pins, missing docs, incomplete captures, actual-rename-answer coverage,
-and valid matching timeout bounds across all four captures.
-Racket lexical delimiter/string balance was checked separately; that is not a
-native compilation result.
+Prepared result: 22 bounded comparator mutation tests, 15 original exact
+comparator tests, and 7 source/applier tests pass (44 total). Negative mutations
+cover lost/duplicate events, source-only corruption, moved/changed answers, edge
+or phase/geometry changes, docs end+1 overlap and menu first-wins behavior,
+tooltip/definition/navigation order, first retained duplicate-edge metadata,
+local/tail/different-binder ordering, unsupported forms, broken documentation
+pairing and unstable stock semantics. The original tests retain activation,
+source-pin, completion, Unicode and timeout evidence checks.
