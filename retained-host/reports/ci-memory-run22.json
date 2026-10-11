@@ -1,0 +1,521 @@
+{
+  "publication": 22,
+  "commit": "0cb2eeb546061771806ff228fc2356692e97a631",
+  "tree": "55e59990afbd0c3436a6a55e04370bd2293da8c3",
+  "run_id": 38107957744,
+  "job_id": 114377368746,
+  "conclusion": "success",
+  "log_sha256": "e557bed4bd7eab294de338314f9e2600af5919584099f89fd8759ea4d97a9234",
+  "artifacts": 0,
+  "runner": {
+    "physical_memory_bytes": 7516192768,
+    "os": "macOS-15.7.9-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "parallel_large_trials": 1,
+    "limits_mib": [
+      128,
+      256,
+      512
+    ],
+    "order": [
+      [
+        128,
+        256,
+        512
+      ],
+      [
+        256,
+        512,
+        128
+      ],
+      [
+        512,
+        128,
+        256
+      ]
+    ]
+  },
+  "results": [
+    {
+      "name": "Reviewed frozen stock-memory source hashes",
+      "passed": true,
+      "detail": "26"
+    },
+    {
+      "name": "At least 4 GiB physical RAM for sequential bounded trials",
+      "passed": true,
+      "detail": "7516192768"
+    },
+    {
+      "name": "Fresh-profile and balanced limit order tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict memory matrix metadata checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent pristine memory-sensitivity runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact pristine experiment seams and clone collection paths",
+      "passed": true,
+      "detail": "No scan, budget, autosave, xref or appearance patch"
+    },
+    {
+      "name": "Exact observer source boundaries",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Memory setup, supervisor and observation rejection tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native preference persistence, single-key delta and refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native observer protocol and kill-safety tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual stock host caller compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "memory-stock-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17916889491791688949801\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "Common compact observer installation and actual module compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact pristine experiment seams and clone collection paths",
+      "passed": true,
+      "detail": "No scan, budget, autosave, xref or appearance patch"
+    },
+    {
+      "name": "Actual memory workload and setting helpers compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-128 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-256 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-1-limit-512 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-256 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-512 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-2-limit-128 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-512 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-128 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 matched stock GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 complete memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "round-3-limit-256 complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Nine memory-limit records with explicit actual tool outcomes",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "matrix": {
+    "valid": true,
+    "errors": [],
+    "trials": [
+      {
+        "round": 1,
+        "memory_limit_mib": 128,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": false,
+        "tool_outcome_category": "abnormal-termination",
+        "explicit_out_of_memory": true,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 1,
+        "memory_limit_mib": 256,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 1,
+        "memory_limit_mib": 512,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 2,
+        "memory_limit_mib": 128,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": false,
+        "tool_outcome_category": "abnormal-termination",
+        "explicit_out_of_memory": true,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 2,
+        "memory_limit_mib": 256,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 2,
+        "memory_limit_mib": 512,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 3,
+        "memory_limit_mib": 128,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": false,
+        "tool_outcome_category": "abnormal-termination",
+        "explicit_out_of_memory": true,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 3,
+        "memory_limit_mib": 256,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      },
+      {
+        "round": 3,
+        "memory_limit_mib": 512,
+        "status": "complete",
+        "exit_code": 0,
+        "timeout": false,
+        "tool_succeeded": true,
+        "tool_outcome_category": "handler-results",
+        "explicit_out_of_memory": false,
+        "contention_observed": true,
+        "valid": true
+      }
+    ],
+    "scope": "Capacity/settings sensitivity only. Incomplete trials and actual unsuccessful tool outcomes stay explicit; differing outcomes are not equal completed work."
+  },
+  "scope": "Configuration sensitivity only. All three128MiB trials OOM; all three256MiB and all three512MiB trials finish actual analysis. No product default changed and no equal-work speed ratio between success and OOM."
+}

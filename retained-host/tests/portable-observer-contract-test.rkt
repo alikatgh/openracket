@@ -83,7 +83,9 @@
   (check-equal? (in ns 'finished) '(1)))
 (test-case "observer never replaces entrypoint or mutates content/settings/appearance"
   (define forbidden '(change-to-file insert erase delete set-filename set-modified
-                       preferences:set native-appearance-set! native-appearance-restore!
+                       preferences:set preferences:set-default preferences:set-un/marshall
+                       preferences:add-callback custodian-limit-memory set-custodian-limit
+                       native-appearance-set! native-appearance-restore!
                        set-modern-host-theme! set-modern-chrome-blended!))
   (define (walk x)
     (when (pair? x)
@@ -93,3 +95,22 @@
       (check-false (equal? x '(quote drracket/drracket)))
       (walk (car x)) (walk (cdr x))))
   (walk tree))
+(test-case "memory observation belongs to genuine launcher frame inspection"
+  (define inspection (definition 'inspect-frame))
+  (check-not-false inspection)
+  (define (contains? form)
+    (find-form inspection (lambda (x) (equal? x form))))
+  (check-not-false
+   (contains? '(assert! (is-a? frame (drracket:get/extend:get-unit-frame))
+                        "Registered stock frame class")))
+  (check-not-false
+   (contains? '(define memory-limit (memory-limit-evidence expected-memory-limit))))
+  (check-not-false (contains? '(assert-memory-limit! memory-limit assert!)))
+  (check-not-false (contains? '(set! last-state (hash 'memory_limit memory-limit))))
+  (define success-report
+    (find-form inspection
+               (lambda (x) (match x [`(hash 'status "passed" ,_ ...) #t] [_ #f]))))
+  (check-not-false success-report)
+  (check-not-false (member '('memory_limit memory-limit)
+                           (for/list ([i (in-range 1 (length success-report) 2)])
+                             (take (drop success-report i) 2)))))

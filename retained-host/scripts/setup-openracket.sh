@@ -5,8 +5,12 @@ cd "$ROOT"
 if [ "${1:-}" != --install ]; then
   echo 'Usage: scripts/setup-openracket.sh --install' >&2
   echo 'Downloads official 9.3 stock dependencies if missing, then prepares only this isolated profile.' >&2
+  echo 'A fresh profile uses 256 MiB per job; OPENRACKET_MEMORY_LIMIT_MIB=128 (or integer >=8) selects another limit.' >&2
   exit 2
 fi
+# Validate the fresh-only option and reserve freshness BEFORE any package work
+# creates the profile. A pre-existing profile never receives an automatic limit.
+memory_grant=$(run_racket "$ROOT/scripts/memory-profile.rkt" --reserve)
 mkdir -p "$ADDON" "$XDG_CACHE_HOME"
 # --skip-installed only covers the requested scope. A full distribution already
 # supplies these packages in installation scope; do not request a duplicate user
@@ -46,4 +50,5 @@ button=$(run_racket -e '(display (collection-file-path "switchable-button.rkt" "
 case "$button" in "$PROFILE"/*) ;; *) echo 'The active toolbar did not resolve to the isolated package.' >&2; exit 4;; esac
 run_raco make "$button" "$ROOT/tool/tool.rkt"
 run_racket scripts/preflight.rkt
+run_racket "$ROOT/scripts/memory-profile.rkt" --initialize "$memory_grant"
 printf '\nPrepared the retained DrRacket host. Launch with scripts/launch-openracket.sh.\n'

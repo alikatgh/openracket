@@ -18,6 +18,38 @@
         [else value]))
 (define (emit marker value)
   (printf "~a ~a\n" marker (jsexpr->string (json-safe value))) (flush-output))
+;; This expectation is supplied independently by CI, never inferred from the
+;; preview configuration or written to preferences. #f is DrRacket's unlimited
+;; value; keep it distinct from missing/invalid observer configuration.
+(define (parse-expected-memory-limit value)
+  (cond
+    [(equal? value "unlimited") #f]
+    [(and (string? value) (regexp-match-exact? #px"[0-9]+" value)
+          (let ([mib (string->number value 10)])
+            (and (exact-integer? mib) (>= mib 8))))
+     (* (string->number value 10) 1024 1024)]
+    [else
+     (error 'portable-observer
+            "OPENRACKET_PORTABLE_EXPECT_MEMORY_MIB must be a decimal integer >= 8 or exactly unlimited; received ~s"
+            value)]))
+(define (memory-limit-evidence expected)
+  ;; Registered by stock eval-helpers-and-pref-init.rkt. Do not register a
+  ;; fallback: an absent registration must fail instead of hiding a wrong key.
+  (define actual (preferences:get 'drracket:child-only-memory-limit))
+  (hash 'preference_key "drracket:child-only-memory-limit"
+        'expected_bytes expected 'effective_bytes actual
+        'observation "registered preference in launcher-created frame process"
+        'worker_cap_measured #f))
+(define (assert-memory-limit! evidence assert!)
+  (define actual (hash-ref evidence 'effective_bytes))
+  (define expected (hash-ref evidence 'expected_bytes))
+  (assert! (or (eq? actual #f)
+               (and (exact-integer? actual) (>= actual (* 8 1024 1024))))
+           (format "Registered child-only memory preference must be #f or exact bytes >= 8 MiB; observed ~s"
+                   actual))
+  (assert! (equal? actual expected)
+           (format "Registered child-only memory preference: expected ~s bytes/#f, observed ~s"
+                   expected actual)))
 (define (geometry frame)
   (define-values (width height) (send frame get-size))
   (hash 'x (send frame get-x) 'y (send frame get-y) 'width width 'height height))
@@ -69,6 +101,7 @@
       (define checks 0)
       (define expected-ui (getenv "OPENRACKET_PORTABLE_EXPECT_UI"))
       (define expected-guard (getenv "OPENRACKET_PORTABLE_EXPECT_SAVE_GUARD"))
+      (define expected-memory-limit 'unconfigured)
       (define modern? (equal? expected-ui "modern"))
       (define (assert! condition text)
         (unless condition (error 'portable-observer "~a" text))
@@ -127,6 +160,10 @@
                  "Launcher argv opened the exact fixture")
         (assert! (equal? (send defs get-text) fixture-text) "Launcher preserved exact Unicode source")
         (assert! (not (send defs is-modified?)) "Observer did not edit the opened fixture")
+        (define memory-limit (memory-limit-evidence expected-memory-limit))
+        ;; Preserve the actual value in failure diagnostics before asserting it.
+        (set! last-state (hash 'memory_limit memory-limit))
+        (assert-memory-limit! memory-limit assert!)
         (assert! (pair? (send (send frame get-menu-bar) get-items)) "Original menu bar remains populated")
         (assert! (pair? (send frame get-tabs)) "Original tab remains present")
         (define toolbar (send frame get-button-panel))
@@ -165,6 +202,7 @@
         (assert! (eq? (hash-ref native 'backend #f) 'cocoa) "This acceptance gate is Cocoa-specific")
         (set! last-state
               (hash 'painter painter-theme 'native_blending blended? 'native native
+                    'memory_limit memory-limit
                     'light_scheme (color-prefs:get-current-color-scheme-name #:wob? #f)
                     'dark_scheme (color-prefs:get-current-color-scheme-name #:wob? #t)
                     'mode (preferences:get 'framework:white-on-black-mode?)
@@ -203,6 +241,7 @@
               'content_or_preferences_changed #f 'fixture fixture 'fixture_characters (string-length fixture-text)
               'toolbar_labels labels 'toolbar_horizontal horizontal? 'ui expected-ui 'theme (if modern? "dark" "stock")
               'native native 'painter painter-theme 'native_blending blended? 'save_guard save-guard
+              'memory_limit memory-limit
               'sources source-evidence 'geometry (geometry frame) 'complete_stock_parity #f))
       (define (tick)
         (with-handlers ([exn? (lambda (e)
@@ -242,6 +281,8 @@
         (assert! (not (file-exists? done-path)) "Capture completion path must be fresh")
         (assert! (member expected-ui '("modern" "stock")) "Explicit expected UI is modern or stock")
         (assert! (member expected-guard '("1" "0")) "Explicit expected guard is 1 or 0")
+        (set! expected-memory-limit
+              (parse-expected-memory-limit (getenv "OPENRACKET_PORTABLE_EXPECT_MEMORY_MIB")))
         (assert! (equal? (getenv "OPENRACKET_UI") expected-ui) "Actual launcher UI environment")
         (if modern?
             (begin
@@ -256,6 +297,8 @@
                             "da45ea64a5a0b413296a60ebe61d3e5ee69a27b53a6f1e13ae258701bdce1578")
                     (source "unit.rkt" '("drracket" "private")
                             "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5")
+                    (source "eval-helpers-and-pref-init.rkt" '("drracket" "private")
+                            "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62")
                     (source "text-misc.rkt" '("framework" "private")
                             "00d1ac5b184b494939a98057ea4b2584c3cda31378dcb32a7685f370ed60475d")))
         (assert! (not (file-exists? (build-path (path-only (collection-file-path "unit.rkt" "drracket" "private"))

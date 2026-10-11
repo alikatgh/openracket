@@ -2,8 +2,10 @@
 
 Start with [PORTABLE-CANDIDATE.md](PORTABLE-CANDIDATE.md) for the current Mac-first
 installation, measured autosave scope, opt-outs and remaining native acceptance
-gates. This tree is based on the tested polish 1316 source plus the exact measured
-autosave guard. Windows remains untested.
+gates. The delivered Mac appearance/autosave source passed actual installation and
+launch checks. This working candidate adds a fresh-profile 256 MiB capacity
+default; its new native adoption gate is pending. Existing profiles retain their
+choices. Windows remains untested.
 
 The earlier proof documentation follows as historical context; its unrun notes
 refer to the earlier stage, not the completed native runs cited above.

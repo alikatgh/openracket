@@ -8,7 +8,7 @@ assert os.environ.get('GITHUB_ACTIONS')=='true'
 assert os.environ.get('GITHUB_REPOSITORY')=='alikatgh/openracket'
 assert os.environ.get('GITHUB_REF')=='refs/heads/prototype/retained-drracket'
 assert platform.system()=='Darwin','This bounded installation gate is Mac-first'
-assert sys.argv[1:] in (['prepare'],['install'],['launch'],['save'],['verify'])
+assert sys.argv[1:] in (['prepare'],['install'],['launch'],['memory'],['save'],['verify'])
 PHASE=sys.argv[1]
 TEMP=pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
 STOCK=pathlib.Path(os.environ['OPENRACKET_CI_STOCK_RACKET']).resolve().parents[1]
@@ -28,7 +28,7 @@ def record(name,ok,detail=''):
     lines=['# Actual Mac portable installation and launch','', 'Commit: '+os.environ['GITHUB_SHA'],'',
            '| Check | Outcome | Detail |','|---|---|---|']
     lines+=['| '+r['name']+' | '+('PASS' if r['passed'] else 'FAIL / incomplete')+' | '+r['detail'].replace('|',';').replace('\n',' ')+' |' for r in ROWS]
-    lines+=['','This gate invokes the real setup and launcher scripts. A read-only CI observer checks the launcher-created fixture frame, original controls, actual app-local appearance and loaded autosave flag. Separate callers exercise actual combined-host save/recovery behavior.',
+    lines+=['','This gate invokes the real setup and launcher scripts. A read-only CI observer checks the launcher-created fixture frame, original controls, actual app-local appearance and loaded autosave flag. Separate callers exercise unchanged combined-host save/recovery behavior in fresh stock128 test profiles; they do not prove the new capacity default.',
             'Runtime immutability covers every original file including compiled bytecode. This is a source-overlay install, not a signed/notarized standalone application. Earlier Stop failures and unrun extension/dialog/platform coverage remain recorded release gaps.',
             'Synthetic native PNGs are bounded lossless job-log evidence. No artifact, cache, release or package upload.']
     (REPORTS/'summary.md').write_text('\n'.join(lines)+'\n')
@@ -36,7 +36,7 @@ def record(name,ok,detail=''):
 def environment(purpose,installed=False):
     env=os.environ.copy()
     for key in list(env):
-        if key.startswith('OPENRACKET_') or key in ('PLTADDONDIR','PLTCOMPILEDROOTS','PLTUSERHOME','XDG_CONFIG_HOME','XDG_CACHE_HOME'):
+        if key.startswith('OPENRACKET_') or key in ('PLTCONFIGDIR','PLTCOLLECTS','PLT_COMPILED_FILE_CHECK','PLTADDONDIR','PLTCOMPILEDROOTS','PLTUSERHOME','XDG_CONFIG_HOME','XDG_CACHE_HOME','XDG_DATA_HOME'):
             env.pop(key,None)
     env['RACKET']=str((RUNTIME if installed else STOCK)/'bin/racket')
     env['RACO']=str(pathlib.Path(env['RACKET']).with_name('raco'))
@@ -95,15 +95,17 @@ def emit_image(label,path):
     for i in range(0,len(encoded),3072):print(f'OPENRACKET_SCREENSHOT_DATA {label} {i//3072:04d} {encoded[i:i+3072]}',flush=True)
     print(f'OPENRACKET_SCREENSHOT_END {label}',flush=True)
 
-def launch(label,stock=False,optout=False):
+def launch(label,stock=False,optout=False,expected_memory_mib=None):
     env=environment(label,True)
+    if expected_memory_mib is None:expected_memory_mib='128' if stock else '256'
     ready=REPORTS/(label+'-ready.json');done=REPORTS/(label+'-capture-done');image=REPORTS/(label+'.png')
     assert not ready.exists() and not done.exists()
     fixture=PROOF/'portable-fixture-λ.rkt'
     if not fixture.exists():fixture.write_text('#lang racket\n;; Real portable launcher fixture: λ 中文\n(+ 20 22)\n',encoding='utf-8')
     env.update(OPENRACKET_PORTABLE_FIXTURE=str(fixture),OPENRACKET_NATIVE_READY_FILE=str(ready),
                OPENRACKET_NATIVE_CAPTURE_DONE=str(done),OPENRACKET_PORTABLE_EXPECT_UI='stock' if stock else 'modern',
-               OPENRACKET_PORTABLE_EXPECT_SAVE_GUARD='0' if stock or optout else '1',OPENRACKET_THEME='dark')
+               OPENRACKET_PORTABLE_EXPECT_SAVE_GUARD='0' if stock or optout else '1',
+               OPENRACKET_PORTABLE_EXPECT_MEMORY_MIB=str(expected_memory_mib),OPENRACKET_THEME='dark')
     if optout:env['OPENRACKET_AUTOSAVE_GUARD']='0'
     if stock:
         # Deliberate inherited values must be cleared by the actual stock launcher.
@@ -136,6 +138,24 @@ def launch(label,stock=False,optout=False):
     print('::endgroup::',flush=True)
     return passed
 
+
+def memory_status(label,arguments,expected_mib,ownership):
+    env=environment('memory-'+label,True)
+    proc=subprocess.run(['sh',str(PROOF/'scripts/memory-profile.sh'),*arguments],env=env,text=True,capture_output=True,timeout=90)
+    print('OPENRACKET_PORTABLE_MEMORY_COMMAND '+json.dumps({'label':label,'arguments':arguments,'exit':proc.returncode,'stderr':proc.stderr[-3000:]}),flush=True)
+    assert proc.returncode==0,'Memory helper failed: '+label
+    assert len(proc.stdout.encode())<32768,'Bounded memory status required'
+    report=json.loads(proc.stdout)
+    print('OPENRACKET_PORTABLE_MEMORY_STATUS '+json.dumps({'label':label,'report':report}),flush=True)
+    (REPORTS/('memory-'+label+'.json')).write_text(json.dumps(report,indent=2)+'\n')
+    assert report['runtime_version']=='9.3' and report['preference_key']=='drracket:child-only-memory-limit'
+    assert report['gui_initialized'] is False and report['ownership_state']==ownership
+    assert report['effective_limit_bytes']==expected_mib*1024**2 and report['persisted_limit_bytes']==expected_mib*1024**2
+    assert pathlib.Path(report['profile']).resolve()==PROFILE.resolve()
+    assert pathlib.Path(report['preference_store']).resolve().is_relative_to(PROFILE.resolve())
+    record('Memory '+label+' effective setting and ownership',True,json.dumps(report))
+    return report
+
 try:
     if PHASE=='prepare':
         command('Portable adapter isolation unit tests',[sys.executable,ROOT/'scripts/ci/test-portable-adapter.py'])
@@ -152,12 +172,17 @@ try:
         tree_check('baseline',STOCK);tree_check('baseline',RUNTIME)
         for name in ('portable-profile-test.py','portable-source-test.py','portable-dependency-test.py','autosave-source-test.py'):
             command(name,[sys.executable,PROOF/'tests'/name])
-        command('Portable installer observer and combined save contract tests',[STOCK/'bin/raco','test',PROOF/'tests/portable-autosave-installer-test.rkt',PROOF/'tests/independent-autosave-model-test.rkt',PROOF/'tests/portable-observer-contract-test.rkt',PROOF/'tests/portable-save-caller-contract-test.rkt'])
+        command('Compile product memory helper',[RUNTIME/'bin/racket','-l','raco','make',PROOF/'scripts/memory-profile.rkt'],environment('memory-compile',False))
+        command('Native product memory profile ownership and preservation tests',[sys.executable,PROOF/'tests/portable-memory-profile-test.py','--racket',RUNTIME/'bin/racket','-v'],environment('memory-tests',False),timeout=300)
+        command('Portable installer observer and combined save contract tests',[STOCK/'bin/raco','test',PROOF/'tests/portable-autosave-installer-test.rkt',PROOF/'tests/independent-autosave-model-test.rkt',PROOF/'tests/portable-observer-contract-test.rkt',PROOF/'tests/portable-memory-observer-test.rkt',PROOF/'tests/portable-save-caller-contract-test.rkt'])
+        assert not PROFILE.exists(),'Profile must remain absent until real setup reserves freshness'
+        record('Profile absent before actual setup freshness reservation',True)
     elif PHASE=='install':
         env=environment('setup',True)
         command('Actual setup-openracket --install',[ 'bash',PROOF/'scripts/setup-openracket.sh','--install'],env,timeout=720)
         command('Actual launch-openracket --check',['bash',PROOF/'scripts/launch-openracket.sh','--check'],env,timeout=90)
         check_resolution()
+        memory_status('fresh-default',['--status'],256,'owned')
         raco=[RUNTIME/'bin/racket','-A',ADDON,'-R',str(CACHE)+':','-l','raco','--']
         command('Register CI-only read-only launcher observer',raco+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--link','--name','openracket-portable-observer',PROOF/'tests/portable-observer'],env,timeout=90)
         command('Compile observer tool registration',raco+['setup','--avoid-main','--no-docs','--no-launcher','--no-foreign-libs','--no-install','--no-post-install','--pkgs','openracket-portable-observer'],env,timeout=240)
@@ -168,12 +193,24 @@ try:
         launch('portable-modern-optout',optout=True)
         launch('portable-stock-launcher',stock=True)
         check_resolution()
+    elif PHASE=='memory':
+        memory_status('restored',['--restore'],128,'restored')
+        launch('portable-memory-restored',expected_memory_mib=128)
+        memory_status('explicit-stock',['--set-mib','128'],128,'explicit')
+        launch('portable-memory-explicit-stock',expected_memory_mib=128)
+        memory_status('custom',['--set-mib','384'],384,'explicit')
+        launch('portable-memory-custom',expected_memory_mib=384)
+        command('Repeated actual setup preserves explicit custom memory',['bash',PROOF/'scripts/setup-openracket.sh','--install'],environment('setup-repeat',True),timeout=720)
+        memory_status('after-repeat-setup',['--status'],384,'explicit')
+        launch('portable-memory-existing',expected_memory_mib=384)
+        launch('portable-stock-after-memory',stock=True,expected_memory_mib=128)
+        check_resolution()
     elif PHASE=='save':
         for mode in ('candidate-on','candidate-off'):
             env=environment('combined-save-'+mode,True)
             env.update(OPENRACKET_UI='modern',OPENRACKET_HOST_THEME='1',OPENRACKET_THEME='dark',OPENRACKET_NATIVE_APPEARANCE='1')
             if mode=='candidate-on':env['OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD']='1'
-            command('Combined installed host '+mode+' save and recovery',[RUNTIME/'bin/racket',PROOF/'tests/portable-native-save-host.rkt',mode],env,timeout=200,required=False)
+            command('Combined installed host '+mode+' save and recovery (fresh stock128 test profile)',[RUNTIME/'bin/racket',PROOF/'tests/portable-native-save-host.rkt',mode],env,timeout=200,required=False)
     elif PHASE=='verify':
         tree_check('compare',STOCK,False)
         tree_check('compare',RUNTIME,False)

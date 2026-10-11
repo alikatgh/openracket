@@ -27,6 +27,9 @@ class EvidenceTests(unittest.TestCase):
   # Two trials, 256 samples each, two actual threads, 8 capped frames/thread.
   sample={'threads':[{'role':role,'frames':[{'name':'🌈'*240,'source':'🌈'*240,'line':i} for i in range(8)]} for role in ('worker','monitor')]}
   self.roundtrip({'trials':[{'phase_probe':{'samples':[sample for _ in range(256)],'points':[{'phase':i} for i in range(128)]}} for _ in range(2)]})
+ def test_completed_phase_three_role_unicode_bound(self):
+  sample={'threads':[{'role':role,'frames':[{'name':'🌈'*240,'source':'🌈'*240,'line':i} for i in range(8)]} for role in ('worker','monitor','xref-service')]}
+  self.roundtrip({'trials':[{'phase_probe':{'samples':[sample for _ in range(256)],'points':[{'phase':i} for i in range(128)]}} for _ in range(2)]})
  def test_xref_trace_file_preserves_order_duplicates_paths_and_rename_answers(self):
   entry=['vector',['symbol','syncheck:add-docs-menu'],['number','12'],['number','18'],['string','λ'],['string','Label'],['path','unix',['root','runtime','share/doc/a.html']],['pair',['symbol','def'],['string','tag']],['string','anchor']]
   value={'schema':'openracket-actual-online-comp-trace/v1','fixtures':[{'name':'unicode','trace':[entry for _ in range(90)],'rename_answers':[{'query':'λ','answer':True},{'query':'δ','answer':False}]}]}

@@ -17,9 +17,10 @@ class AdapterTests(unittest.TestCase):
     def test_ambient_experiments_and_profile_roots_do_not_leak(self):
         with patch.dict(os.environ,{'OPENRACKET_ALL_STRING_FAST_PATH':'1','OPENRACKET_EXPERIMENTAL_COLOR_BUDGET_MS':'8',
                                   'OPENRACKET_EXPERIMENTAL_SAVE_SCAN_GUARD':'1','OPENRACKET_NATIVE_APPEARANCE':'1',
-                                  'PLTADDONDIR':'/unrelated','PLTCOMPILEDROOTS':'/unrelated-cache','PLTUSERHOME':'/unrelated-home'}):
+                                  'PLTCONFIGDIR':'/unrelated-config','PLTCOLLECTS':'/unrelated-collections','PLT_COMPILED_FILE_CHECK':'exists','PLTADDONDIR':'/unrelated','PLTCOMPILEDROOTS':'/unrelated-cache','PLTUSERHOME':'/unrelated-home'}):
             env=self.ns['environment']('probe',True)
         self.assertFalse(any(k.startswith('OPENRACKET_') for k in env))
+        for key in ('PLTCONFIGDIR','PLTCOLLECTS','PLT_COMPILED_FILE_CHECK'):self.assertNotIn(key,env)
         self.assertEqual(env['PLTADDONDIR'],str(self.ns['ADDON']))
         self.assertEqual(env['PLTCOMPILEDROOTS'],str(self.ns['CACHE'])+':')
         self.assertEqual(env['RACKET'],str(self.ns['RUNTIME']/'bin/racket'))
@@ -41,6 +42,7 @@ class AdapterTests(unittest.TestCase):
         self.assertIn("OPENRACKET_NATIVE_CAPTURE_DONE=str(done)",source)
         self.assertIn("env['OPENRACKET_AUTOSAVE_GUARD']='0'",source)
         self.assertIn("report.get('genuine_host') is True",source)
+        self.assertIn('OPENRACKET_PORTABLE_EXPECT_MEMORY_MIB=str(expected_memory_mib)',source)
         self.assertIn("tree_check('compare',STOCK,False)",source)
         self.assertIn("tree_check('compare',RUNTIME,False)",source)
 if __name__=='__main__':unittest.main()
