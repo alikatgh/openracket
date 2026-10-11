@@ -4,6 +4,7 @@
 The 20 unchanged baseline tests use the reviewed PYTHON reference decorator with
 this candidate's byte-identical scripts, not the unexecuted Racket implementation.
 Additional checks cover syntax delimiters, source pins, and the new build shell.
+The Python reference still claims file types; it is not the plist-policy oracle.
 Python is optional QA tooling, NOT a dependency for building the app on a Mac.
 """
 import hashlib
@@ -128,6 +129,23 @@ class PortSourceContracts(unittest.TestCase):
         text=(HERE/'test-app.rkt').read_text()
         import re
         self.assertEqual(re.findall(r'\((?:fixture-test|test-case) "(\d\d) ',text),[f'{i:02}' for i in range(1,21)])
+    def test_no_document_claim_source_contract(self):
+        # Static guard only. Real Racket fixture execution and native Launch
+        # Services/default-handler observations remain separate required gates.
+        text=(HERE/'make-app.rkt').read_text()
+        body=text.split('(define (decorate-bundle ',1)[1].split('(define (run!',1)[0]
+        self.assertNotIn('(cons "CFBundleDocumentTypes"',body)
+        self.assertIn('"LSEnvironment" "CFBundleDocumentTypes")])',body)
+        self.assertIn('(hash-remove! info key)',body)
+        self.assertNotIn('"LSHandlerRank"',body)
+        for key in ('UTExportedTypeDeclarations','UTImportedTypeDeclarations'):
+            self.assertNotIn(key,body)
+        fixture=(HERE/'test-app.rkt').read_text()
+        self.assertIn('(assoc-pair "CFBundleDocumentTypes"',fixture)
+        self.assertIn('(assoc-pair "LSItemContentTypes" (array "public.text"))',fixture)
+        self.assertIn('(check-false (hash-has-key? h "CFBundleDocumentTypes"))',fixture)
+        self.assertIn('(with-fixture proc [inherited-claims? #t])',fixture)
+        self.assertIn('(check-false (assoc "CFBundleDocumentTypes" (map cdr (cdr info))))',fixture)
     def test_no_python_in_product_entrypoints(self):
         for name in ('build-app.sh','make-app.rkt','bootstrap.sh','runtime-dispatch.sh','make-native-launcher.rkt'):
             self.assertNotIn('python', (HERE/name).read_text().lower(),name)

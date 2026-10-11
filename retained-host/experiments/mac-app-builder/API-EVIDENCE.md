@@ -1,5 +1,30 @@
 # Racket 9.3 builder API evidence
 
+## Packaging-policy correction: no automatic document association
+
+Reviewed 2026-10-11 against Apple's primary documentation:
+
+- [Info.plist Core Foundation keys, CFBundleDocumentTypes and LSHandlerRank](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html#//apple_ref/doc/uid/TP40009249-SW1):
+  the document-type array associates file types with an app. `Alternate` is a
+  selectable rank below `Owner` and `Default`; it is not an opt-out. `None` is
+  supported and prevents automatic selection while permitting drops. Do not
+  confuse `LSHandlerRank=None` with `CFBundleTypeRole=None`.
+- [LSOpenFromRefSpec](https://developer.apple.com/documentation/coreservices/1444466-lsopenfromrefspec?language=objc):
+  a request that specifies both an application and files sends the documents to
+  that application regardless of its advertised capabilities. The documentation
+  distinguishes cold launch from activation of an existing process. This is a
+  deprecated API's documented Launch Services behavior, not a native result for
+  the current `/usr/bin/open` implementation or this Racket launcher.
+
+For the bounded explicit-open preview, removing the whole document-type key is
+the smaller policy surface: no extension, wildcard, role or UTI claim needs to
+be advertised. `None` would be a valid alternative if native icon-drop support
+were required, but still retains document association metadata. This candidate
+does not replace claims with new imported/exported UTIs or a generic type claim.
+It also removes inherited document-type dictionaries from the generated plist.
+The unchanged Racket native event handler still needs the precise cold/warm
+delivery and before/after default-resolution test in `MAC-NATIVE-ACCEPTANCE.md`.
+
 Source-only review on 2026-10-11. No Racket runtime, package installer, generated launcher, or application was executed. These findings support a port of the existing Python builder; they are not native acceptance evidence.
 
 ## Exact source pin

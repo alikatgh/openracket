@@ -1,0 +1,43 @@
+{
+  "official_repository": "racket/drracket",
+  "commit": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+  "version": "9.3",
+  "files": [
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/info.rkt",
+      "sha256": "ea8e21d56646762b3f54e2dd11e89989fd15ea81e96977e1551acd4eeb938159"
+    },
+    {
+      "path": "/tmp/17916276491791627649681-drracket/info.rkt",
+      "sha256": "4303911ac8229529de9ab0f67b709e384b005b584df2eb03b9f7efcddc30edb6"
+    },
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/language-configuration.rkt",
+      "sha256": "2119ccd614d5b538f1d835915c2d31bb55c0663310d4d24305754b4d7b24b518"
+    },
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/syncheck/gui.rkt",
+      "sha256": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e"
+    },
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/module-language-tools.rkt",
+      "sha256": "237d169fc743c4682e859932a8b1bd6d5a3d260d6c0a645c82d733e41cacc2a1"
+    },
+    {
+      "path": "/tmp/17916276701791627670599-drracket-core-lib/drracket/private/unit.rkt",
+      "sha256": "535a8a60592727cbba63bcd4485925cfaec49dbc3ebb9173715eb4ec5c7caff5"
+    },
+    {
+      "path": "/tmp/17916276491791627649681-drracket/gui-debugger/debug-tool.rkt",
+      "sha256": "5a8b030e9ef3c1f57f829f3749673cdedb0938f460ed1d40f162160036759676"
+    },
+    {
+      "path": "/tmp/17916276491791627649681-drracket/macro-debugger/tool.rkt",
+      "sha256": "37fdf39522bfb7ba9c9d6a17bc102e80827a6065fad6b0b6a9da79931b89c36c"
+    },
+    {
+      "path": "/tmp/17916276731791627673915-drracket-plugin-lib/drracket/private/drsig.rkt",
+      "sha256": "aa75005c8bfd3fa34fcd298449b8413588b7dca3205b3ffaabf5f46bce280f47"
+    }
+  ]
+}

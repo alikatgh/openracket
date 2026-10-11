@@ -20,8 +20,8 @@ REPORTS=ROOT/'reports/mac-app-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 STATE=REPORTS/'results.json';ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)
 SPEC=importlib.util.spec_from_file_location('app_contract',ROOT/'scripts/ci/app-ci-contract.py');CONTRACT=importlib.util.module_from_spec(SPEC);SPEC.loader.exec_module(CONTRACT)
 sys.path.insert(0,str(ROOT/'performance'));from run import terminate_group
-BUILDER_PIN='db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67'
-OBSERVER_PIN='ba3741d74751421427ae4772fdfe86fb8948cb36437e565b08549c144a02a1ce'
+BUILDER_PIN='b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee'
+OBSERVER_PIN='3a4d1cdabbdbbcce4ecdcf40132748db168fc6515479112036c24df78aabb2e1'
 SOURCE_PIN='2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'
 
 
@@ -32,8 +32,9 @@ def record(name,passed,detail=''):
  lines+=['| '+r['name']+' | '+('PASS' if r['passed'] else 'FAIL / incomplete')+' | '+str(r['detail']).replace('|',';').replace('\n',' ')+' |' for r in ROWS]
  lines+=['','This is a Racket-only, destination-built app tethered to the verified source and full official runtime. A runner-built bundle cannot be delivered as a portable app for another computer.',
  'Actual Launch Services dispatch and read-only observer evidence are distinct from shell fixture tests. Final observer exit is test cleanup, not normal Quit acceptance.',
+ 'Historical observer README registration examples retain -U; the reviewed CI deliberately uses the separate no-U installed-profile prefix, with explicit private addon/cache and exact collection-source resolution. The stale recipe is not the executed acceptance command.',
  'Broader unsaved-Quit, forced-instance, rich/two-file delivery, failure UX, accessibility/IME and transferred-app/Gatekeeper cases remain pending unless explicitly recorded. No performance adoption follows from packaging.',
- 'Only bounded synthetic screenshots and JSON use ordinary job logs. No artifact/cache/release upload, paid runner, default-handler or security-setting changes.']
+ 'Only bounded synthetic screenshots and JSON use ordinary job logs. No artifact/cache/release upload or paid runner. No intentional default-handler or security-setting writes; any observed automatic association change fails acceptance.']
  (REPORTS/'summary.md').write_text('\n'.join(lines)+'\n')
 
 def env(label,installed=False):
@@ -89,12 +90,19 @@ def default_handler(label):
  record('Original .rkt UTI/default handler '+label,True,json.dumps(result))
  return result
 
+def require_default_handler_unchanged(label):
+ try:return default_handler(label)
+ except Exception as error:
+  if not (REPORTS/'launch-blocked.json').exists():
+   atomic_json(REPORTS/'launch-blocked.json',{'label':label,'reason':'Original file-handler preservation failed or could not be verified','error':str(error)})
+  raise
+
 def application_manifest(app):
  info=plistlib.loads((app/'Contents/Info.plist').read_bytes());build=json.loads((app/'Contents/Resources/build-record.json').read_text())
  assert info['CFBundleExecutable']=='OpenRacket-launch' and info['CFBundlePackageType']=='APPL'
  assert info['LSMultipleInstancesProhibited'] is True
  assert 'LSEnvironment' not in info and 'LSUIElement' not in info and 'LSBackgroundOnly' not in info
- assert all(row['LSHandlerRank']=='Alternate' for row in info['CFBundleDocumentTypes'])
+ assert 'CFBundleDocumentTypes' not in info,'Product app must not advertise file associations'
  native=app/'Contents/MacOS'/build['native_executable'];assert native.is_file() and os.access(native,os.X_OK)
  assert os.access(app/'Contents/MacOS/OpenRacket-launch',os.X_OK)
  assert build['source_manifest_sha256']==SOURCE_PIN and pathlib.Path(build['source'])==PROOF and pathlib.Path(build['runtime_root'])==RUNTIME
@@ -195,6 +203,7 @@ def launch_sequence(label,mode,app):
     path=capture(label+'-'+step+'-failure-diagnostic')
     if path:emit_image(label+'-'+step+'-failure-diagnostic',path)
     raise RuntimeError('Launch Services rejected '+step+': '+p.stderr+'; further launch/relocation attempts blocked pending diagnosis')
+   require_default_handler_unchanged(label+'-'+step+'-after-dispatch')
    envelope={'schema':1,'run_id':run_id,'step':step,'token':tokens[step]}
    if index:atomic_json(directory/(run_id+'.'+step+'.sent.json'),{**envelope,'open_exit':0})
    ready=directory/(run_id+'.'+step+'.ready.json');deadline=min(sequence_deadline,time.monotonic()+85)
@@ -216,9 +225,13 @@ def launch_sequence(label,mode,app):
    picture=capture(image_label)
    # ACK immediately after real capture; log transport follows outside the20s window.
    if picture:atomic_json(directory/(run_id+'.'+step+'.ack.json'),{**envelope,'capture_ok':True})
+   handler_error=None
+   try:require_default_handler_unchanged(label+'-'+step+'-after-ready')
+   except Exception as error:handler_error=error
    emit_document(label+'-'+step,'ready.json',report)
    if picture:emit_image(image_label,picture)
    assert picture is not None,'OS screenshot failed; no successful ACK fabricated'
+   if handler_error:raise handler_error
    if state_error:raise state_error
    first_pid=observed_pid
    print('OPENRACKET_MAC_APP_PROCESS_TREE '+json.dumps({'run_id':run_id,'label':label,'step':step,'processes':owned}),flush=True)
@@ -238,6 +251,8 @@ def launch_sequence(label,mode,app):
   ok=False;record(label+' native sequence',False,str(error))
  finally:
   if not cleanup_app(app):ok=False
+  try:require_default_handler_unchanged(label+'-after-cleanup')
+  except Exception as error:ok=False;record(label+' default-handler preservation after cleanup',False,str(error))
   for path in sorted(set(PROFILE.glob('openracket-app-launch.*'))-prior_logs):
    raw=path.read_bytes();assert len(raw)<2*1024*1024,'App log exceeded bounded synthetic diagnostic size'
    print('::group::'+label+' actual app log '+path.name,flush=True);print(raw.decode('utf-8','replace'),flush=True);print('::endgroup::',flush=True)
@@ -254,7 +269,7 @@ try:
   verify_builder()
   CONTRACT.source_copy(ROOT,PROOF,SOURCE_PIN,155)
   record('Exact tested preview copied to fresh Unicode/apostrophe/spaced source',True,str(PROOF))
-  CONTRACT.source_copy(OBSERVER_SOURCE,OBSERVER,OBSERVER_PIN,11,'DELIVERABLE-SHA256.json')
+  CONTRACT.source_copy(OBSERVER_SOURCE,OBSERVER,OBSERVER_PIN,14,'DELIVERABLE-SHA256.json')
   source_env=env('observer-source');source_env['OPENRACKET_OBSERVER_BASELINE_TOOL']=str(PROOF/'tests/portable-observer/tool.rkt')
   command('Read-only observer portable source contracts',[sys.executable,'-B',OBSERVER/'tests/source-test.py'],source_env)
   command('Deep-copy independent app runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','mac-app'],os.environ.copy(),180)
@@ -282,8 +297,8 @@ try:
   builder_code,_=command('Compile actual Racket-only builder, tests and official launcher generator',raco_prefix()+['make',BUILDER/'make-app.rkt',BUILDER/'test-app.rkt',BUILDER/'make-native-launcher.rkt'],e,180,required=False)
   code,out=command('Twenty actual native Racket builder contract cases',raco_prefix()+['test',BUILDER/'test-app.rkt'],e,180,required=False) if builder_code==0 else (1,'compile failed; tests not run')
   record('All20 actual builder RackUnit cases executed',code==0 and '20 tests passed' in out,'Exact native count required')
-  code,out=command('Twenty-one read-only app observer native contract/state cases',raco_prefix()+['test',OBSERVER/'tests/contract-test.rkt',OBSERVER/'tests/observer-state-test.rkt'],e,60,required=False)
-  record('All21 actual observer RackUnit cases executed',code==0 and '21 tests passed' in out,'Exact native count required')
+  code,out=command('Thirty-two read-only app observer native contract/state cases',raco_prefix()+['test',OBSERVER/'tests/contract-test.rkt',OBSERVER/'tests/observer-state-test.rkt'],e,60,required=False)
+  record('All32 actual observer RackUnit cases executed',code==0 and '32 tests passed' in out,'Exact native count required')
   command('Explicit native app observer and Cocoa/default-reader compilation',raco_prefix()+['make',OBSERVER/'tool.rkt',OBSERVER/'cocoa-identity.rkt',OBSERVER/'default-handler.rkt'],e,180,required=False)
   witness('compare','pristine',STOCK);witness('compare','selected-runtime',RUNTIME)
  elif PHASE=='build':
@@ -315,6 +330,7 @@ try:
   matching=[line for line in ps.splitlines() if str(APP) in line]
   assert not matching,'Unexpected GUI launch during generation: '+repr(matching)
   record('Generation opened no app process',True)
+  require_default_handler_unchanged('after-generation')
  elif PHASE=='observer':
   assert not (OBSERVER/'observer-config.json').exists()
   command('Register separate CI-only read-only native app observer',installed_raco_prefix()+['pkg','install','--scope','user','--batch','--no-setup','--deps','fail','--link','--name','openracket-mac-app-observer',OBSERVER],env('observer',True),90)
@@ -343,7 +359,7 @@ try:
    else:record(label+' witness unavailable',False)
   p=REPORTS/'original-preference-path.json'
   if p.exists():witness('compare','official-user-preferences',pathlib.Path(json.loads(p.read_text())))
-  if (REPORTS/'default-handler-before-build.json').exists():default_handler('after-all')
+  if (REPORTS/'default-handler-before-build.json').exists():require_default_handler_unchanged('after-all')
 except Exception as error:
  record(PHASE+' orchestration',False,str(error));raise
 finally:print('Mac app evidence: '+str(REPORTS/'summary.md'),flush=True)

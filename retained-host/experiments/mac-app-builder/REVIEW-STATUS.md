@@ -1,3 +1,31 @@
+# No-claim packaging correction: review pending
+
+Prepared 2026-10-11 from the unchanged 0752 freeze. Only production code change:
+remove the generated and inherited CFBundleDocumentTypes key during decoration.
+The native launcher, all shell entrypoints/dispatchers, error transport, and the
+155-file retained preview are unchanged. No native execution, Launch Services
+registration/default edit, remote publication, or security change was performed.
+
+Current checks: 28 portable checks passed. They include the original 20 Python
+reference fixtures, which retain their previous plist policy, and eight source
+checks. Only source checks cover this new policy here. The changed 20-case
+RackUnit suite has NOT RUN; case 03 now checks inherited claims are stripped,
+no claim is added to an input without the key, unrelated icon metadata survives,
+and the native executable remains unchanged. Native plist/default-resolution and
+cold/warm file delivery are NOT RUN for this correction. No local Racket runtime
+was available, and no runtime was downloaded or installed.
+
+Current implementation hashes:
+
+- make-app.rkt: `12f635b329f2d021b9c714e82ca8895365a0361cf94a2c4a53ae9b647120af8d`
+- test-app.rkt: `e6894532a532628b4b9c905938d9bc00f4dd0aaf8b7789dffd83428cf7c40663`
+
+The exact 14-file candidate manifest is regenerated in CANDIDATE-SHA256.json.
+Independent review is requested; the historical review below applies only to
+the older implementation hashes and must not be attributed to this correction.
+
+## Historical 0752 review (unchanged record)
+
 # Independent source review and verification status
 
 Reviewed 2026-10-11. This is source-level evidence, not Racket/native acceptance.

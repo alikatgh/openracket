@@ -1,7 +1,7 @@
-Relocated publication test: explicit exact baseline; no sibling frozen directory.
 test_all_racket_delimiters (__main__.SourceContracts.test_all_racket_delimiters) ... ok
 test_contract_and_state_tests_cover_real_functions (__main__.SourceContracts.test_contract_and_state_tests_cover_real_functions) ... ok
 test_default_handler_has_only_read_queries_and_owned_releases (__main__.SourceContracts.test_default_handler_has_only_read_queries_and_owned_releases) ... ok
+test_language_exception_is_read_only_bounded_and_keeps_complete_order (__main__.SourceContracts.test_language_exception_is_read_only_bounded_and_keeps_complete_order) ... ok
 test_native_identity_is_observed_not_configured (__main__.SourceContracts.test_native_identity_is_observed_not_configured) ... ok
 test_no_mutating_host_api_or_source_entrypoint (__main__.SourceContracts.test_no_mutating_host_api_or_source_entrypoint) ... ok
 test_original_public_tab_readers_and_strict_identity_retention (__main__.SourceContracts.test_original_public_tab_readers_and_strict_identity_retention) ... ok
@@ -12,9 +12,6 @@ test_protocol_bounds_and_native_gate_honesty (__main__.SourceContracts.test_prot
 test_retained_memory_checks_are_byte_identical (__main__.SourceContracts.test_retained_memory_checks_are_byte_identical) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 0.016s
+Ran 12 tests in 0.012s
 
 OK
-PASS negative baseline contract: missing rejected, exit=1
-PASS negative baseline contract: relative rejected, exit=1
-PASS negative baseline contract: tampered rejected, exit=1

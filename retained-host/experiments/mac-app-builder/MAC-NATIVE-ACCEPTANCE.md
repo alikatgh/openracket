@@ -4,6 +4,60 @@ Status: **not run**. This contract prepares the next authorized test; it does no
 authorize remote publication, runtime/package downloads or user-computer actions.
 Keep the interval-map and other performance experiments completely outside it.
 
+## Exact no-claim regression gate
+
+This correction is unexecuted on macOS. It addresses run 38125605788's change
+from `(dyn.age81e45y, null)` to the preview bundle ID. Those before/after samples
+prove changed effective resolution; they do not establish the exact registration
+moment or a stored user-preference write. The reader's `defaults_changed:false`
+describes its own read-only operation, not before/after equality.
+
+1. Use a fresh disposable native runner/session with no previous version of this
+   preview registered. Retain a new output path and source/profile identity. Do
+   not clear/reset Launch Services or install an artificial handler to arrange
+   the baseline. Keep existing handlers, including null, exactly as found. A
+   previously contaminated session cannot establish original-null preservation.
+2. Before reference generation or product building, run the existing separate
+   read-only `.rkt` witness. Require `status:observed`, capture the exact preferred
+   UTI and default handler (JSON null is valid), and fail closed on query errors.
+   Keep the existing all-roles mask 4294967295. The preferred-UTI query is bounded
+   evidence, not proof for every UTI or document-role resolution.
+3. Compile the changed builder and run all 20 RackUnit cases using the isolated
+   roots. Case 03 must strip inherited extension/wildcard/UTI entries and require
+   exact `CFBundleDocumentTypes` key absence, while retaining the app icon and
+   native executable bytes. Parse the real generated plist independently and
+   require the same absence; replacing `Alternate` with an empty array, another
+   rank, or a different advertised type is not this candidate's contract.
+4. Repeat the read-only witness immediately after native generation, before the
+   first open, after cold-empty readiness, after cold-file readiness, after warm
+   delivery, after duplicate reopen, and after app cleanup/relocation. Compare
+   `(uti, default_handler)` to the unchanged before-build baseline every time.
+   Run the final comparison from cleanup even if readiness/file assertions fail;
+   retain each result and the earliest divergence independently of other errors.
+5. With no preview process, dispatch only ordinary `/usr/bin/open -a` using the
+   exact app path. After cold-empty, independently start cold-file with an
+   absolute Unicode/apostrophe `.rkt` fixture. Require the actual editor's exact
+   file path/content/hash once, generated bundle/native identity, and a real OS
+   capture. Send a second file while that PID remains alive, then reopen it;
+   require the existing PID and stock duplicate-window behavior. Retain dispatch
+   argv/status, ready evidence, file identities and process observations. An
+   `open` exit code alone does not prove delivery; no observer-created document,
+   argv-only launch, direct event injection, or alternate launcher substitutes.
+6. On an OS/security refusal or default change, stop additional launch cases and
+   report the first failure. Do not set a default back, unregister an app, edit
+   Launch Services preferences, strip quarantine, re-sign to bypass refusal, or
+   change OS policy. Test a naturally pre-existing non-null `.rkt` default on a
+   separate authorized session when available; one null-baseline run cannot prove
+   non-null preservation. Finder Open With through explicit app selection is a
+   separate UI gate; without a document claim, automatic Open With listing and
+   icon-drop affordances are not promised.
+
+CI integration must replace publication-34's `application_manifest` assertion
+of every row's `LSHandlerRank == Alternate` with exact key absence. Keep the
+unchanged default-handler comparison, strengthen its checkpoints as above, and
+update the builder manifest pin. The 20-case RackUnit count is unchanged. This
+document does not authorize a native run or a remote workflow change.
+
 ## Fixture and independent evidence
 
 Use Apple Silicon/macOS 15 and an already-installed full official Racket 9.3.

@@ -1,4 +1,4 @@
-import pathlib,ast,unittest,subprocess,types
+import pathlib,ast,unittest,subprocess,types,tempfile
 ROOT=pathlib.Path(__file__).parent
 S=(ROOT/'run-mac-app.py').read_text()
 class Adapter(unittest.TestCase):
@@ -30,12 +30,27 @@ class Adapter(unittest.TestCase):
   block=S[S.index('   if not ready.exists():'):S.index("   assert ready.stat()")]
   self.assertLess(block.index('atomic_json('),block.index('path=capture('))
   self.assertIn("if first_pid is None and not (REPORTS/'launch-blocked.json').exists():",S)
+ def test_no_document_claim_and_handler_change_blocks_more_launches(self):
+  self.assertIn("assert 'CFBundleDocumentTypes' not in info",S)
+  for label in ('after-generation','after-dispatch','after-ready','after-cleanup','after-all'):self.assertIn(label,S)
+  node=next(n for n in ast.parse(S).body if isinstance(n,ast.FunctionDef) and n.name=='require_default_handler_unchanged')
+  seen=[]
+  def changed(label):raise AssertionError('Original .rkt handler changed')
+  ns={'default_handler':changed,'REPORTS':pathlib.Path('/reports'),'atomic_json':lambda p,v:seen.append((p,v))}
+  exec(compile(ast.Module(body=[node],type_ignores=[]),'<handler>','exec'),ns)
+  with self.assertRaises(AssertionError):ns['require_default_handler_unchanged']('after-generation')
+  self.assertEqual(seen[0][0],pathlib.Path('/reports/launch-blocked.json'))
+  with tempfile.TemporaryDirectory() as tmp:
+   prior=pathlib.Path(tmp)/'launch-blocked.json';prior.write_text('first launch failure')
+   ns['REPORTS']=pathlib.Path(tmp);seen.clear()
+   with self.assertRaisesRegex(AssertionError,'Original .rkt handler changed'):ns['require_default_handler_unchanged']('cleanup')
+   self.assertEqual(seen,[]);self.assertEqual(prior.read_text(),'first launch failure')
  def test_native_footprint_witness_starts_before_builder_tests(self):
   self.assertLess(S.index("witness('baseline','pristine',STOCK)"),S.index("'Twenty actual native Racket builder contract cases'"))
   self.assertLess(S.index("witness('baseline','selected-runtime',RUNTIME)"),S.index("'Twenty actual native Racket builder contract cases'"))
   self.assertIn("witness('compare','official-user-preferences'",S)
  def test_exact_builder_and_preview_pins(self):
-  self.assertIn('db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67',S)
+  self.assertIn('b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee',S)
   self.assertIn('2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',S)
   self.assertIn('CONTRACT.source_copy(ROOT,PROOF,SOURCE_PIN,155)',S)
  def test_native_tests_explicit_and_no_false_success(self):

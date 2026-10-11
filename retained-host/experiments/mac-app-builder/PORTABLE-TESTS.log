@@ -20,6 +20,7 @@ test_spaces_unicode_quotes_argv_and_exec_pid (baseline_app_contracts.AppContract
 test_wrong_runtime_version_is_reported_without_launch (baseline_app_contracts.AppContracts.test_wrong_runtime_version_is_reported_without_launch) ... ok
 test_exact_manifest_and_155_sources (__main__.PortSourceContracts.test_exact_manifest_and_155_sources) ... ok
 test_new_entry_sanitizes_before_fake_racket (__main__.PortSourceContracts.test_new_entry_sanitizes_before_fake_racket) ... ok
+test_no_document_claim_source_contract (__main__.PortSourceContracts.test_no_document_claim_source_contract) ... ok
 test_no_python_in_product_entrypoints (__main__.PortSourceContracts.test_no_python_in_product_entrypoints) ... ok
 test_racket_delimiters_only (__main__.PortSourceContracts.test_racket_delimiters_only) ... ok
 test_rackunit_has_twenty_numbered_contracts (__main__.PortSourceContracts.test_rackunit_has_twenty_numbered_contracts) ... ok
@@ -27,6 +28,6 @@ test_shell_syntax (__main__.PortSourceContracts.test_shell_syntax) ... ok
 test_unchanged_app_scripts_and_generator (__main__.PortSourceContracts.test_unchanged_app_scripts_and_generator) ... ok
 
 ----------------------------------------------------------------------
-Ran 27 tests in 1.276s
+Ran 28 tests in 0.828s
 
 OK

@@ -21,7 +21,7 @@
 (define (env-ref env key)
   (define b (environment-variables-ref env (string->bytes/utf-8 key)))
   (and b (bytes->string/utf-8 b)))
-(define (with-fixture proc)
+(define (with-fixture proc [inherited-claims? #t])
   (define root (canonical-path (make-temporary-file "openracket-contract-~a" 'directory)))
   (dynamic-wind void
     (lambda ()
@@ -62,7 +62,29 @@ NATIVE
         (lambda (out) (write-plist '(dict (assoc-pair "CFBundleExecutable" "OpenRacket Preview")
                                           (assoc-pair "CFBundleIdentifier" "org.racket-lang.example")
                                           (assoc-pair "CFBundleIconFile" "Starter.icns")
+                                          ;; Simulate inherited generator claims, including
+                                          ;; an extension claim and a UTI/wildcard claim.
+                                          (assoc-pair "CFBundleDocumentTypes"
+                                            (array
+                                              (dict (assoc-pair "CFBundleTypeName" "Inherited source")
+                                                    (assoc-pair "CFBundleTypeRole" "Editor")
+                                                    (assoc-pair "CFBundleTypeExtensions" (array "rkt" "rktl" "ss" "scm" "wxme"))
+                                                    (assoc-pair "LSHandlerRank" "Owner"))
+                                              (dict (assoc-pair "CFBundleTypeName" "Inherited fallback")
+                                                    (assoc-pair "CFBundleTypeRole" "Viewer")
+                                                    (assoc-pair "CFBundleTypeExtensions" (array "*"))
+                                                    (assoc-pair "LSItemContentTypes" (array "public.text"))
+                                                    (assoc-pair "LSHandlerRank" "Alternate"))))
                                           (assoc-pair "LSUIElement" (true))) out)))
+      (unless inherited-claims?
+        (define info-path (build-path bundle "Contents/Info.plist"))
+        (define info (call-with-input-file info-path read-plist))
+        (call-with-output-file info-path
+          (lambda (out)
+            (write-plist
+              (cons 'dict (filter (lambda (a) (not (equal? (cadr a) "CFBundleDocumentTypes"))) (cdr info)))
+              out))
+          #:exists 'truncate/replace))
       (define native-before (file->bytes native))
       (decorate-bundle bundle source racket "saved")
       ;; Mock only the alert transport in fixtures: failure cases must not open
@@ -97,7 +119,7 @@ NATIVE
   (fixture-test "02 native executable unchanged"
     (root source racket bundle native native-before env)
     (check-equal? (file->bytes native) native-before))
-  (fixture-test "03 normal metadata and no default-app setter"
+  (fixture-test "03 normal metadata without inherited or generated document claims"
     (root source racket bundle native native-before env)
     (define info (call-with-input-file (build-path bundle "Contents/Info.plist") read-plist))
     (define h (for/hash ([a (in-list (cdr info))]) (values (cadr a) (caddr a))))
@@ -106,7 +128,17 @@ NATIVE
     (check-false (hash-has-key? h "LSUIElement"))
     (check-false (hash-has-key? h "LSEnvironment"))
     (check-equal? (hash-ref h "LSMultipleInstancesProhibited") '(true))
-    (check-true (regexp-match? #rx"Alternate" (format "~s" (hash-ref h "CFBundleDocumentTypes")))))
+    (check-false (hash-has-key? h "CFBundleDocumentTypes"))
+    (check-equal? (hash-ref h "CFBundleIconFile") "Starter.icns")
+    (check-false (hash-has-key? h "UTExportedTypeDeclarations"))
+    (check-false (hash-has-key? h "UTImportedTypeDeclarations"))
+    ;; Also prove a generator without any document key gains no new claim.
+    (with-fixture
+      (lambda (root source racket bundle native native-before env)
+        (define info (call-with-input-file (build-path bundle "Contents/Info.plist") read-plist))
+        (check-false (assoc "CFBundleDocumentTypes" (map cdr (cdr info))))
+        (check-equal? (file->bytes native) native-before))
+      #f))
   (fixture-test "04 spaces Unicode quotes argv and exec PID"
     (root source racket bundle native native-before env)
     ;; Feed an actual trailing-slash source through the same CLI canonicalizer

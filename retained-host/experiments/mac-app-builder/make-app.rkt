@@ -179,14 +179,13 @@ QUERY
                      (cons "CFBundleName" "OpenRacket Preview") (cons "CFBundleDisplayName" "OpenRacket Preview")
                      (cons "CFBundleIdentifier" identifier) (cons "CFBundlePackageType" "APPL")
                      (cons "CFBundleVersion" "1") (cons "CFBundleShortVersionString" "0.1.0")
-                     (cons "LSMinimumSystemVersion" "15.0") (cons "LSMultipleInstancesProhibited" '(true))
-                     (cons "CFBundleDocumentTypes"
-                           '(array (dict (assoc-pair "CFBundleTypeName" "Racket source and editor document")
-                                         (assoc-pair "CFBundleTypeRole" "Editor")
-                                         (assoc-pair "CFBundleTypeExtensions" (array "rkt" "rktl" "ss" "scm" "wxme"))
-                                         (assoc-pair "LSHandlerRank" "Alternate"))))))])
+                     (cons "LSMinimumSystemVersion" "15.0") (cons "LSMultipleInstancesProhibited" '(true))))])
     (hash-set! info (car pair) (cdr pair)))
-  (for ([key '("LSUIElement" "LSBackgroundOnly" "LSEnvironment")]) (hash-remove! info key))
+  ;; Explicit Open With/open -a remains supported by the native event handler.
+  ;; Do not advertise document ownership, including inherited launcher claims:
+  ;; Alternate is still selectable when no higher-ranked handler exists.
+  (for ([key '("LSUIElement" "LSBackgroundOnly" "LSEnvironment" "CFBundleDocumentTypes")])
+    (hash-remove! info key))
   (call-with-output-file info-path (lambda (out) (write-plist (hash->plist info) out)) #:exists 'truncate/replace)
   (define record
     (hash 'status "native acceptance pending" 'source (pstr source) 'racket (pstr racket)

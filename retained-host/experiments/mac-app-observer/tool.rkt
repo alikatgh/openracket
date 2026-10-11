@@ -159,11 +159,43 @@
         (define toolbar (send frame get-button-panel))
         (define buttons (filter (lambda (w) (is-a? w switchable-button%)) (descendants toolbar)))
         (define labels (map (lambda (w) (send w get-label)) buttons))
-        (define expected
+        (define full-expected
           (list (string-constant check-syntax) (string-constant debug-tool-button-name)
                 (string-constant macro-stepper) (string-constant execute-button-label)
                 (string-constant break-button-label)))
-        (define observed (filter (lambda (label) (member label expected)) labels))
+        ;; Read the active document's real stock language, not its toolbar shape.
+        ;; Detached capability-disabled widgets are absent from get-children.
+        (define language
+          (drracket:language-configuration:language-settings-language
+           (send defs get-next-settings)))
+        (define language-position (send language get-language-position))
+        (define no-language?
+          (equal? language-position
+                  (list (string-constant initial-language-category)
+                        (string-constant no-language-chosen))))
+        (define module-language? (is-a? language drracket:module-language:module-language<%>))
+        (define unnamed-empty? (and (not (send defs get-filename)) (zero? (send defs last-position))))
+        (define capability-keys
+          '(drscheme:check-syntax-button gui-debugger:debug-button macro-stepper:enabled))
+        (define registered (map drracket:language:capability-registered? capability-keys))
+        (define capabilities
+          (map (lambda (key present?)
+                 (if present? (send language capability-value key) 'unregistered))
+               capability-keys registered))
+        (define toolbar-language
+          (hash 'position language-position 'no_language_chosen no-language?
+                'module_language module-language? 'unnamed_empty unnamed-empty?
+                'capability_keys capability-keys 'capabilities_registered registered
+                'capability_values capabilities))
+        ;; Preserve diagnostic evidence even if the state/order assertion fails.
+        (set! last-state (hash 'memory_limit memory-limit 'toolbar_labels labels
+                              'toolbar_language toolbar-language))
+        (define expected
+          (expected-toolbar-labels (hash-ref config 'mode) (step) unnamed-empty?
+                                   no-language? module-language? registered capabilities full-expected))
+        ;; Filter against all five names, so unexpected visible language tools
+        ;; cannot disappear from the no-language comparison.
+        (define observed (filter (lambda (label) (member label full-expected)) labels))
         (define horizontal?
           (if (object-method-arity-includes? toolbar 'get-orientation 0)
               (send toolbar get-orientation)
@@ -196,7 +228,7 @@
                     'light_scheme (color-prefs:get-current-color-scheme-name #:wob? #f)
                     'dark_scheme (color-prefs:get-current-color-scheme-name #:wob? #t)
                     'mode (preferences:get 'framework:white-on-black-mode?)
-                    'toolbar_labels labels))
+                    'toolbar_labels labels 'toolbar_language toolbar-language))
         (define painter-modern? ((dynamic-require 'mrlib/private/openracket-paint 'modern-ui?)))
         (assert! (eq? painter-modern? modern?) "Actual painter mode matches the chosen launcher")
         (cond
@@ -229,7 +261,10 @@
         (hash 'status "passed" 'observer "CI-only native app retained host" 'checks checks
               'genuine_host #t 'entrypoint_replaced #f 'fixture_opened_by_observer #f
               'content_or_preferences_changed #f
-              'toolbar_labels labels 'toolbar_horizontal horizontal? 'ui expected-ui 'theme (if modern? "dark" "stock")
+              'toolbar_labels labels 'toolbar_language toolbar-language
+              'full_toolbar_verified (and module-language?
+                                          (equal? observed (if horizontal? full-expected (reverse full-expected))))
+              'toolbar_horizontal horizontal? 'ui expected-ui 'theme (if modern? "dark" "stock")
               'native native 'painter painter-theme 'native_blending blended? 'save_guard save-guard
               'memory_limit memory-limit
               'sources source-evidence 'geometry (geometry frame) 'complete_stock_parity #f))
@@ -294,6 +329,12 @@
         (assert! (equal? (sort (map (lambda (t) (hash-ref t 'filename)) named) string<?)
                          (sort expected string<?))
                  "Stock-opened file set contains each expected file exactly once and no extras")
+        (define active-fixture-toolbar
+          (and (not (equal? (step) "coldempty"))
+               (current-fixture-toolbar-witness tabs frame-reports expected)))
+        (unless (equal? (step) "coldempty")
+          (assert! active-fixture-toolbar
+                   "A current expected fixture has a verified module-language five-tool toolbar"))
         (for ([t (in-list tabs)])
           (define filename (hash-ref t 'filename))
           (if filename
@@ -326,7 +367,9 @@
                 'entrypoint_replaced #f 'fixture_opened_by_observer #f 'handler_replaced #f
                 'content_or_preferences_changed #f 'pid first-pid 'same_pid #t 'identity identity
                 'frames frame-reports 'tabs tabs 'frame_count (length frames) 'tab_count (length tabs)
-                'blank_count blank-count 'expected_files expected 'sources source-evidence
+                'blank_count blank-count 'expected_files expected
+                'active_fixture_toolbar_witness (or active-fixture-toolbar 'null)
+                'sources source-evidence
                 'profile (hash 'user_home (or (getenv "PLTUSERHOME") 'null)
                                'addon_dir (or (getenv "PLTADDONDIR") 'null)
                                'compiled_roots (current-compiled-file-roots))

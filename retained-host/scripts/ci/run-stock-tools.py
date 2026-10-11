@@ -36,6 +36,29 @@ def command(name,args,environment=None,timeout=120,required=True):
  if code and required:raise RuntimeError(name+' failed')
  return code==0
 
+def coordinator_result_valid(code,output,negative):
+ lines=output.splitlines()
+ success='OPENRACKET_NATIVE_TOOL_COORDINATOR_OK strict-failures cleanup-complete'
+ injection='OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE'
+ if negative:
+  return code>0 and code!=124 and lines.count(injection)==1 and success not in output and 'actual' in output and 'deliberately-wrong' in output
+ return code==0 and lines.count(success)==1 and injection not in output
+
+def coordinator_regression(mode,e):
+ for negative in (False,True):
+  label=mode+' standalone coordinator '+('injected-negative' if negative else 'positive')
+  args=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],str(PROOF/'tests/native-tool-coordinator-standalone.rkt')]
+  if negative:args.append('--inject-outer-failure')
+  print('::group::'+label,flush=True)
+  p=subprocess.Popen(args,env=e,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
+  try:output,_=p.communicate(timeout=30);code=p.returncode
+  except subprocess.TimeoutExpired:
+   terminate_group(p);output,_=p.communicate(timeout=5);code=124
+  print(output,flush=True)
+  passed=coordinator_result_valid(code,output,negative)
+  record(label,passed,'exit='+str(code)+'; strict marker and outer-failure behavior checked')
+  print('::endgroup::',flush=True)
+
 def tree(operation,root,label,required=True):
  return command(label+' entire original runtime '+operation,[sys.executable,ROOT/'scripts/ci/runtime-tree-check.py',operation,root,TEMP/('stock-tools-'+label+'-tree.json')],timeout=180,required=required)
 
@@ -98,16 +121,17 @@ def native_case(case,modern=False):
 try:
  if PHASE=='prepare':
   tree('baseline',STOCK,'pristine')
-  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='e588a7b4e383a30e30bc418874102589234dcf4143c93f7cb1c5785680bbb521'
-  members=json.loads(m.read_text());assert len(members)==17
+  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='753839e4a470ebf9fb33a95f4100b3954a6f55718cc14c3310cc7cc46d2bd1bc'
+  members=json.loads(m.read_text());assert len(members)==20
   for name,h in members.items():
    p=EXP/name;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==h
   command('Portable exact host reproduction',[sys.executable,EXP/'scripts/prepare-stock-tool-host.py','--check'])
   command('Portable stock-tool source preservation',[sys.executable,EXP/'tests/stock-tool-source-test.py'])
+  command('Standalone driver source preservation',[sys.executable,EXP/'tests/coordinator-standalone-source-test.py'])
   command('Stock-tool adapter isolation tests',[sys.executable,ROOT/'scripts/ci/test-stock-tools-adapter.py'])
   CONTRACT.source_copy(ROOT,PROOF,'2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',155)
-  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='226ec3054710a95b45e15c2211090000a94f75123515305a1f4a8a27fd156ea7'
-  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==4
+  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='f74d22a1b1e15956d8a86b6b884fb3d69655523d79e125c777a16b5758fb961a'
+  allowed=json.loads(raw.read_text())['files'];assert len(allowed)==5
   baseline=json.loads((PROOF/'CONTENTS-SHA256.json').read_text());shutil.copy2(PROOF/'CONTENTS-SHA256.json',PROOF/'BASE-0520-CONTENTS.json')
   for name,h in allowed.items():
    assert hashlib.sha256((EXP/name).read_bytes()).hexdigest()==h
@@ -115,18 +139,18 @@ try:
    if dest.exists():dest.unlink()
    shutil.copy2(EXP/name,dest);baseline[name]=h
   (PROOF/'CONTENTS-SHA256.json').write_text(json.dumps(baseline,indent=2)+'\n')
-  record('Complete native candidate assembled from exact0520 plus four reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
+  record('Complete native candidate assembled from exact0520 plus five reviewed test files',True,str(len(baseline))+' source files; production scripts unchanged')
   command('Independent modern-only tool runtime',[sys.executable,ROOT/'scripts/ci/copy-independent-runtime.py','native-tools'],os.environ.copy(),180)
   tree('baseline',MODERN,'selected-modern')
   command('Actual unchanged setup for modern tool registration',['/bin/sh',PROOF/'scripts/setup-openracket.sh','--install'],env('setup',True,True),720)
-  compile_files=[PROOF/'tests'/n for n in ('native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
+  compile_files=[PROOF/'tests'/n for n in ('native-tool-coordinator-standalone.rkt','native-tool-coordinator.rkt','native-tool-coordinator-test.rkt','independent-native-stock-tools.rkt','independent-native-host.rkt','independent-native-workflows.rkt','independent-native-appearance-workflows.rkt','independent-native-stop-returning.rkt')]
   for mode,modern in [('stock',False),('modern',True)]:
    e=env('compile-'+mode,modern)
    if modern:
     home=pathlib.Path(e['PLTUSERHOME']);home.mkdir();shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)
    prefix=[e['RACKET'],'-A',e['PLTADDONDIR'],'-R',e['PLTCOMPILEDROOTS'],'-l','raco','--']
-   command(mode+' native coordinator failure-propagation regression',prefix+['test',PROOF/'tests/native-tool-coordinator-test.rkt'],e,60)
    command(mode+' explicit native tool callers and runtime-path modules compile',prefix+['make',*compile_files],e,180)
+   coordinator_regression(mode,e)
  elif PHASE=='cases':
   for case in ('debugger','macro-stepper','teaching-tests'):
    if native_case(case):native_case(case,True)

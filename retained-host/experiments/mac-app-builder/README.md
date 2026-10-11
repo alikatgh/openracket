@@ -1,5 +1,24 @@
 # OpenRacket Mac app: Racket-only builder candidate
 
+## No automatic file-type claims correction (2026-10-11)
+
+This working copy changes only the builder's document-association policy, its
+tests and evidence documents. It does not modify the native generator, bootstrap,
+runtime dispatcher, error transport, source preview, or original 0752 freeze.
+The final Info.plist must omit `CFBundleDocumentTypes`, including any dictionary
+inherited from the official generator. Explicit `open -a <exact-app-path> <file>`
+and Finder Open With remain the intended entrypoints; their actual cold/warm
+delivery is still a native gate. The preview no longer advertises itself as a
+recommended handler or an icon-drop target. See the packaging-policy evidence
+in `API-EVIDENCE.md` and the new exact native gate below.
+
+Run 38125605788 observed the original `.rkt` handler change from null to the
+generated preview after a cold empty launch; its plist declared `Alternate`.
+That rank permits fallback selection. No explicit default setter was involved
+in this builder or read-only query. The run did not reach cold/warm file tests.
+This correction has not been compiled or tested on native macOS. The historical
+checks below describe the 0752 baseline, not acceptance of these changed bytes.
+
 ## Status and scope
 
 This is a source-only replacement for the reviewed Python one-time builder.
@@ -19,8 +38,8 @@ ID signing. See `MAC-NATIVE-ACCEPTANCE.md` before calling any output launchable.
 
 ### What has and has not been checked
 
-- PASS: 27 portable checks (`PORTABLE-TESTS.log`): the original 20 Python-reference
-  tests with the byte-identical app scripts, plus seven source/shell-entry checks.
+- PASS: 28 portable checks (`PORTABLE-TESTS.log`): the original 20 Python-reference
+  tests with the byte-identical app scripts, plus eight source/shell-entry checks.
 - PASS: the 155-file source pin, original script/generator byte identity, shell
   syntax, lexical Racket delimiter checks, and poisoned entry configuration with
   an explicitly fake executable that never invokes Racket.
@@ -34,6 +53,10 @@ The portable tests deliberately import the untouched Python reference to exercis
 its fixture generation. They **do not test the Racket decorator**. The new
 `test-app.rkt` ports those 20 contracts without Python and must pass with real
 Racket before the port is accepted. Delimiter balance is not a compiler result.
+The Python reference retains its old document claim and is not an oracle for the
+corrected plist policy. The added portable check is source-only. RackUnit case 03
+requires exact key absence after inherited extension, wildcard and UTI claims;
+the real native app manifest must independently require that same absence.
 
 ## One-time build command (future authorized Mac gate)
 

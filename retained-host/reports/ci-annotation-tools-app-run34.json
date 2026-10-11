@@ -1,0 +1,513 @@
+{
+  "run_id": 38125605788,
+  "job_id": 114429230238,
+  "commit": "8821c54027faa4dd0526e2b3eac2cc0b66618342",
+  "conclusion": "failure",
+  "log_sha256": "8d15ea134bdaf242f3becdbf0d1853f6186083074e791584acbd02240e280008",
+  "rows": {
+    "OPENRACKET_REPLAY_CI_RESULT": [
+      {
+        "name": "Frozen diagnostic source hashes",
+        "passed": true,
+        "detail": "0a0117d4b8e20aa7804b5863bc30bad8da40aa6ad9a14136e6f0408e272147b9"
+      },
+      {
+        "name": "Application attribution adapter isolation tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Readable evidence transport unit tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Pristine complete runtime baseline",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Dedicated independent stock diagnostic clone",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "All native preflight gates; no skipped Racket tests accepted",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Pinned diagnostic insertions and actual clone compilation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Generate unchanged deterministic fixture",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Genuine GUI control request, trace application and lexer completion",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Genuine GUI observed request, trace application and lexer completion",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Strict matched genuine GUI outcome and application accounting acceptance",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/capture-host.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/capture-supervisor.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/memory-profile.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/gui-observation.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/worker-init.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/worker-phase-1.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded control/application-profile.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/capture-host.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/capture-supervisor.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/memory-profile.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/gui-observation.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/worker-init.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/worker-phase-1.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded observed/application-profile.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Bounded annotation-application-ci/acceptance.json log evidence",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Pristine complete runtime unchanged after diagnostic",
+        "passed": true,
+        "detail": "exit=0"
+      }
+    ],
+    "OPENRACKET_STOCK_TOOLS_RESULT": [
+      {
+        "name": "pristine entire original runtime baseline",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Portable exact host reproduction",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Portable stock-tool source preservation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Stock-tool adapter isolation tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Complete native candidate assembled from exact0520 plus four reviewed test files",
+        "passed": true,
+        "detail": "158 source files; production scripts unchanged"
+      },
+      {
+        "name": "Independent modern-only tool runtime",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-modern entire original runtime baseline",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual unchanged setup for modern tool registration",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "stock native coordinator failure-propagation regression",
+        "passed": false,
+        "detail": "exit=1"
+      },
+      {
+        "name": "prepare orchestration",
+        "passed": false,
+        "detail": "stock native coordinator failure-propagation regression failed"
+      },
+      {
+        "name": "pristine entire original runtime compare",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-modern entire original runtime compare",
+        "passed": true,
+        "detail": "exit=0"
+      }
+    ],
+    "OPENRACKET_MAC_APP_RESULT": [
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "App CI isolation and byte/mtime witness tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "App adapter source-contract tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Lossless evidence transport tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Exact builder and separate heartbeat helper sources",
+        "passed": true,
+        "detail": "db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67"
+      },
+      {
+        "name": "Exact tested preview copied to fresh Unicode/apostrophe/spaced source",
+        "passed": true,
+        "detail": "/Users/runner/work/_temp/OpenRacket App Proof \u03bb's"
+      },
+      {
+        "name": "Read-only observer portable source contracts",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Deep-copy independent app runtime",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "Independent corrected heartbeat native regression",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "official-user-preferences complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+      },
+      {
+        "name": "Product profile absent before actual setup",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "Actual verified preview setup",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual unchanged preview preflight",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual fresh preview memory ownership status",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Read-only original .rkt default handler before-build",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler before-build",
+        "passed": true,
+        "detail": "{\"default_handler\": null, \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": false, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"dyn.age81e45y\"}"
+      },
+      {
+        "name": "Exact builder and separate heartbeat helper sources",
+        "passed": true,
+        "detail": "db7b3e766da0532630237e8dd3bc42fb6eab9d7130753a69a17e70faf0574f67"
+      },
+      {
+        "name": "Compile actual Racket-only builder, tests and official launcher generator",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Twenty actual native Racket builder contract cases",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "All20 actual builder RackUnit cases executed",
+        "passed": true,
+        "detail": "Exact native count required"
+      },
+      {
+        "name": "Twenty-one read-only app observer native contract/state cases",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "All21 actual observer RackUnit cases executed",
+        "passed": true,
+        "detail": "Exact native count required"
+      },
+      {
+        "name": "Explicit native app observer and Cocoa/default-reader compilation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "Generate independent untouched official native launcher reference",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual Racket-only destination app build",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Product builder passed its same-object native-byte preservation assertion",
+        "passed": true,
+        "detail": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083"
+      },
+      {
+        "name": "Native plist syntax",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Inspect native executable architecture",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Refuse existing output 0",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Refuse existing output 1",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Refuse existing output 2",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output is a symbolic link\n"
+      },
+      {
+        "name": "Refuse existing output 3",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Generation opened no app process",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "Register separate CI-only read-only native app observer",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Compile observer package registration without main runtime writes",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Resolve actual isolated observer collection after registration",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Registered observer resolves to exact private reviewed source",
+        "passed": true,
+        "detail": "{\"path\": \"/Users/runner/work/_temp/OpenRacket App Observer/tool.rkt\", \"sha256\": \"f57dfe1fc91768679bf0f4003d97fec92c854ae8f5fd3ac10af8ce70fa587a01\", \"private_addon\": \"/Users/runner/work/_temp/OpenRacket App Proof \\u03bb's/profile/.local/share/racket\"}"
+      },
+      {
+        "name": "mac-app-coldempty-coldempty-failure-diagnostic OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 112513, \"sha256\": \"97de74178838a1286698a99c1859ed41a2bedf045cc31e61bc9a078ab8d77f3e\"}"
+      },
+      {
+        "name": "mac-app-coldempty native sequence",
+        "passed": false,
+        "detail": "Native observer failed: mac-app-observer: Localized Check Syntax/Debug/Macro Stepper/Run/Stop order remains stock"
+      },
+      {
+        "name": "Bounded app test cleanup",
+        "passed": true,
+        "detail": "{\"original_processes\": [], \"remaining\": []}"
+      },
+      {
+        "name": "Further app launches withheld",
+        "passed": false,
+        "detail": "Ordinary launch refusal/unobserved startup requires diagnosis; no alternate launch attempted"
+      },
+      {
+        "name": "relocate orchestration",
+        "passed": false,
+        "detail": "App relocation launch withheld after prior unresolved launch refusal/startup"
+      },
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "official-user-preferences complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler after-all",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "verify orchestration",
+        "passed": false,
+        "detail": "Original .rkt handler changed"
+      }
+    ],
+    "OPENRACKET_RUNTIME_TREE_CHECK": [
+      {
+        "operation": "baseline",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "baseline",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "baseline",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket-native-tools",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "compare",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "compare",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "compare",
+        "root": "/Users/runner/work/_temp/openracket-full.KT87LI/racket-native-tools",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      }
+    ]
+  },
+  "annotation_accepted": true,
+  "tool_cases": "unrun: coordinator regression 2/10 failure",
+  "app_launch": "cold-empty shown, observer toolbar predicate failed; later launches withheld",
+  "default_handler": {
+    "before": null,
+    "after": "local.openracket.preview.p751b18fc32abb5fc",
+    "unchanged": false
+  },
+  "screenshot": "images/mac-app-coldempty-coldempty-failure-diagnostic.png"
+}

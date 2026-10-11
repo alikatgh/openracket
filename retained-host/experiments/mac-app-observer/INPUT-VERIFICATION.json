@@ -1,0 +1,22 @@
+{
+  "source": "openracket-mac-app-observer-freeze-20261011-0814",
+  "baseline": "openracket-preview-memory-freeze-20261011-0520",
+  "changed_from_observer": [
+    "API-EVIDENCE.md",
+    "DELIVERABLE-SHA256.json",
+    "PORTABLE-TESTS.log",
+    "README.md",
+    "contract.rkt",
+    "tests/contract-test.rkt",
+    "tests/source-test.py",
+    "tool.rkt"
+  ],
+  "unchanged_from_observer": [
+    "cocoa-identity.rkt",
+    "default-handler.rkt",
+    "info.rkt",
+    "tests/observer-state-test.rkt"
+  ],
+  "native_or_racket_execution": false,
+  "remote_mutation": false
+}

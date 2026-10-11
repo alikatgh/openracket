@@ -109,11 +109,32 @@ class SourceContracts(unittest.TestCase):
     def test_contract_and_state_tests_cover_real_functions(self):
         c=(ROOT/'tests/contract-test.rkt').read_text()
         s=(ROOT/'tests/observer-state-test.rkt').read_text()
-        self.assertEqual(c.count('(test-case '),10)
+        self.assertEqual(c.count('(test-case '),21)
         self.assertEqual(s.count('(test-case '),11)
         self.assertIn("'(publish! next-stage! observe-turn! tick)",s)
         self.assertIn('(definition \'phase2)',s)
         self.assertIn('"../contract.rkt"',c)
+    def test_language_exception_is_read_only_bounded_and_keeps_complete_order(self):
+        t=(ROOT/'tool.rkt').read_text();c=(ROOT/'contract.rkt').read_text()
+        for fragment in ['(send defs get-next-settings)', '(send language get-language-position)',
+                         'drracket:language:capability-registered?',
+                         'drracket:module-language:module-language<%>',
+                         '(string-constant initial-language-category)', '(string-constant no-language-chosen)',
+                         '(member label full-expected)',
+                         '(equal? observed (if horizontal? expected (reverse expected)))',
+                         "'toolbar_language toolbar-language"]:
+            self.assertIn(fragment,t)
+        self.assertIn("(equal? registered '(#t #t #t))",c)
+        self.assertIn("(equal? capabilities '(#f #f #f))",c)
+        self.assertIn('(and (equal? mode "coldempty") unnamed-empty? (not module-language?))',c)
+        self.assertIn('(check module-language?',c)
+        self.assertIn('(drop full-labels 3)',c)
+        self.assertIn('(current-fixture-toolbar-witness tabs frame-reports expected)',t)
+        self.assertIn('(unless (equal? (step) "coldempty")',t)
+        self.assertIn('"A current expected fixture has a verified module-language five-tool toolbar"',t)
+        self.assertIn("'active_fixture_toolbar_witness (or active-fixture-toolbar 'null)",t)
+        self.assertIn("(eq? (hash-ref tab 'current #f) #t)",c)
+        self.assertIn("(eq? (hash-ref frame 'full_toolbar_verified #f) #t)",c)
     def test_protocol_bounds_and_native_gate_honesty(self):
         t=(ROOT/'tool.rkt').read_text();c=(ROOT/'contract.rkt').read_text()
         for f in ['60000','20000','2000','(sleep 270)',"'complete_app_acceptance #f"]: self.assertIn(f,t)

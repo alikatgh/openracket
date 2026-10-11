@@ -103,5 +103,18 @@ Portable tests verify source contracts and lexical delimiter balance only.
 `tests/contract-test.rkt` exercises the actual independent contract module.
 `tests/observer-state-test.rkt` reads/evaluates actual state functions with fake
 clock/window results, not a reconstructed runtime or fake application entrypoint.
-Those 21 cases and all native modules still need Racket 9.3 compilation/execution.
+The corrected suite has 32 cases (21 contracts and 11 state cases); these and all native modules still need Racket 9.3 compilation/execution.
 No source-review assertion can replace the real Launch Services event sequence.
+
+
+## Stock initial-language toolbar behavior (2026-10-11 correction)
+
+The source package metadata identifies official `racket/drracket` commit
+`1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6`, built for 9.3. See
+DIAGNOSIS-38125605788.md for exact paths, hashes and source line references.
+The existing public tool signature exports the language settings accessor,
+`drracket:language:capability-registered?`, and
+`drracket:module-language:module-language<%>` used by the repair. Verified in
+`drracket-plugin-lib/drracket/private/drsig.rkt` lines 110–115, 342–377,
+and 448–468. No private member names, preference setter, tool callback, language
+selection, or extra native operation is introduced.

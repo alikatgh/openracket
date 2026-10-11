@@ -6,7 +6,7 @@ editor/control callback, or changing preferences/content/theme. Product source,
 appbuilder and generated bundle are not edited by the observer. Reading fixture
 bytes means reading their expected text from disk; it never opens them in an editor.
 
-**Status:** 11 portable source/lexical checks pass. Twenty-one actual Racket
+**Status:** 12 portable source/lexical checks pass. Thirty-two actual Racket
 contract/state tests, native module compilation, Cocoa API calls and all native
 app acceptance remain **not run here**. No local Racket, package or GUI was
 downloaded or executed. Delimiter checks are not compilation evidence.
@@ -14,7 +14,7 @@ downloaded or executed. Delimiter checks are not compilation evidence.
 The source builds on the proven 0520 preview observer, whose source SHA-256 is
 `ce3d961b5c6f2b5cb42edea8c984afcd9a87c309ff8e9409901eece4ed1fc9e5`.
 It preserves its genuine class/canvas/editor identity checks, localized original
-toolbar order, dark theme/palette/native DarkAqua/blending assertions, exact
+toolbar order for module-language fixtures, dark theme/palette/native DarkAqua/blending assertions, exact
 registered memory preference check and loaded autosave scan-guard check. This is
 read-only activation evidence, not a save/recovery exercise or live worker cap
 measurement. It adds all-tab enumeration, sequence/object identity, native process
@@ -33,7 +33,20 @@ must use real `/usr/bin/open -a "$APP"` commands externally. The CI harness owns
 all launches, configuration, disposable fixtures, registration, screenshots and
 process inspection. There are no shell commands or application launches here.
 
-Coldempty expects exactly one empty genuine document. Coldfile expects exactly
+Coldempty expects exactly one empty genuine document in the actual stock
+“No language chosen” state, with all three tool capabilities registered and false.
+Its visible stock control order is Run/Stop. A retained unnamed empty no-language
+frame may remain through warmfile/duplicate only in this coldempty sequence.
+Every module-language fixture frame still requires Check Syntax/Debug/Macro
+Stepper/Run/Stop, in the original orientation/order. A wrong fixture language,
+missing capability registration, malformed initial state, or missing fixture
+button fails. Every file stage also requires at least one expected named fixture
+to be current in its actual frame, whose module-language identity and complete
+five-tool toolbar are verified. Inactive fixture tabs cannot make this pass
+vacuously through a retained blank frame. Language identity and capability evidence are read from the running
+host and included in success/failure records; the observer never selects a language.
+
+Coldfile expects exactly
 one named fixture, with no blank document. At warm stages all expected file paths
 must occur exactly once across every genuine frame/tab, with exact Unicode text
 and unmodified buffers. An original coldempty blank may be reused or remain;
@@ -287,3 +300,14 @@ absolute and its bytes must hash to the existing pinned
 `ce3d961b5c6f2b5cb42edea8c984afcd9a87c309ff8e9409901eece4ed1fc9e5`.
 Missing/relative paths or altered baseline bytes fail; no path is auto-discovered.
 This test-only variable is not read by the runtime observer or product app.
+
+## 2026-10-11 language-state correction
+
+See DIAGNOSIS-38125605788.md for exact failed-run evidence and immutable stock
+source provenance. Only the separate observer is changed. The builder, runtime
+dispatch, preview source, launch scripts, and frozen inputs remain unchanged.
+The existing native CI command already includes both test files: 21 contract
+cases plus 11 observer state cases. Its “Twenty-one” display label should be
+updated to “Thirty-two” when this observer is adopted; no test-file routing
+change is required. The new 32-case suite and actual native sequences have not
+run locally. Portable Python source/lexical checks are not compilation evidence.

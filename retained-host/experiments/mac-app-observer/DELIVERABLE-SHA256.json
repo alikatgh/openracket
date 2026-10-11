@@ -1,13 +1,16 @@
 {
-  "API-EVIDENCE.md": "6103535d246608ba6c52e4b94ffa3fac5263ab10f3656e65f83f4d1ebd3d7da9",
-  "PORTABLE-TESTS.log": "bd2c8af4c82a7cc48e10703f838b13e0a53bfdde99917b2f4761982c40b255d0",
-  "README.md": "5a784d4d9217adbe6821b32d5d75246cf4a78f5aa52872a659c9c1cc801f3e64",
+  "API-EVIDENCE.md": "c78d6eebf41ca661ccb52d93a76284807ca6088b6cf7f808c1e4f35e440db0ce",
+  "DIAGNOSIS-38125605788.md": "0b99f4831f8a4fee41496c5f8fe55861d9489054c531b02be3b1bef05077f041",
+  "INPUT-VERIFICATION.json": "a850b0be5d9ddc71ac52eb9734113dd34f3f379698350fa3bd1859bcaf5fd224",
+  "PORTABLE-TESTS.log": "e59b430d49ba1b6257629a253015efebae940461e05bd7fa0fc7c46c0261c27d",
+  "README.md": "ec0214bbddb533cb60835c8ef26a4ba834ee3d34887d96d7e8b73a970eb36d4b",
+  "SOURCE-EVIDENCE.json": "17d91b199886fd5ce27bfb711e0bbbca38d075093588157ad3cf9aeb06d5c4f6",
   "cocoa-identity.rkt": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b",
-  "contract.rkt": "e6dd87040c17a0261b7bf5517ad73375fd9575a8138a271c5a899419b33a2cf2",
+  "contract.rkt": "66770f81f5098b21761ee11f68b6b3fcac67661998c9b7553f3394e51097b77d",
   "default-handler.rkt": "175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b",
   "info.rkt": "be2dc595c1c9034794f6e0dc943727ec51804bf78ada9a767242c6cfed9bd815",
-  "tests/contract-test.rkt": "f06dc82011652afdd5955c016590170944eff1aee8ef54c52bf88c1fe5ea8b66",
+  "tests/contract-test.rkt": "363b2722f9d0f03a60fa4ea6a433b92b24a5f46707457465c0c7dae68ae5e906",
   "tests/observer-state-test.rkt": "06409f955c6f20b5acfedc1a4327271823a9cedc525f63db1928172dec587efb",
-  "tests/source-test.py": "75047d66ab872621fabc739dd751a2b9dd2720606a1dfdaf7d621c60358a3b2b",
-  "tool.rkt": "f57dfe1fc91768679bf0f4003d97fec92c854ae8f5fd3ac10af8ce70fa587a01"
+  "tests/source-test.py": "5e629e90d8e4d5fd7a00ed5f4cea8d18823edfebb36235ff9ebbec4674545e1a",
+  "tool.rkt": "19aae5e581853b314e739ee88fccb003a2e1f67d0e933dcb47626d91853b5c29"
 }

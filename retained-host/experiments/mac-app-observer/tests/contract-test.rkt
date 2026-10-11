@@ -92,3 +92,63 @@
                  (directory-exists? "/var") (directory-exists? "/private/var"))
         (check-equal? (canonical "/var") (canonical "/private/var"))))
     (lambda () (delete-directory/files root))))
+
+
+(define full-toolbar '("Check Syntax" "Debug" "Macro Stepper" "Run" "Stop"))
+(define (toolbar mode step empty? initial? module? [registered '(#t #t #t)] [values '(#f #f #f)])
+  (expected-toolbar-labels mode step empty? initial? module? registered values full-toolbar))
+(test-case "fresh coldempty reads registered false capabilities and expects only Run Stop"
+  (check-equal? (toolbar "coldempty" "coldempty" #t #t #f) '("Run" "Stop")))
+(test-case "retained original blank can remain no-language at warmfile and duplicate"
+  (for ([step '("warmfile" "duplicate")])
+    (check-equal? (toolbar "coldempty" step #t #t #f) '("Run" "Stop"))))
+(test-case "named fixture stages preserve the complete five-tool requirement"
+  (for ([mode '("coldempty" "coldfile")])
+    (for ([step (if (equal? mode "coldfile") '("coldfile" "warmfile" "duplicate")
+                   '("warmfile" "duplicate"))])
+      ;; Stock module-language Macro Stepper uses its opt-out toolbar factory;
+      ;; a false ordinary capability must not reduce the five-tool expectation.
+      (define expected (toolbar mode step #f #f #t '(#t #t #t) '(#t #t #f)))
+      (check-equal? expected full-toolbar)
+      (check-not-equal? '("Run" "Stop") expected))))
+(test-case "coldfile cannot inherit the no-language exception even for a blank frame"
+  (for ([step '("coldfile" "warmfile" "duplicate")])
+    (check-exn exn:fail? (lambda () (toolbar "coldfile" step #t #t #f)))))
+(test-case "named or nonempty no-language document fails in every coldempty stage"
+  (for ([step '("coldempty" "warmfile" "duplicate")])
+    (check-exn exn:fail? (lambda () (toolbar "coldempty" step #f #t #f)))))
+(test-case "missing tool registration fails for empty and module-language states"
+  (for ([registered '((#f #t #t) (#t #f #t) (#t #t #f) ())])
+    (check-exn exn:fail? (lambda () (toolbar "coldempty" "coldempty" #t #t #f registered)))
+    (check-exn exn:fail? (lambda () (toolbar "coldfile" "coldfile" #f #f #t registered)))))
+(test-case "initial no-language requires all false capabilities and distinct language identity"
+  (for ([values '((#t #f #f) (#f #t #f) (#f #f #t) ())])
+    (check-exn exn:fail? (lambda () (toolbar "coldempty" "coldempty" #t #t #f '(#t #t #t) values))))
+  (check-exn exn:fail? (lambda () (toolbar "coldempty" "coldempty" #t #t #t))))
+(test-case "a wrong initial or fixture language cannot pass by matching toolbar labels"
+  (check-exn exn:fail? (lambda () (toolbar "coldempty" "coldempty" #t #f #t)))
+  (check-exn exn:fail? (lambda () (toolbar "coldfile" "coldfile" #f #f #f)))
+  (check-exn exn:fail? (lambda () (toolbar "coldempty" "warmfile" #f #f #f))))
+
+
+(define witness-tab (hash 'frame_id 1 'tab_id 2 'filename "/ci/fixture.rkt" 'current #t))
+(define witness-frame
+  (hash 'frame_id 1 'full_toolbar_verified #t 'toolbar_language (hash 'module_language #t)))
+(test-case "current expected named fixture must have its own verified five-tool frame"
+  (define witness (current-fixture-toolbar-witness (list witness-tab) (list witness-frame) '("/ci/fixture.rkt")))
+  (check-equal? (hash-ref witness 'tab_id) 2)
+  (check-equal? (hash-ref witness 'filename) "/ci/fixture.rkt")
+  (check-true (hash-ref witness 'full_toolbar_verified)))
+(test-case "inactive fixture, current blank, unrelated file and missing frame cannot witness tools"
+  (for ([tab (list (hash-set witness-tab 'current #f)
+                  (hash-set witness-tab 'filename #f)
+                  (hash-set witness-tab 'filename "/ci/other.rkt")
+                  (hash-set witness-tab 'frame_id 3))])
+    (check-false (current-fixture-toolbar-witness (list tab) (list witness-frame) '("/ci/fixture.rkt"))))
+  (check-false (current-fixture-toolbar-witness '() (list witness-frame) '("/ci/fixture.rkt"))))
+(test-case "blank or non-module frame and missing full-order proof cannot witness fixture tools"
+  (for ([frame (list (hash-set witness-frame 'full_toolbar_verified #f)
+                    (hash-remove witness-frame 'full_toolbar_verified)
+                    (hash-set witness-frame 'toolbar_language (hash 'module_language #f))
+                    (hash-remove witness-frame 'toolbar_language))])
+    (check-false (current-fixture-toolbar-witness (list witness-tab) (list frame) '("/ci/fixture.rkt")))))
