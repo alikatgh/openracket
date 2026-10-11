@@ -1,0 +1,17 @@
+{
+  "edited_snapshot_sha256": "f66aacc13f5cec59fd57f20a0fc82fa2c159a3cb4a77cbc57d4eddbd1f107735",
+  "elapsed_ms": 35266.263999999996,
+  "fixture": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/fixtures/mixed-1mib.rkt",
+  "lexer_valid_at_terminal": false,
+  "measurement_kind": "native_capture_only; no performance claim",
+  "os": "macosx",
+  "pending_run_configuration_scope": "get-next-settings: pending next Run, not worker instrumentation",
+  "pending_run_serialized_settings": "(#(#t print mixed-fraction-e #f #t lang-default) (default) #() #f #t #t ((test) (main)) #t)",
+  "preserved_preferences": {
+    "child_limit_bytes": 268435456,
+    "coloring": true,
+    "online_compilation": true
+  },
+  "racket_version": "9.3",
+  "status": "terminal_captured"
+}

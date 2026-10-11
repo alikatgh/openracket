@@ -1,0 +1,145 @@
+{
+  "base_fixture_sha256": "766af354720de3e235cd60d9eb511f0469c35b36a99b599a071453d22a1b499e",
+  "capture_exists": true,
+  "cleanup": {
+    "attempted": true,
+    "child_reaped": true,
+    "complete": true,
+    "errors": [],
+    "membership_verified": true,
+    "remaining_live_pids": [],
+    "remaining_zombie_pids": [],
+    "signals": [],
+    "timing": {
+      "budget_seconds": 4.999799208999775,
+      "deadline_overrun_seconds": 0.0,
+      "dropped_stages": 0,
+      "elapsed_seconds": 0.07775454200009335,
+      "final_poll_seconds": 0.0777530420000403,
+      "last_membership_observed_seconds": 0.07758266700011518,
+      "reap_phase_end_seconds": 3.3331994726665166,
+      "stages": [
+        {
+          "elapsed_seconds": 0.0011863750000884465,
+          "remaining_seconds": 4.998612833999687,
+          "stage": "initial_membership_start",
+          "timeout_seconds": 0.2
+        },
+        {
+          "child_returncode": 0,
+          "elapsed_seconds": 0.07758933400009482,
+          "membership_known": true,
+          "remaining_seconds": 4.92220987499968,
+          "stage": "initial_membership_end"
+        },
+        {
+          "elapsed_seconds": 0.07774520900011339,
+          "remaining_seconds": 4.922053999999662,
+          "stage": "skip_SIGTERM_empty_group"
+        },
+        {
+          "child_returncode": 0,
+          "elapsed_seconds": 0.07774933399969086,
+          "remaining_seconds": 4.922049875000084,
+          "stage": "term_wait_end"
+        },
+        {
+          "child_returncode": 0,
+          "elapsed_seconds": 0.07775170900004014,
+          "remaining_seconds": 4.922047499999735,
+          "stage": "kill_reap_end"
+        },
+        {
+          "child_returncode": 0,
+          "elapsed_seconds": 0.07775333399968076,
+          "remaining_seconds": 4.922045875000094,
+          "stage": "final_poll"
+        }
+      ],
+      "term_phase_end_seconds": 1.6665997363332583
+    }
+  },
+  "cleared_inherited_openracket_keys": [],
+  "command": [
+    "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/bin/racket",
+    "/Users/runner/work/openracket/openracket/retained-host/experiments/expansion-phase-256/capture-host.rkt"
+  ],
+  "edited_snapshot_bytes": 1048577,
+  "edited_snapshot_sha256": "f66aacc13f5cec59fd57f20a0fc82fa2c159a3cb4a77cbc57d4eddbd1f107735",
+  "elapsed_seconds": 35.88111083299964,
+  "exit_code": 0,
+  "expected_memory_limit_bytes": 268435456,
+  "gui_started": true,
+  "memory_profile_setup": {
+    "cleanup": [],
+    "command": [
+      "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/bin/racket",
+      "/Users/runner/work/openracket/openracket/retained-host/experiments/expansion-phase-256/memory-profile.rkt",
+      "--limit-mib",
+      "256",
+      "--output",
+      "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/memory-profile.json",
+      "--runtime-root",
+      "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256"
+    ],
+    "configuration": {
+      "addon_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/addon",
+      "addon_was_empty": true,
+      "disk_key_count_after": 1,
+      "disk_key_count_before": 0,
+      "disk_read_method": "get-preference/#t/explicit-file + bounded direct read",
+      "expected_default_limit_bytes": 134217728,
+      "expected_limit_bytes": 268435456,
+      "gui_initialized": false,
+      "legacy_preference_store_absent": true,
+      "one_key_delta": [
+        {
+          "after_value": 268435456,
+          "before_present": false,
+          "key": "plt:framework-pref:drracket:child-only-memory-limit"
+        }
+      ],
+      "only_expected_preference_changed": true,
+      "original_default_limit_bytes": 134217728,
+      "persisted_limit_bytes": 268435456,
+      "persisted_preference_key": "plt:framework-pref:drracket:child-only-memory-limit",
+      "phase": "before-timed-gui",
+      "preference_key": "drracket:child-only-memory-limit",
+      "preference_store_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+      "preference_store_sha256": "e9fa8ae51b0c4bcfa835a1b673978d4c1c024df0c550e8b7fe6f26641248f2a5",
+      "profile_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/profile",
+      "profile_was_empty": true,
+      "readback_limit_bytes": 268435456,
+      "runtime_executable": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/bin/racket",
+      "runtime_fallback_store_absent": true,
+      "runtime_root": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256",
+      "runtime_version": "9.3",
+      "schema_version": 1,
+      "selected_limit_bytes": 268435456,
+      "sources": {
+        "eval_helpers": {
+          "expected_sha256": "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62",
+          "path": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/drracket-core-lib/drracket/private/eval-helpers-and-pref-init.rkt",
+          "sha256": "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62"
+        },
+        "framework_preferences": {
+          "expected_sha256": "59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c",
+          "path": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/gui-lib/framework/preferences.rkt",
+          "sha256": "59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c"
+        }
+      },
+      "status": "verified"
+    },
+    "elapsed_ms_before_timed_process": 719.1885420002109,
+    "errors": [],
+    "exit_code": 0,
+    "gui_started": false,
+    "helper_sha256": "9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0",
+    "timeout": false,
+    "verified": true
+  },
+  "native_capture_only": true,
+  "schema_version": 1,
+  "summary_exists": true,
+  "timeout": false
+}

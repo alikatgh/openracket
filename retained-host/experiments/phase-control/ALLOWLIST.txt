@@ -1,0 +1,14 @@
+ALLOWLIST.txt
+README.md
+SHA256SUMS
+fixtures/run-38110770395/capture-capture-host.json
+fixtures/run-38110770395/capture-capture-summary.json
+fixtures/run-38110770395/capture-capture-supervisor.json
+fixtures/run-38110770395/capture-memory-profile.json
+fixtures/run-38110770395/provenance.json
+fixtures/run-38110770395/replay-acceptance.json
+fixtures/run-38110770395/replay-replay.json
+fixtures/run-38110770395/replay-supervisor.json
+portable-tests.log
+test_validator.py
+validator.py

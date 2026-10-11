@@ -1,0 +1,83 @@
+{
+  "run_id": 38111315091,
+  "commit": "142f8c28b0508110edce6fd8f6b60dda2b4e383a",
+  "conclusion": "failure",
+  "log_sha256": "7628f33d86ef726842619da52c00c7dfd18827c71498dcc8511bdd27dd659e85",
+  "results": [
+    {
+      "name": "Portable adapter isolation unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Runtime immutability witness unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Copy verified portable source into fresh spaced path",
+      "passed": true,
+      "detail": "155 source files; /Users/runner/work/_temp/OpenRacket Portable Proof"
+    },
+    {
+      "name": "Deep-copy independent official portable runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-profile-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-dependency-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "autosave-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile product memory helper",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native product memory profile ownership and preservation tests",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "prepare orchestration",
+      "passed": false,
+      "detail": "Native product memory profile ownership and preservation tests failed"
+    },
+    {
+      "name": "pristine complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ]
+}

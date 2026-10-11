@@ -1,0 +1,15 @@
+{
+  "source_run": "38110770395",
+  "kind": "historical_failed_two-on-run_test_fixture_only",
+  "source_directory": "openracket-recovery/results/run-38110770395/decoded",
+  "original_file_sha256": {
+    "capture-capture-host.json": "aa087bc91ba917282ad477815763d08c1db836e58e0e7e1b02c630254da9821e",
+    "capture-capture-summary.json": "60ec46ed3dc0b26d3ad387d69adbf9cb76a99240028557f4b016bd20f69f4494",
+    "capture-capture-supervisor.json": "1b1a20b531f1577387ccb69e3bff327fd541c2344e9f7fe4c290ec5db7e6e341",
+    "capture-memory-profile.json": "61563621021465d91159e54b673439fe2296d8f8992dd3ae983ff663a486c0d4",
+    "replay-acceptance.json": "8eafceda6cc0c1e377dfefb0f57f04833385e51c3501f8ab35533c9a0b5e9ea1",
+    "replay-replay.json": "c5b7121f79000a6f5d62f3a238e74606a13d7ea2e6fa8c0e4d7ed85a8500d264",
+    "replay-supervisor.json": "11dbdbcee0c725c65c085a39c9d3094e6601f48cf3ab2d7673ec85254b53f20f"
+  },
+  "adaptation": "Raw seven JSON files are byte-identical. test_validator.evidence() explicitly adapts in memory: one trial, off phase null/hash absent, phase flag, times/PIDs/config outputs, intervals and hard wall. outcome() adds synthetic success/timeout/failure. None is evidence of a new native control run."
+}

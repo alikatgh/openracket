@@ -1,0 +1,98 @@
+#lang racket/base
+;; Read-only native diagnostic inspecting the exact frozen helper's bindings.
+;; This script requires only base-distribution path support; loading the helper
+;; uses its existing dependencies. No main entry point, preference calls, profile
+;; creation, installation, network, mutation, or RackUnit dependency.
+;; Usage: racket tests/diagnose-memory-paths.rkt /absolute/tree/scripts/memory-profile.rkt
+(require racket/path)
+
+(define arguments (current-command-line-arguments))
+(unless (= (vector-length arguments) 1)
+  (error 'memory-path-diagnostic "supply the absolute helper source filename"))
+(define helper (path->complete-path (vector-ref arguments 0)))
+(unless (file-exists? helper)
+  (error 'memory-path-diagnostic "helper source does not exist: ~a" helper))
+(define expected-profile (simplify-path (build-path (path-only helper) 'up "profile") #f))
+(define (exists? p) (or (file-exists? p) (directory-exists? p) (link-exists? p)))
+(define profile-existed-before-load? (exists? expected-profile))
+(unless (not profile-existed-before-load?)
+  (error 'memory-path-diagnostic "use a copy whose profile does not exist: ~a" expected-profile))
+;; Inspect the exact frozen module's bindings, without running module+ main.
+;; This loads its existing dependencies but does not call any preference API.
+(dynamic-require helper #f)
+(define helper-namespace (module->namespace helper))
+(define (binding name)
+  (parameterize ([current-namespace helper-namespace])
+    (namespace-variable-value name #t)))
+(define source-root (binding 'source-root))
+(define root (binding 'root))
+(define profile (binding 'profile))
+(define physical (binding 'physical))
+(define profile-aliases (binding 'profile-aliases))
+(define confined (binding 'confined))
+
+(define (path-data p)
+  (cond
+    [(path? p)
+     (define-values (base name directory?) (split-path p))
+     (list (cons 'printed (format "~s" p))
+           (cons 'string (path->string p))
+           (cons 'bytes (path->bytes p))
+           (cons 'directory-valued? directory?)
+           (cons 'components (explode-path p))
+           (cons 'relative? (relative-path? p))
+           (cons 'link? (link-exists? p)))]
+    [else p]))
+(define (emit label value)
+  (write (list label value))
+  (newline)
+  (flush-output))
+(define (observed thunk)
+  (with-handlers ([exn:fail? (lambda (e) (list 'refused (exn-message e)))])
+    (list 'accepted (path-data (thunk)))))
+
+(emit 'profile-existed-before-load? profile-existed-before-load?)
+(emit 'profile-exists-after-load? (exists? profile))
+(emit 'runtime (list (version) (system-type 'os)))
+(emit 'helper (path-data helper))
+(emit 'original-source-root (path-data source-root))
+(emit 'physical-root (path-data root))
+(emit 'profile (path-data profile))
+(emit 'environment-profile (getenv "PLTUSERHOME"))
+(emit 'profile-aliases (map path-data (profile-aliases)))
+(for ([candidate (in-list (list profile (path->directory-path profile)
+                               (build-path source-root "profile")
+                               (or (getenv "PLTUSERHOME") profile)))])
+  (define path (simplify-path (path->complete-path candidate) #f))
+  (define-values (base name directory?) (split-path path))
+  (emit 'alias-candidate
+        (list (cons 'candidate (path-data candidate))
+              (cons 'simplified (path-data path))
+              (cons 'split-base (path-data base))
+              (cons 'split-name (path-data name))
+              (cons 'directory? directory?)
+              (cons 'physical-base (and (path? base) (path-data (physical base))))
+              (cons 'name-equal? (equal? name (string->path "profile")))
+              (cons 'physical-base-equal-root? (and (path? base) (equal? (physical base) root)))
+              (cons 'base-components-equal-root?
+                    (and (path? base) (equal? (explode-path (physical base)) (explode-path root)))))))
+(for ([entry (in-list
+              (list (cons 'self profile)
+                    (cons 'trailing-self (path->directory-path profile))
+                    (cons 'child (build-path profile ".guard-probe" "nested.pref"))
+                    (cons 'sibling (build-path root "profile-sibling" "prefs"))
+                    (cons 'parent root)
+                    (cons 'upward-escape (build-path profile 'up "outside"))))])
+  (define path (simplify-path (cdr entry) #f))
+  (emit (car entry)
+        (list (cons 'target (path-data path))
+              (cons 'relative-default (path-data (find-relative-path profile path)))
+              (cons 'relative-more-than-same-false
+                    (path-data (find-relative-path profile path #:more-than-same? #f)))
+              (cons 'relative-more-than-same-true
+                    (path-data (find-relative-path profile path #:more-than-same? #t)))
+              (cons 'actual-confined (observed (lambda () (confined path)))))))
+(emit 'profile-exists-after-probe? (exists? profile))
+(when (exists? profile)
+  (error 'memory-path-diagnostic "profile unexpectedly exists after the read-only probe: ~a" profile))
+(emit 'diagnostic-complete 'profile-remained-absent)

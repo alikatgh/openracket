@@ -1,0 +1,33 @@
+{
+  "accepted": false,
+  "classification": "diagnostic_incomplete_or_failed",
+  "failures": [
+    "trial 1: no completed handler-results",
+    "trial 1: terminal summary differs",
+    "trial 1: missing clean monitor messages",
+    "trial 1: missing clean monitor trace_batches",
+    "trial 1: missing clean monitor trace_entries",
+    "trial 1: missing clean monitor rename_capability_rows",
+    "trial 1: monitor scalar count differs from capture: trace_entries",
+    "trial 1: monitor scalar count differs from capture: rename_capability_rows",
+    "trial 1: actual rename endpoint not retained",
+    "trial 1: missing completed request phase coverage",
+    "trial 1: missing/nonmonotonic producer phase times",
+    "trial 1: missing/nonmonotonic producer phase times",
+    "trial 2: no completed handler-results",
+    "trial 2: terminal summary differs",
+    "trial 2: missing clean monitor messages",
+    "trial 2: missing clean monitor trace_batches",
+    "trial 2: missing clean monitor trace_entries",
+    "trial 2: missing clean monitor rename_capability_rows",
+    "trial 2: monitor scalar count differs from capture: trace_entries",
+    "trial 2: monitor scalar count differs from capture: rename_capability_rows",
+    "trial 2: actual rename endpoint not retained",
+    "trial 2: missing completed request phase coverage",
+    "trial 2: missing/nonmonotonic producer phase times",
+    "trial 2: missing/nonmonotonic producer phase times",
+    "prior rename endpoints not retained through replacement",
+    "last rename endpoints not retained through cleanup"
+  ],
+  "scope": "Two completed cap256 requests with clean monitor schema, terminal summaries, phase coverage and approximate thread context. No full payload equality, allocation ownership, CPU attribution or speedup claim. The shared xref service is observed during each request, not proven to execute that request."
+}

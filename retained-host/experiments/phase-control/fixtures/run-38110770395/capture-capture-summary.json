@@ -1,0 +1,45 @@
+{
+  "actual_child_limit_bytes": 268435456,
+  "matching_request_ids": [
+    1
+  ],
+  "monitor_evidence": {
+    "check_syntax_monitor_registry_entries": 1,
+    "error_messages": 0,
+    "errors": [],
+    "invalid_payloads": 0,
+    "messages": 1,
+    "other_monitor_messages": 0,
+    "rename_capability_rows": 74675,
+    "scope": "Actual CheckSyntax monitor envelope/schema/error counts only; no full trace or capability equivalence",
+    "trace_batches": 1,
+    "trace_entries": 292728
+  },
+  "monitor_messages": 1,
+  "registry": [
+    "(#<path:/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/drracket-core-lib/drracket/private/syncheck/online-comp.rkt> go #f)",
+    "(#<path:/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/drracket-core-lib/drracket/private/syncheck/online-comp.rkt> monitor #t)"
+  ],
+  "registry_sha256": "d463642729368e267344dbee36742765debfeb7976b708bae8bd8d4fa7cc88d5",
+  "request_id": 1,
+  "schema_version": 1,
+  "settings": "#s(prefab-module-settings #() (default) #t #t none #t)",
+  "snapshot_bytes": 1048577,
+  "snapshot_characters": 1048577,
+  "snapshot_kind": "string",
+  "snapshot_sha256": "f66aacc13f5cec59fd57f20a0fc82fa2c159a3cb4a77cbc57d4eddbd1f107735",
+  "source": "#<path:/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/fixtures/mixed-1mib.rkt>",
+  "status": "terminal_observed",
+  "statuses": [
+    "finished-expansion"
+  ],
+  "terminal": {
+    "compiled_bytes": 270280,
+    "compiled_sha256": "cf6fe105b208f0d5b068b07d30d304ba0be9c1bfcaa7cf2864c5425428ae00c2",
+    "handler_keys": [
+      "(#<path:/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/drracket-core-lib/drracket/private/syncheck/online-comp.rkt> go)"
+    ],
+    "loaded_paths_count": 6,
+    "tag": "handler-results"
+  }
+}

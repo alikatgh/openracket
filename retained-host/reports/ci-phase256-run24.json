@@ -1,0 +1,193 @@
+{
+  "run_id": 38110770395,
+  "commit": "5e6dce2ffec02848152f3405677d3f9bc1e44c59",
+  "conclusion": "failure",
+  "log_sha256": "d737e5649428ea415e5d119ad9fe8a19d59b51c43547dc0acea3fad21b25c66b",
+  "results": [
+    {
+      "name": "Frozen diagnostic source hashes",
+      "passed": true,
+      "detail": "44b6c593c61eb752b7da04eece27245f127d9c448dff576b52751f354e0c7e56"
+    },
+    {
+      "name": "Completed phase adapter isolation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Readable evidence transport unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dedicated independent stock diagnostic clone",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "All native preflight gates; no skipped Racket tests accepted",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pinned diagnostic insertions and actual clone compilation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Generate unchanged deterministic fixture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual native edited-snapshot request and registry capture",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Two same-process actual worker expansion replays",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Completed handler results, clean monitor trace, three-role phase context and cleanup acceptance",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "accept diagnostic orchestration",
+      "passed": false,
+      "detail": "Completed handler results, clean monitor trace, three-role phase context and cleanup acceptance failed"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/acceptance.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime unchanged after diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-host.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/capture-supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded capture/memory-profile.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/replay.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/supervisor.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Bounded replay/acceptance.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ]
+}

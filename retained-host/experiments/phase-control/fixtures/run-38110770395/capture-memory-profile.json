@@ -1,0 +1,48 @@
+{
+  "addon_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/addon",
+  "addon_was_empty": true,
+  "disk_key_count_after": 1,
+  "disk_key_count_before": 0,
+  "disk_read_method": "get-preference/#t/explicit-file + bounded direct read",
+  "expected_default_limit_bytes": 134217728,
+  "expected_limit_bytes": 268435456,
+  "gui_initialized": false,
+  "legacy_preference_store_absent": true,
+  "one_key_delta": [
+    {
+      "after_value": 268435456,
+      "before_present": false,
+      "key": "plt:framework-pref:drracket:child-only-memory-limit"
+    }
+  ],
+  "only_expected_preference_changed": true,
+  "original_default_limit_bytes": 134217728,
+  "persisted_limit_bytes": 268435456,
+  "persisted_preference_key": "plt:framework-pref:drracket:child-only-memory-limit",
+  "phase": "before-timed-gui",
+  "preference_key": "drracket:child-only-memory-limit",
+  "preference_store_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/profile/Library/Preferences/org.racket-lang.prefs.rktd",
+  "preference_store_sha256": "e9fa8ae51b0c4bcfa835a1b673978d4c1c024df0c550e8b7fe6f26641248f2a5",
+  "profile_path": "/Users/runner/work/openracket/openracket/retained-host/reports/completed-phase-ci/capture/profile",
+  "profile_was_empty": true,
+  "readback_limit_bytes": 268435456,
+  "runtime_executable": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/bin/racket",
+  "runtime_fallback_store_absent": true,
+  "runtime_root": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256",
+  "runtime_version": "9.3",
+  "schema_version": 1,
+  "selected_limit_bytes": 268435456,
+  "sources": {
+    "eval_helpers": {
+      "expected_sha256": "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62",
+      "path": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/drracket-core-lib/drracket/private/eval-helpers-and-pref-init.rkt",
+      "sha256": "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62"
+    },
+    "framework_preferences": {
+      "expected_sha256": "59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c",
+      "path": "/Users/runner/work/_temp/openracket-full.JxGkr1/racket-phase256/share/pkgs/gui-lib/framework/preferences.rkt",
+      "sha256": "59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c"
+    }
+  },
+  "status": "verified"
+}
