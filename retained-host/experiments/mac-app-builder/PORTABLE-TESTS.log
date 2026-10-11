@@ -1,0 +1,32 @@
+test_build_environment_clears_external_compilation_overrides (baseline_app_contracts.AppContracts.test_build_environment_clears_external_compilation_overrides) ... ok
+test_builder_refuses_platform_and_existing_output (baseline_app_contracts.AppContracts.test_builder_refuses_platform_and_existing_output) ... ok
+test_bundle_move_does_not_change_tethered_paths (baseline_app_contracts.AppContracts.test_bundle_move_does_not_change_tethered_paths) ... ok
+test_dispatch_only_routes_exact_final_invocation (baseline_app_contracts.AppContracts.test_dispatch_only_routes_exact_final_invocation) ... ok
+test_empty_filename_is_refused (baseline_app_contracts.AppContracts.test_empty_filename_is_refused) ... ok
+test_environment_and_launcher_activations_survive_dispatch (baseline_app_contracts.AppContracts.test_environment_and_launcher_activations_survive_dispatch) ... ok
+test_exact_frozen_manifest_is_accepted (baseline_app_contracts.AppContracts.test_exact_frozen_manifest_is_accepted) ... ok
+test_explicit_saved_theme_configuration (baseline_app_contracts.AppContracts.test_explicit_saved_theme_configuration) ... ok
+test_failed_preflight_does_not_launch (baseline_app_contracts.AppContracts.test_failed_preflight_does_not_launch) ... ok
+test_linebreak_and_relative_configuration_paths_are_refused (baseline_app_contracts.AppContracts.test_linebreak_and_relative_configuration_paths_are_refused) ... ok
+test_managed_profile_link_is_refused_without_writes (baseline_app_contracts.AppContracts.test_managed_profile_link_is_refused_without_writes) ... ok
+test_missing_runtime_is_reported (baseline_app_contracts.AppContracts.test_missing_runtime_is_reported) ... ok
+test_native_executable_is_not_renamed_or_changed (baseline_app_contracts.AppContracts.test_native_executable_is_not_renamed_or_changed) ... ok
+test_normal_bundle_metadata_and_no_default_app_command (baseline_app_contracts.AppContracts.test_normal_bundle_metadata_and_no_default_app_command) ... ok
+test_old_finder_flag_is_not_a_document (baseline_app_contracts.AppContracts.test_old_finder_flag_is_not_a_document) ... ok
+test_psn_like_filename_is_preserved (baseline_app_contracts.AppContracts.test_psn_like_filename_is_preserved) ... ok
+test_reported_runtime_paths_must_match_root (baseline_app_contracts.AppContracts.test_reported_runtime_paths_must_match_root) ... ok
+test_runtime_boundary_requires_explicit_validated_layout (baseline_app_contracts.AppContracts.test_runtime_boundary_requires_explicit_validated_layout) ... ok
+test_spaces_unicode_quotes_argv_and_exec_pid (baseline_app_contracts.AppContracts.test_spaces_unicode_quotes_argv_and_exec_pid) ... ok
+test_wrong_runtime_version_is_reported_without_launch (baseline_app_contracts.AppContracts.test_wrong_runtime_version_is_reported_without_launch) ... ok
+test_exact_manifest_and_155_sources (__main__.PortSourceContracts.test_exact_manifest_and_155_sources) ... ok
+test_new_entry_sanitizes_before_fake_racket (__main__.PortSourceContracts.test_new_entry_sanitizes_before_fake_racket) ... ok
+test_no_python_in_product_entrypoints (__main__.PortSourceContracts.test_no_python_in_product_entrypoints) ... ok
+test_racket_delimiters_only (__main__.PortSourceContracts.test_racket_delimiters_only) ... ok
+test_rackunit_has_twenty_numbered_contracts (__main__.PortSourceContracts.test_rackunit_has_twenty_numbered_contracts) ... ok
+test_shell_syntax (__main__.PortSourceContracts.test_shell_syntax) ... ok
+test_unchanged_app_scripts_and_generator (__main__.PortSourceContracts.test_unchanged_app_scripts_and_generator) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 1.276s
+
+OK

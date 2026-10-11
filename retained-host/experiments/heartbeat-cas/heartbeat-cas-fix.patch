@@ -1,0 +1,190 @@
+--- a/heartbeat.rkt
++++ b/heartbeat.rkt
+@@ -11,6 +11,19 @@
+ (define (tick) (current-inexact-monotonic-milliseconds))
+ (define (finite-real? v) (and (real? v) (< -inf.0 v +inf.0)))
+ (struct heartbeat (state stop acknowledged producer))
++
++;; Native box-cas! may return #f spuriously without changing the box. The
++;; private parameter only lets native tests reproduce that permitted result.
++;; It is not part of the production API or configurable from the environment.
++(define current-once-cas! (make-parameter box-cas!))
++(module+ test-support (provide current-once-cas!))
++(define (claim-once! once)
++  (define cas! (current-once-cas!))
++  (let loop ()
++    (cond
++      [(unbox once) #f]
++      [(cas! once #f #t) #t]
++      [else (loop)])))
+ 
+ ;; The producer and GUI callback share only bounded scalar evidence and these
+ ;; synchronization objects. CAS avoids ever waiting for a mutex in the GUI.
+@@ -57,7 +70,7 @@
+ 
+ (define (callback! h sequence scheduled submitted once acknowledged)
+   (cond
+-    [(not (box-cas! once #f #t))
++    [(not (claim-once! once))
+      (error! h "duplicate-callback")
+      (heartbeat-stop! h)]
+     [else
+@@ -132,7 +145,7 @@
+                        ;; A failed submission cannot leave join waiting for a
+                        ;; callback that was never accepted. If a broken queue
+                        ;; later invokes it, once makes that an explicit error.
+-                       (when (box-cas! once #f #t)
++                       (when (claim-once! once)
+                          (put h 'outstanding_callbacks 0)
+                          (semaphore-post acknowledged)))])
+             (queue-callback
+--- a/test_heartbeat.rkt
++++ b/test_heartbeat.rkt
+@@ -1,6 +1,7 @@
+ #lang racket/base
+ ;; Native rackunit tests; no display server, GUI library, installation, or I/O.
+-(require rackunit racket/async-channel json "heartbeat.rkt")
++(require rackunit racket/async-channel json "heartbeat.rkt"
++         (submod "heartbeat.rkt" test-support))
+ 
+ (define (tick) (current-inexact-monotonic-milliseconds))
+ (define (deadline [ms 2000.0]) (+ (tick) ms))
+@@ -53,6 +54,138 @@
+                   (heartbeat-stop! h)
+                   (heartbeat-join! h (dispatcher-yield d) (deadline)))))
+ 
++;; Fault only the once-claim CAS, never scalar-state updates. The hook returns
++;; #f while leaving the unclaimed box unchanged, exactly as native CAS permits.
++;; Parameterize both producer creation and fake GUI dispatch: callbacks run in
++;; the dispatching thread, not necessarily in their producer's parameterization.
++(define (make-spurious-cas count)
++  (define remaining (box count))
++  (define attempts (box 0))
++  (define (cas! once old new)
++    (check-false old)
++    (check-true new)
++    (set-box! attempts (add1 (unbox attempts)))
++    (cond
++      [(positive? (unbox remaining))
++       (check-false (unbox once))
++       (set-box! remaining (sub1 (unbox remaining)))
++       #f]
++      [else (box-cas! once old new)]))
++  (values cas! remaining attempts))
++
++(test-case "spurious callback claims retry and still record, acknowledge and join"
++  (for ([failures (in-list '(1 3))])
++    (define-values (cas! remaining attempts) (make-spurious-cas failures))
++    (parameterize ([current-once-cas! cas!])
++      (define d (make-dispatcher))
++      (with-heartbeat
++       d
++       (lambda (h)
++         (await-queued d)
++         (define until (deadline))
++         (heartbeat-stop! h)
++         (check-true (heartbeat-join! h (dispatcher-yield d) until))
++         (check-equal? (unbox remaining) 0)
++         (check-true (>= (unbox attempts) (add1 failures)))
++         (check-equal? (field h 'submitted_count) 1)
++         (check-equal? (field h 'handled_count) 1)
++         (check-equal? (length (rows h)) 1)
++         (check-equal? (field h 'outstanding_callbacks) 0)
++         (check-equal? (field h 'error_count) 0)
++         (check-false (field h 'join_timed_out))
++         (check-true (field h 'joined))
++         (check-true (field h 'producer_exited))
++         (check-true (heartbeat-ok? h))
++         (check-equal? (unbox (dispatcher-maximum d)) 1)
++         (check-equal? (unbox (dispatcher-priorities d)) '(#f)))))))
++
++(test-case "a truly repeated callback is still rejected after spurious retry"
++  (define-values (cas! remaining attempts) (make-spurious-cas 1))
++  (parameterize ([current-once-cas! cas!])
++    (define d (make-dispatcher))
++    (define accepted-callback #f)
++    (define h
++      (start-heartbeat!
++       (lambda (callback priority)
++         (set! accepted-callback callback)
++         ((dispatcher-queue d) callback priority))
++       #:period-ms 1.0))
++    (dynamic-wind
++      void
++      (lambda ()
++        (await-queued d)
++        (heartbeat-stop! h)
++        ((dispatcher-pop d))
++        (define first-attempts (unbox attempts))
++        (accepted-callback)
++        (check-true (heartbeat-join! h (dispatcher-yield d) (deadline)))
++        (check-equal? (unbox remaining) 0)
++        (check-equal? (unbox attempts) first-attempts)
++        (check-equal? (field h 'errors) '("duplicate-callback"))
++        (check-equal? (field h 'error_count) 1)
++        (check-equal? (field h 'submitted_count) 1)
++        (check-equal? (field h 'handled_count) 1)
++        (check-equal? (length (rows h)) 1)
++        (check-equal? (field h 'outstanding_callbacks) 0)
++        (check-false (heartbeat-ok? h)))
++      (lambda () (stop/join h d)))))
++
++(test-case "spurious queue-failure cleanup claims cannot strand acknowledgment"
++  (define-values (cas! remaining attempts) (make-spurious-cas 3))
++  (parameterize ([current-once-cas! cas!])
++    (define attempted (make-semaphore 0))
++    (define h
++      (start-heartbeat!
++       (lambda (_callback _priority)
++         (semaphore-post attempted)
++         (error 'fake "queue unavailable"))
++       #:period-ms 1.0))
++    (check-not-false (sync/timeout 2.0 attempted))
++    (define until (deadline))
++    (check-true (heartbeat-join! h sync until))
++    (check-equal? (unbox remaining) 0)
++    (check-true (>= (unbox attempts) 4))
++    (check-equal? (field h 'errors) '("queue-callback-failed"))
++    (check-equal? (field h 'error_count) 1)
++    (check-equal? (field h 'submitted_count) 1)
++    (check-equal? (field h 'handled_count) 0)
++    (check-equal? (rows h) '())
++    (check-equal? (field h 'outstanding_callbacks) 0)
++    (check-true (field h 'joined))
++    (check-true (field h 'producer_exited))
++    (check-false (field h 'join_timed_out))
++    (check-false (heartbeat-ok? h))))
++
++(test-case "callback then queue error preserves the original acknowledgment owner"
++  (define-values (cas! remaining attempts) (make-spurious-cas 1))
++  (parameterize ([current-once-cas! cas!])
++    (define attempted (make-semaphore 0))
++    (define callback-attempts #f)
++    (define h
++      (start-heartbeat!
++       (lambda (callback _priority)
++         ;; Deliberately broken queue: callback succeeds before queueing raises.
++         (callback)
++         (set! callback-attempts (unbox attempts))
++         (semaphore-post attempted)
++         (error 'fake "queue raised after callback"))
++       #:period-ms 1.0))
++    (check-not-false (sync/timeout 2.0 attempted))
++    (define until (deadline))
++    (check-true (heartbeat-join! h sync until))
++    (check-equal? (unbox remaining) 0)
++    (check-equal? (unbox attempts) callback-attempts)
++    (check-equal? (field h 'errors) '("queue-callback-failed"))
++    (check-equal? (field h 'error_count) 1)
++    (check-equal? (field h 'submitted_count) 1)
++    (check-equal? (field h 'handled_count) 1)
++    (check-equal? (length (rows h)) 1)
++    (check-equal? (field h 'outstanding_callbacks) 0)
++    (check-true (field h 'joined))
++    (check-true (field h 'producer_exited))
++    (check-false (field h 'join_timed_out))
++    (check-false (heartbeat-ok? h))))
++
+ (test-case "exact production defaults and no false success without coverage"
+   (define d (make-dispatcher))
+   (define h (start-heartbeat! (dispatcher-queue d)))

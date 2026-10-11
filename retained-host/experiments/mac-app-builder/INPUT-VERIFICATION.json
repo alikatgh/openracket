@@ -1,0 +1,38 @@
+{
+  "source_manifest_sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+  "source_count": 155,
+  "reference_files": {
+    "CANDIDATE-SHA256.json": "14d637817319708e559fdb26c09509fd54476bfa8fc9e3b8a465178cda9d04d0",
+    "IMPLEMENTATION-AND-ACCEPTANCE.md": "6d875663a883b140740eee9c9a1e71c59aa42795be4780dd39c1035459cd222c",
+    "INPUT-VERIFICATION.json": "9344b131e2d1ecf8b345ebf72d762b2fe68755d3bee8b0c79d80cf01213f5714",
+    "MAC-NATIVE-ACCEPTANCE.md": "183f0a4379f8a4f1bdd3a721c7a68f53d72d078db142c843b59171f498a3e537",
+    "SOURCE-TESTS.log": "97e60d94eff287754b016037a9f3a1e737ece61f46abf9f5f08bcecd2261c517",
+    "bootstrap.sh": "36124ece9cb17ce19f8f7ad19f92511bd3122410c8962441160dcc3fd112b6c7",
+    "make-native-launcher.rkt": "fd1349075c9c59e4e228d02b25ac37cc2f7ad34ac70b45762d5eaab6e5ca89e4",
+    "make_app.py": "11fa60c23a565e5fbc97e28aff50d971d48eb670fa034718c207be790598b63f",
+    "report-error.applescript": "9f2e12764570b1765968ed606230054b491a6cc595c3e6e4422cb4a86a0a58d7",
+    "runtime-dispatch.sh": "d2193260696f93f23fd64567d984a1a13e79b967e44e65f793ffb54dad4cd58c",
+    "test_app.py": "50e30f5915732d6c02a07dfc06d63c8a04c88f0b1b99b09329b90e7f8ed2f463"
+  },
+  "preserved_files": {
+    "bootstrap.sh": {
+      "sha256": "36124ece9cb17ce19f8f7ad19f92511bd3122410c8962441160dcc3fd112b6c7",
+      "matches_reference": true
+    },
+    "runtime-dispatch.sh": {
+      "sha256": "d2193260696f93f23fd64567d984a1a13e79b967e44e65f793ffb54dad4cd58c",
+      "matches_reference": true
+    },
+    "report-error.applescript": {
+      "sha256": "9f2e12764570b1765968ed606230054b491a6cc595c3e6e4422cb4a86a0a58d7",
+      "matches_reference": true
+    },
+    "make-native-launcher.rkt": {
+      "sha256": "fd1349075c9c59e4e228d02b25ac37cc2f7ad34ac70b45762d5eaab6e5ca89e4",
+      "matches_reference": true
+    }
+  },
+  "racket_execution": "not run",
+  "native_execution": "not run",
+  "portable_tests": "27 passed; 20 reference-oracle tests + 7 source/entry checks"
+}

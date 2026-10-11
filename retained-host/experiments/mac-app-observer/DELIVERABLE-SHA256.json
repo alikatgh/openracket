@@ -1,0 +1,13 @@
+{
+  "API-EVIDENCE.md": "6103535d246608ba6c52e4b94ffa3fac5263ab10f3656e65f83f4d1ebd3d7da9",
+  "PORTABLE-TESTS.log": "bd2c8af4c82a7cc48e10703f838b13e0a53bfdde99917b2f4761982c40b255d0",
+  "README.md": "5a784d4d9217adbe6821b32d5d75246cf4a78f5aa52872a659c9c1cc801f3e64",
+  "cocoa-identity.rkt": "11ccc2e2a9208cb605579f4cb69efcc0766a917be99b5ea389fa41ddf956178b",
+  "contract.rkt": "e6dd87040c17a0261b7bf5517ad73375fd9575a8138a271c5a899419b33a2cf2",
+  "default-handler.rkt": "175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b",
+  "info.rkt": "be2dc595c1c9034794f6e0dc943727ec51804bf78ada9a767242c6cfed9bd815",
+  "tests/contract-test.rkt": "f06dc82011652afdd5955c016590170944eff1aee8ef54c52bf88c1fe5ea8b66",
+  "tests/observer-state-test.rkt": "06409f955c6f20b5acfedc1a4327271823a9cedc525f63db1928172dec587efb",
+  "tests/source-test.py": "75047d66ab872621fabc739dd751a2b9dd2720606a1dfdaf7d621c60358a3b2b",
+  "tool.rkt": "f57dfe1fc91768679bf0f4003d97fec92c854ae8f5fd3ac10af8ce70fa587a01"
+}

@@ -1,0 +1,20 @@
+Relocated publication test: explicit exact baseline; no sibling frozen directory.
+test_all_racket_delimiters (__main__.SourceContracts.test_all_racket_delimiters) ... ok
+test_contract_and_state_tests_cover_real_functions (__main__.SourceContracts.test_contract_and_state_tests_cover_real_functions) ... ok
+test_default_handler_has_only_read_queries_and_owned_releases (__main__.SourceContracts.test_default_handler_has_only_read_queries_and_owned_releases) ... ok
+test_native_identity_is_observed_not_configured (__main__.SourceContracts.test_native_identity_is_observed_not_configured) ... ok
+test_no_mutating_host_api_or_source_entrypoint (__main__.SourceContracts.test_no_mutating_host_api_or_source_entrypoint) ... ok
+test_original_public_tab_readers_and_strict_identity_retention (__main__.SourceContracts.test_original_public_tab_readers_and_strict_identity_retention) ... ok
+test_package_is_separate_and_inert_by_default (__main__.SourceContracts.test_package_is_separate_and_inert_by_default) ... ok
+test_preserved_host_assertions (__main__.SourceContracts.test_preserved_host_assertions) ... ok
+test_preserved_source_pins (__main__.SourceContracts.test_preserved_source_pins) ... ok
+test_protocol_bounds_and_native_gate_honesty (__main__.SourceContracts.test_protocol_bounds_and_native_gate_honesty) ... ok
+test_retained_memory_checks_are_byte_identical (__main__.SourceContracts.test_retained_memory_checks_are_byte_identical) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.016s
+
+OK
+PASS negative baseline contract: missing rejected, exit=1
+PASS negative baseline contract: relative rejected, exit=1
+PASS negative baseline contract: tampered rejected, exit=1

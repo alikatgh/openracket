@@ -15,6 +15,8 @@ class EvidenceTests(unittest.TestCase):
    self.assertEqual(json.loads(pathlib.Path(rows[0]['path']).read_text()),value)
    self.assertEqual(rows[0]['canonical_sha256'],hashlib.sha256(mod.packed(value).encode()).hexdigest())
    return lines
+ def test_native_app_ready_preserves_failure_and_unicode_tabs(self):
+  self.roundtrip({'status':'failed','error':'actual Cocoa failure','identity':{'pid':123,'bundle':'OpenRacket λ'},'tabs':[{'path':f'/tmp/文档 {i}.rkt','sha256':'a'*64,'frame_id':i} for i in range(65)]},filename='ready.json')
  def test_lossless_nested_gc_rows(self):
   self.roundtrip({'trials':[{'gc':{'records':[{'time':i,'info':'GC λ'} for i in range(97)]}},{'result':'error remains visible'}]})
  def test_under_forty_large_samples(self):

@@ -1,4 +1,4 @@
-name: Mac interval-map correctness and matched GUI trials (public free runner)
+name: Mac native app generation and real file delivery (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 60
+    timeout-minutes: 80
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -62,36 +62,45 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Verify frozen interval candidate and independent runtimes
-        id: interval_prepare
-        timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-interval.py prepare
-      - name: Mandatory native telemetry helpers with no skipped gates
-        id: interval_helpers
-        if: always() && steps.interval_prepare.outcome == 'success'
-        timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-interval.py helpers
-      - name: Actual maps, complete traces, docs lookup and native Check Syntax
-        id: interval_correctness
-        if: always() && steps.interval_prepare.outcome == 'success'
+      - name: Verify exact preview and builder with full runtime witnesses
+        id: app_prepare
+        timeout-minutes: 8
+        run: python3 retained-host/scripts/ci/run-mac-app.py prepare
+      - name: Actual source setup and twenty native Racket builder cases
+        id: app_install
+        if: success() && steps.app_prepare.outcome == 'success'
         timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-interval.py correctness
-      - name: Six interleaved genuine GUI application trials
-        if: success() && steps.interval_correctness.outcome == 'success' && steps.interval_helpers.outcome == 'success'
-        timeout-minutes: 38
-        run: python3 retained-host/scripts/ci/run-interval.py telemetry
-      - name: Verify original full runtime including bytecode unchanged
+        run: python3 retained-host/scripts/ci/run-mac-app.py install
+      - name: Generate native app and inspect executable, plist and signature
+        id: app_build
+        if: success() && steps.app_install.outcome == 'success'
+        timeout-minutes: 8
+        run: python3 retained-host/scripts/ci/run-mac-app.py build
+      - name: Install independently reviewed read-only app observer
+        id: app_observer
+        if: success() && steps.app_build.outcome == 'success'
+        timeout-minutes: 6
+        run: python3 retained-host/scripts/ci/run-mac-app.py observer
+      - name: Genuine Launch Services cold and warm file events
+        id: app_launch
+        if: success() && steps.app_observer.outcome == 'success'
+        timeout-minutes: 12
+        run: python3 retained-host/scripts/ci/run-mac-app.py launch
+      - name: App-only relocation with real file delivery
+        if: always() && steps.app_observer.outcome == 'success'
+        timeout-minutes: 7
+        run: python3 retained-host/scripts/ci/run-mac-app.py relocate
+      - name: Verify whole original runtimes and user preference witnesses
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-interval.py verify
-      - name: Report interval-map gates and complete-work timing
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-mac-app.py verify
+      - name: Report actual app construction and native launch evidence
         if: always()
         run: |
-          if test -f retained-host/reports/interval-ci/summary.md; then
-            cat retained-host/reports/interval-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/mac-app-ci/summary.md; then
+            cat retained-host/reports/mac-app-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Preparation failed before interval-map evidence was available.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Preparation failed before app evidence was available.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'A default-off data/interval-map candidate in an independent runtime. Correctness gates precede three fresh stock/candidate GUI pairs; both use 256 MiB, original stock tools and 20 ms batching.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Producer phases stay off in both measured arms. All source/metadata, terminal, full current application and final lexer endpoints must pass; failed or incomplete work is retained.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'No artifact/cache/release upload, paid runner or default product change. Historical release gaps remain separate.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Destination-built app tethered to an explicit installed full runtime and the exact tested preview source. Native Racket tests and actual Launch Services file events are separately recorded.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The generated runner-local bundle is test evidence, not a distributable self-contained, Developer ID signed or notarized app. No artifact/cache/release or paid runner.' >> "$GITHUB_STEP_SUMMARY"
