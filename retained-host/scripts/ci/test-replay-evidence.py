@@ -19,6 +19,13 @@ class EvidenceTests(unittest.TestCase):
   self.roundtrip({'status':'failed','error':'actual Cocoa failure','identity':{'pid':123,'bundle':'OpenRacket λ'},'tabs':[{'path':f'/tmp/文档 {i}.rkt','sha256':'a'*64,'frame_id':i} for i in range(65)]},filename='ready.json')
  def test_application_profile_bound_and_failed_accounting_retained(self):
   self.roundtrip({'status':'incomplete','application_count':1,'tags':[{'tag':str(i),'count':5000,'wall_ms':i/10,'cpu_ms':i/20} for i in range(13)],'phases':[{'name':'slice-'+str(i),'value':i} for i in range(100)]},filename='application-profile.json')
+ def test_queued_sampler_maximum_astral_unicode_roundtrip(self):
+  frame={'name':'🌈'*240,'source':'𝄞'*240,'line':123,'column':45}
+  value={'status':'complete','attempts':[{'sequence':i,'frames':[dict(frame) for _ in range(8)],'pending_replay':True} for i in range(1024)],'attempt_limit':1024,'dropped':0}
+  raw=json.dumps(value,ensure_ascii=False).encode()
+  self.assertLess(len(raw),20*1024*1024)
+  self.assertGreater(len(mod.packed(value).encode()),24*1024*1024)
+  self.roundtrip(value,filename='queued-samples.json')
  def test_lossless_nested_gc_rows(self):
   self.roundtrip({'trials':[{'gc':{'records':[{'time':i,'info':'GC λ'} for i in range(97)]}},{'result':'error remains visible'}]})
  def test_under_forty_large_samples(self):

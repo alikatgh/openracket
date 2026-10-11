@@ -1,0 +1,116 @@
+{
+  "kind": "diagnostic-evidence-contract",
+  "native_measurements_in_this_document": false,
+  "cli": {
+    "prepare": "native_preflight.py --racket EXE --pristine-source PRIVATE --profile PROFILE; prepare_gui.py --diagnostic-root CLONE --racket EXE",
+    "capture": "capture.py --arm control|observed --racket EXE --fixture FIXTURE --output NEW_DIRECTORY",
+    "accept": "accept_gui.py --control CONTROL --observed OBSERVED --manifest CLONE/openracket-gui-phase-manifest.json"
+  },
+  "files_per_arm": [
+    "capture-host.json",
+    "capture-supervisor.json",
+    "gui-observation.json",
+    "worker-init.json",
+    "worker-phase-1.json",
+    "memory-profile.json",
+    "application-profile.json",
+    "queued-samples.json"
+  ],
+  "acceptance": {
+    "exit_code": 0,
+    "accepted": true,
+    "failures": []
+  },
+  "native_limits": {
+    "profile_setup_seconds": 30,
+    "gui_process_seconds": 190,
+    "startup_seconds": 90,
+    "absolute_post_edit_seconds": 90,
+    "process_cleanup_seconds": 5
+  },
+  "outer_envelopes_seconds": {
+    "prepare": 285,
+    "capture": 235
+  },
+  "queued_sample_maximum_bytes": 20971520,
+  "sample_bounds": {
+    "period_ms": 100,
+    "attempts": 1024,
+    "frames_per_row": 8,
+    "characters_per_name_or_source": 240,
+    "native_json_encode": "control"
+  },
+  "sampler_count_fields": [
+    "attempts",
+    "stored_samples",
+    "race_discarded",
+    "stop_discarded",
+    "invalid_token_discarded",
+    "attempt_errors_discarded",
+    "capture_errors",
+    "absent_handlers",
+    "collected_handlers",
+    "dead_handlers",
+    "invalid_handlers",
+    "died_during_capture",
+    "missing_frames",
+    "frames_truncated",
+    "text_fields_truncated",
+    "usable_source_samples",
+    "cadence_ticks",
+    "idle_ticks",
+    "early_wakes",
+    "missed_cadence_ticks",
+    "sampler_errors"
+  ],
+  "sampler_timing_fields": [
+    "scheduling_delay_ms",
+    "max_scheduling_delay_ms",
+    "capture_duration_ms",
+    "max_capture_duration_ms"
+  ],
+  "sample_row_fields": [
+    "actual_monotonic_ms",
+    "application_generation",
+    "capture_duration_ms",
+    "capture_finished_monotonic_ms",
+    "capture_performed",
+    "capture_started_monotonic_ms",
+    "error",
+    "error_truncated",
+    "frames",
+    "frames_truncated",
+    "missed_before_capture_ticks",
+    "missed_cadence_ticks",
+    "missing_frame_sources",
+    "planned_monotonic_ms",
+    "queued_monotonic_ms",
+    "request_id",
+    "scheduling_delay_ms",
+    "state",
+    "text_fields_truncated",
+    "usable_source_frames",
+    "wait_ordinal"
+  ],
+  "frame_fields": [
+    "column",
+    "line",
+    "name",
+    "name_truncated",
+    "position",
+    "source",
+    "source_kind",
+    "source_truncated"
+  ],
+  "nested_operations": [
+    "add-to-bindings-table",
+    "start-add-to-range/key",
+    "end-add-to-range/key"
+  ],
+  "scope": "One common-observer control and one nested-arrow plus sparse pending-handler observation. Original stock scheduling, features,256MiB cap and workload. No product optimization. Sampler errors/cap/non-useful evidence fail attribution; raw partial records remain.",
+  "authoritative_validators": [
+    "accept_gui.py",
+    "validate_application.py",
+    "validate_sampler.py"
+  ]
+}

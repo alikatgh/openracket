@@ -1,4 +1,4 @@
-name: Mac native tools and app file delivery repair (public free runner)
+name: Mac arrow and queued-gap attribution (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 105
+    timeout-minutes: 35
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -62,57 +62,29 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare independently frozen stock and modern tool callers
-        id: tools_prepare
-        if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-stock-tools.py prepare
-      - name: Actual Debugger, Macro Stepper and teaching tests
-        if: always() && steps.tools_prepare.outcome == 'success'
-        timeout-minutes: 10
-        run: python3 retained-host/scripts/ci/run-stock-tools.py cases
-      - name: Verify original and selected tool runtimes
+      - name: Verify arrow and queued-gap probe and mandatory native preflight
+        id: annotation_prepare
+        timeout-minutes: 12
+        run: python3 retained-host/scripts/ci/run-arrow-gap.py prepare
+      - name: Genuine GUI control with common slice counters
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-arrow-gap.py control
+      - name: Genuine GUI with nested arrow timings and queued-gap samples
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-arrow-gap.py observed
+      - name: Require complete actual application and exact accounting
+        if: always() && steps.annotation_prepare.outcome == 'success'
+        timeout-minutes: 3
+        run: python3 retained-host/scripts/ci/run-arrow-gap.py accept
+      - name: Verify original runtime after arrow and queued-gap diagnostic
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-stock-tools.py verify
-      - name: Verify exact preview and builder with full runtime witnesses
-        id: app_prepare
-        if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 8
-        run: python3 retained-host/scripts/ci/run-mac-app.py prepare
-      - name: Actual source setup and twenty native Racket builder cases
-        id: app_install
-        if: always() && steps.app_prepare.outcome == 'success'
-        timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-mac-app.py install
-      - name: Generate native app and inspect executable, plist and signature
-        id: app_build
-        if: always() && steps.app_install.outcome == 'success'
-        timeout-minutes: 8
-        run: python3 retained-host/scripts/ci/run-mac-app.py build
-      - name: Install independently reviewed read-only app observer
-        id: app_observer
-        if: always() && steps.app_build.outcome == 'success'
-        timeout-minutes: 6
-        run: python3 retained-host/scripts/ci/run-mac-app.py observer
-      - name: Genuine Launch Services cold and warm file events
-        id: app_launch
-        if: always() && steps.app_observer.outcome == 'success'
-        timeout-minutes: 12
-        run: python3 retained-host/scripts/ci/run-mac-app.py launch
-      - name: App-only relocation with real file delivery
-        if: always() && steps.app_observer.outcome == 'success'
-        timeout-minutes: 7
-        run: python3 retained-host/scripts/ci/run-mac-app.py relocate
-      - name: Verify whole original runtimes and user preference witnesses
-        if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-mac-app.py verify
-      - name: Report separate native tool and app findings
+        run: python3 retained-host/scripts/ci/run-arrow-gap.py verify
+      - name: Report bounded arrow and queued-gap attribution
         if: always()
         run: |
-          for report in retained-host/reports/stock-tools-ci/summary.md retained-host/reports/mac-app-ci/summary.md; do
-            if test -f "$report"; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
-          done
-          echo 'Separate stock/default128 and modern-dark native tool cases keep original60s bounds and matched stock prerequisites. Failures remain independent, with exact logs/captures.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Reviewed app repair removes document-type claims and verifies language-appropriate native toolbar states. Unsigned/Gatekeeper assessment stays explicit; no security bypass. No artifact/cache/release, paid runner or new performance adoption.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/arrow-gap-probe-ci/summary.md; then cat retained-host/reports/arrow-gap-probe-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'One genuine stock GUI control/observed pair at verified 256 MiB. Diagnostic counters and sparse queued-gap samples do not establish an optimization speedup.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Original workload, tool settings and deadlines retained. No artifact/cache/release uploads, paid runner, or security/default-handler changes.' >> "$GITHUB_STEP_SUMMARY"

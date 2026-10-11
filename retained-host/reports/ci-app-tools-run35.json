@@ -1,0 +1,708 @@
+{
+  "run_id": 38127332821,
+  "job_id": 114434315116,
+  "commit": "dae4b69d34a793404f1e8ddf35a65948d33ae980",
+  "conclusion": "failure",
+  "log_sha256": "2fd65a4bd56ddcd3d23e2f83b4496bd6883c9ec15c9fbc32f71b2eaacf2fbd83",
+  "rows": {
+    "OPENRACKET_STOCK_TOOLS_RESULT": [
+      {
+        "name": "pristine entire original runtime baseline",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Portable exact host reproduction",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Portable stock-tool source preservation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Standalone driver source preservation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Stock-tool adapter isolation tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Complete native candidate assembled from exact0520 plus five reviewed test files",
+        "passed": true,
+        "detail": "159 source files; production scripts unchanged"
+      },
+      {
+        "name": "Independent modern-only tool runtime",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-modern entire original runtime baseline",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual unchanged setup for modern tool registration",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "stock explicit native tool callers and runtime-path modules compile",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "stock standalone coordinator positive",
+        "passed": true,
+        "detail": "exit=0; strict marker and outer-failure behavior checked"
+      },
+      {
+        "name": "stock standalone coordinator injected-negative",
+        "passed": false,
+        "detail": "exit=1; strict marker and outer-failure behavior checked"
+      },
+      {
+        "name": "modern explicit native tool callers and runtime-path modules compile",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "modern standalone coordinator positive",
+        "passed": true,
+        "detail": "exit=0; strict marker and outer-failure behavior checked"
+      },
+      {
+        "name": "modern standalone coordinator injected-negative",
+        "passed": false,
+        "detail": "exit=1; strict marker and outer-failure behavior checked"
+      },
+      {
+        "name": "pristine entire original runtime compare",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-modern entire original runtime compare",
+        "passed": true,
+        "detail": "exit=0"
+      }
+    ],
+    "OPENRACKET_MAC_APP_RESULT": [
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "App CI isolation and byte/mtime witness tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "App adapter source-contract tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Lossless evidence transport tests",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Exact builder and separate heartbeat helper sources",
+        "passed": true,
+        "detail": "b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee"
+      },
+      {
+        "name": "Exact tested preview copied to fresh Unicode/apostrophe/spaced source",
+        "passed": true,
+        "detail": "/Users/runner/work/_temp/OpenRacket App Proof \u03bb's"
+      },
+      {
+        "name": "Read-only observer portable source contracts",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Deep-copy independent app runtime",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "Independent corrected heartbeat native regression",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "official-user-preferences complete bytes/modes/mtime/symlink witness baseline",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+      },
+      {
+        "name": "Product profile absent before actual setup",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "Actual verified preview setup",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual unchanged preview preflight",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual fresh preview memory ownership status",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Read-only original .rkt default handler before-build",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler before-build",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "Exact builder and separate heartbeat helper sources",
+        "passed": true,
+        "detail": "b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee"
+      },
+      {
+        "name": "Compile actual Racket-only builder, tests and official launcher generator",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Twenty actual native Racket builder contract cases",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "All20 actual builder RackUnit cases executed",
+        "passed": true,
+        "detail": "Exact native count required"
+      },
+      {
+        "name": "Thirty-two read-only app observer native contract/state cases",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "All32 actual observer RackUnit cases executed",
+        "passed": true,
+        "detail": "Exact native count required"
+      },
+      {
+        "name": "Explicit native app observer and Cocoa/default-reader compilation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "Generate independent untouched official native launcher reference",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Actual Racket-only destination app build",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Product builder passed its same-object native-byte preservation assertion",
+        "passed": true,
+        "detail": "acabdbb0f41782c8014cb903caef04b22581e99891f946ed312b7790167b9083"
+      },
+      {
+        "name": "Native plist syntax",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Inspect native executable architecture",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Refuse existing output 0",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Refuse existing output 1",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Refuse existing output 2",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output is a symbolic link\n"
+      },
+      {
+        "name": "Refuse existing output 3",
+        "passed": true,
+        "detail": "OpenRacket app build stopped: openracket-app: output must be a new .app path; existing paths are never replaced\n"
+      },
+      {
+        "name": "Generation opened no app process",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "Read-only original .rkt default handler after-generation",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler after-generation",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "Register separate CI-only read-only native app observer",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Compile observer package registration without main runtime writes",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Resolve actual isolated observer collection after registration",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Registered observer resolves to exact private reviewed source",
+        "passed": true,
+        "detail": "{\"path\": \"/Users/runner/work/_temp/OpenRacket App Observer/tool.rkt\", \"sha256\": \"19aae5e581853b314e739ee88fccb003a2e1f67d0e933dcb47626d91853b5c29\", \"private_addon\": \"/Users/runner/work/_temp/OpenRacket App Proof \\u03bb's/profile/.local/share/racket\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-coldempty-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-coldempty-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty-coldempty OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 112828, \"sha256\": \"a90478500ee5cf641d75667acc48eab89727ff932e85a05c3517e3a57296b103\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-coldempty-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-coldempty-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty coldempty genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22534; checks=52"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty-warmfile OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 103502, \"sha256\": \"403ff934f0abe2e0b1902c6a36def9d2488057ae34694a3e4cb74d94150dbd4c\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-warmfile-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-warmfile-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty warmfile genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22534; checks=55"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty-duplicate OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 103681, \"sha256\": \"5beddf192f935e36296ce86a588bf943d99445f7bc25fd3f1f905c4bf9b9579e\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-duplicate-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-duplicate-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldempty duplicate genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22534; checks=57"
+      },
+      {
+        "name": "mac-app-coldempty observer cleanup complete",
+        "passed": true,
+        "detail": "Actual process gone; Launch Services exit status is unavailable; normal Quit remains untested"
+      },
+      {
+        "name": "Bounded app test cleanup",
+        "passed": true,
+        "detail": "{\"original_processes\": [], \"remaining\": []}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldempty-after-cleanup",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldempty-after-cleanup",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-coldfile-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-coldfile-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile-coldfile OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 103478, \"sha256\": \"f05c254086c2018d4ebe3e2c760549b67973c8c75429354782eed2c1e453a19f\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-coldfile-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-coldfile-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile coldfile genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22879; checks=55"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile-warmfile OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 108185, \"sha256\": \"98fd2ffaac4136ac66c36ecb04746eb545f33c33d87dfebaf44fcd8c54f23bf9\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-warmfile-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-warmfile-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile warmfile genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22879; checks=64"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile-duplicate OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 108355, \"sha256\": \"dbf0e051a8488f70aef8a30df564ac75fa2c22a7616e02a307c8307f1e2139f6\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-duplicate-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-duplicate-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-coldfile duplicate genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=22879; checks=66"
+      },
+      {
+        "name": "mac-app-coldfile observer cleanup complete",
+        "passed": true,
+        "detail": "Actual process gone; Launch Services exit status is unavailable; normal Quit remains untested"
+      },
+      {
+        "name": "Bounded app test cleanup",
+        "passed": true,
+        "detail": "{\"original_processes\": [], \"remaining\": []}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-coldfile-after-cleanup",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-coldfile-after-cleanup",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "App-only relocation retained exact generated bundle",
+        "passed": true,
+        "detail": "/Users/runner/work/_temp/Relocated App \u03bb's/Moved OpenRacket Preview.app"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-coldfile-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-coldfile-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated-coldfile OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 103207, \"sha256\": \"f50c1343f12cbe66c0195c8655b3cc810983a44936eaeb4261de6ceb36c85682\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-coldfile-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-coldfile-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated coldfile genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=23246; checks=55"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-warmfile-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated-warmfile OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 107913, \"sha256\": \"b525fe843739fddf1bdc7eec67e06ba04aa4e599d3bb71ad9d47d191ba99b6f5\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-warmfile-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-warmfile-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated warmfile genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=23246; checks=64"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-duplicate-after-dispatch",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated-duplicate OS screenshot",
+        "passed": true,
+        "detail": "{\"width\": 1024, \"height\": 768, \"bytes\": 107769, \"sha256\": \"60b8f80c2810d30bd86be386c9b6afdee8bde88378a20a68a6cdcd0e638fe7f9\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-duplicate-after-ready",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-duplicate-after-ready",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "mac-app-relocated duplicate genuine native identity/file state",
+        "passed": true,
+        "detail": "pid=23246; checks=66"
+      },
+      {
+        "name": "mac-app-relocated observer cleanup complete",
+        "passed": true,
+        "detail": "Actual process gone; Launch Services exit status is unavailable; normal Quit remains untested"
+      },
+      {
+        "name": "Bounded app test cleanup",
+        "passed": true,
+        "detail": "{\"original_processes\": [], \"remaining\": []}"
+      },
+      {
+        "name": "Read-only original .rkt default handler mac-app-relocated-after-cleanup",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler mac-app-relocated-after-cleanup",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      },
+      {
+        "name": "pristine complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "selected-runtime complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 26838, \"tree_sha256\": \"32314105d49bee5f4d24d068782a5299f5865e729dd4da5f39f81e905276d16e\"}"
+      },
+      {
+        "name": "official-user-preferences complete bytes/modes/mtime/symlink witness compare",
+        "passed": true,
+        "detail": "{\"unchanged\": true, \"changed_count\": 0, \"first_changed_paths\": [], \"entries\": 1, \"tree_sha256\": \"dcdfb54675bf0de7f1857e85bb5c2901a6029c8109f1e445b9b8155913368ce2\"}"
+      },
+      {
+        "name": "Read-only original .rkt default handler after-all",
+        "passed": true,
+        "detail": "exit=0"
+      },
+      {
+        "name": "Original .rkt UTI/default handler after-all",
+        "passed": true,
+        "detail": "{\"default_handler\": \"com.apple.ScriptEditor2\", \"defaults_changed\": false, \"extension\": \"rkt\", \"handler_available\": true, \"query\": \"UTTypeCreatePreferredIdentifierForTag + LSCopyDefaultRoleHandlerForContentType\", \"role_mask\": 4294967295, \"schema\": 1, \"status\": \"observed\", \"uti\": \"org.racket-lang.source\"}"
+      }
+    ],
+    "OPENRACKET_RUNTIME_TREE_CHECK": [
+      {
+        "operation": "baseline",
+        "root": "/Users/runner/work/_temp/openracket-full.iNo3rz/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "baseline",
+        "root": "/Users/runner/work/_temp/openracket-full.iNo3rz/racket-native-tools",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "compare",
+        "root": "/Users/runner/work/_temp/openracket-full.iNo3rz/racket",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      },
+      {
+        "operation": "compare",
+        "root": "/Users/runner/work/_temp/openracket-full.iNo3rz/racket-native-tools",
+        "entries": 26838,
+        "tree_sha256": "adaa2ac60b579a3219f189f1c8e56bc3f2ebb61913cfd62ea4cc692cbf427a60",
+        "status": "passed"
+      }
+    ]
+  },
+  "app_gates_passed": true,
+  "screenshots": 9,
+  "tool_cases": "unrun: negative expected-failure output omitted actual/expected values",
+  "default_handler": {
+    "before": "com.apple.ScriptEditor2",
+    "after": "com.apple.ScriptEditor2",
+    "uti": "org.racket-lang.source",
+    "unchanged": true,
+    "unset_initial_handler_case": "not reproduced on this runner"
+  }
+}
