@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="How the retained DrRacket experiment measured a localized Mac autosave improvement.">
+  <title>OpenRacket — Technical blog</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="project-name" href="index.html">OpenRacket</a>
+    <a href="https://github.com/alikatgh/openracket">GitHub repository</a>
+  </header>
+  <main id="main" tabindex="-1">
+    <h1>Technical blog</h1>
+    <nav class="contents" aria-label="Project pages">
+      <a href="index.html">Project information</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="blog.html">Technical blog</a>
+    </nav>
+    <article aria-labelledby="autosave-title">
+      <section>
+        <h2 id="autosave-title">Measuring the actual autosave call</h2>
+        <p><time datetime="2026-10-11">2026-10-11</time></p>
+        <p>The retained DrRacket experiment reduced a specific source of synchronous autosave work: two redundant format-classification traversals. The required autosave classification, serialization, file writing, save hooks, recovery table and previous-artifact cleanup remain in the call. The original DrRacket editor and evaluator remain in use.</p>
+      </section>
+      <section aria-labelledby="method-title">
+        <h2 id="method-title">Method</h2>
+        <p><a href="https://github.com/alikatgh/openracket/actions/runs/38061486888">Run 38061486888</a> used full official Racket 9.3 CS on a standard macOS 15 ARM64 runner, comparing pristine stock with an independently copied candidate runtime. Three fresh pairs alternated stock/candidate, candidate/stock, stock/candidate. Both arms used the same settings and a mixed-ASCII 1 MiB source fixture.</p>
+        <p>The genuine definitions editor loaded the file, made a one-character comment edit and reached lexer validity. Both arms were explicitly marked modified immediately before timing the real autosave method. Each Mac trial began with an existing recovery artifact and matching recovery-table entry, so all three pairs compared replacement saves. Exact recovery, original source bytes, settings and activation were checked.</p>
+        <p>The appearance changes, separate scan shortcut and experimental color budget were absent. This is the isolated autosave experiment, not a timing of the combined installation.</p>
+      </section>
+      <section aria-labelledby="results-title">
+        <h2 id="results-title">Mac results</h2>
+        <ul>
+          <li>Actual command medians: 266.735 ms stock → 172.400 ms candidate, 35.4% lower between arm medians.</li>
+          <li>Pair 1: 228.559 → 172.400 ms, 24.6% lower.</li>
+          <li>Pair 2: 284.354 → 162.689 ms, 42.8% lower.</li>
+          <li>Pair 3: 266.735 → 215.792 ms, 19.1% lower.</li>
+          <li>Queued GUI callback delay medians: 268.036 → 173.187 ms.</li>
+        </ul>
+        <p>The median paired reduction is 24.6%; it is a different statistic from the 35.4% reduction between arm medians. These are descriptive results from three pairs, without a claim of statistical significance. All six Mac trials passed the exact source, recovery, settings, activation and lexer-validity gates.</p>
+        <p>Linux’s two matched first-save pairs improved by 24.7% and 32.6%. The other Linux pair had different prior recovery state and is excluded from that matched comparison. Mac and Linux results are not a cross-platform speed comparison.</p>
+      </section>
+      <section aria-labelledby="limits-title">
+        <h2 id="limits-title">Remaining limits</h2>
+        <p>The candidate autosave call still blocked the GUI for about 163–216 ms. The queued callback includes the dirty precondition and small measurement snapshots; it is not physical input-to-photon latency. Whole-process peak memory was essentially unchanged. The experiment does not establish reduced retained memory, faster expansion, or elimination of major garbage-collection pauses.</p>
+        <p>Initial Mac lexer waits remained 34.373–39.619 seconds. Large-file readiness remains a larger unresolved problem. The original 20 ms lexer budget is retained; the 8 ms experiment was rejected and the separate scan shortcut is not enabled.</p>
+        <p>Custom extensions that count or throw from virtual traversal callbacks can observe fewer calls. This boundary is documented and is not a claim of arbitrary plugin parity. Verification-enabled conversion dialogs and crash/restart recovery UI remain outside this completed save proof.</p>
+      </section>
+      <section aria-labelledby="installation-title">
+        <h2 id="installation-title">Installation progress</h2>
+        <p>Later, <a href="https://github.com/alikatgh/openracket/actions/runs/38064415026">run 38064415026</a> passed actual Mac setup, all three launch modes, combined appearance-plus-autosave save/recovery checks and original-runtime preservation. The overall run failed in independent expansion-replay preparation, so that replay remains unverified. Combined performance has not been retimed.</p>
+        <p>The current deliverable is a source installer requiring full official Racket 9.3. It is not a signed or packaged app. Windows remains untested and full DrRacket equivalence is not established.</p>
+        <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/PERFORMANCE-AUTOSAVE-38061486888.md">Full measurement report, checksums and reproduction details</a> · <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Current installation and opt-outs</a></p>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer"><p>OpenRacket is an independent development preview, not an official Racket or DrRacket release.</p></footer>
+</body>
+</html>

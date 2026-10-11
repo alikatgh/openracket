@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Dated OpenRacket development results, evidence and remaining limits.">
+  <title>OpenRacket — Changelog</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="project-name" href="index.html">OpenRacket</a>
+    <a href="https://github.com/alikatgh/openracket">GitHub repository</a>
+  </header>
+  <main id="main" tabindex="-1">
+    <h1>Changelog</h1>
+    <nav class="contents" aria-label="Project pages">
+      <a href="index.html">Project information</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="blog.html">Technical blog</a>
+    </nav>
+    <section aria-labelledby="october-title">
+      <h2 id="october-title">2026-10-11: Mac autosave and installation results</h2>
+      <p>This entry records completed experiments and individual acceptance gates. It is not a packaged application release.</p>
+      <ul>
+        <li>Three matched Mac replacement-autosave pairs for a 1 MiB fixture reduced command medians from 266.735 to 172.400 ms (35.4% between arm medians). Paired reductions were 19.1–42.8%, with exact source and recovery checks passing. <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/PERFORMANCE-AUTOSAVE-38061486888.md">Measurement report</a>; <a href="https://github.com/alikatgh/openracket/actions/runs/38061486888">successful Mac and Linux experiment run</a>.</li>
+        <li>The actual Mac source installer, default/guard-opt-out/stock launchers, combined appearance-plus-autosave save/recovery checks and whole-original-runtime preservation gate passed. <a href="https://github.com/alikatgh/openracket/actions/runs/38064415026">Run 38064415026</a> remained red because an independent expansion-replay preparation test failed; subsequent replay steps were skipped.</li>
+        <li>App-local Mac appearance and exact restoration passed in the <a href="https://github.com/alikatgh/openracket/actions/runs/38055256934">macOS job of run 38055256934</a>. Its separate Linux job failed a preservation gate.</li>
+        <li>The preserved Rust preview passed compilation and real-runtime CI checks on Linux and macOS in <a href="https://github.com/alikatgh/openracket/actions/runs/38050843404">run 38050843404</a>. Those checks belong to the earlier architecture and do not prove retained-host native UI behavior.</li>
+      </ul>
+      <p>Installation requires the full official Racket 9.3 distribution. A signed or packaged Mac app is not provided. Windows remains untested. <a href="https://github.com/alikatgh/openracket/blob/b22ced970504e53eb1012c91f6b355e1b4d5dddd/retained-host/reports/PORTABLE-INSTALLATION-38064415026.md">Mac installation evidence</a>. Combined appearance-plus-autosave performance has not been retimed; initial Mac lexer-validity waits were about 34–40 seconds on the measured large fixture.</p>
+      <p><a href="blog.html">Read the autosave method, results and limits</a>.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><p>OpenRacket is an independent development preview, not an official Racket or DrRacket release.</p></footer>
+</body>
+</html>

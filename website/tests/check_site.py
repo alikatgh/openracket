@@ -103,6 +103,53 @@ class SiteTests(unittest.TestCase):
         for text in ['Fresh perspective', 'Familiar ground', 'Come look under', 'Explore the source', '100x', 'Download for Mac', 'production-ready']:
             self.assertNotIn(text, self.html)
 
+    def test_all_project_pages(self):
+        for name in ['index.html', 'changelog.html', 'blog.html']:
+            with self.subTest(page=name):
+                source = (ROOT / name).read_text()
+                doc = Document(source)
+                tags = [tag for tag, _ in doc.elements]
+                for tag in ['main', 'header', 'footer', 'h1']:
+                    self.assertEqual(tags.count(tag), 1)
+                self.assertFalse(set(tags) & {'script', 'img', 'svg', 'iframe', 'canvas'})
+                self.assertIn('class="skip-link" href="#main"', source)
+                ids = [a['id'] for _, a in doc.elements if 'id' in a]
+                self.assertEqual(len(ids), len(set(ids)))
+                previous = 0
+                for tag, attrs in doc.elements:
+                    if re.fullmatch('h[1-6]', tag):
+                        level = int(tag[1])
+                        self.assertLessEqual(level, previous + 1)
+                        previous = level
+                    if tag == 'nav':
+                        self.assertTrue(attrs.get('aria-label'))
+                    for target in attrs.get('aria-labelledby', '').split():
+                        self.assertIn(target, ids)
+                    for key in ['href', 'src']:
+                        if key not in attrs:
+                            continue
+                        url = urlsplit(attrs[key])
+                        if url.scheme:
+                            self.assertEqual(url.scheme, 'https')
+                            self.assertIn(url.netloc, ['github.com', 'docs.racket-lang.org'])
+                        else:
+                            target = ROOT / (url.path or name)
+                            self.assertTrue(target.is_file(), attrs[key])
+                            if url.fragment:
+                                target_ids = [a['id'] for _, a in Document(target.read_text()).elements if 'id' in a]
+                                self.assertIn(url.fragment, target_ids)
+
+    def test_measurement_scope(self):
+        for name in ['changelog.html', 'blog.html']:
+            source = (ROOT / name).read_text()
+            for value in ['266.735', '172.400', '35.4%', '38061486888', '38064415026']:
+                self.assertIn(value, source)
+            self.assertIn('retimed', source)
+            self.assertIn('Windows', source)
+        blog = (ROOT / 'blog.html').read_text()
+        for value in ['24.6%', 'three pairs', '34.373–39.619', 'statistical significance', '163–216']:
+            self.assertIn(value, blog)
+
     def test_css_delimiters(self):
         self.assertEqual(self.css.count('{'), self.css.count('}'))
         self.assertEqual(self.css.count('('), self.css.count(')'))

@@ -3,7 +3,7 @@
 A plain project-information page with source branches, implementation notes,
 build-documentation links, validation scope, and known limitations.
 
-The production site is `index.html` and `styles.css`. It has no JavaScript,
+The production site is `index.html`, `changelog.html`, `blog.html` and `styles.css`. It has no JavaScript,
 images, external fonts, tracking, backend, package dependencies, or build step.
 It does not configure hosting or GitHub Pages.
 
@@ -23,8 +23,9 @@ directory under `/website/`.
 The page distinguishes the earlier Rust preview on `main` from the retained
 DrRacket 9.3 experiment on `prototype/retained-drracket`. It links to each branch’s
 own setup instructions rather than maintaining a second copy of those commands.
-The page makes no full-compatibility or measured-speedup claim and provides no
-application download.
+The pages make no full-compatibility or overall-editor speedup claim and provide no
+application download. The dated changelog and technical blog describe the measured
+localized autosave result, its evidence and limitations.
 
 The website does not automatically follow repository changes. Recheck branch
 names, prerequisites, and validation evidence when editing the project information.

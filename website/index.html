@@ -25,6 +25,8 @@
       <a href="#implementation">Implementation</a>
       <a href="#build">Build and run</a>
       <a href="#validation">Validation and limitations</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="blog.html">Technical blog</a>
     </nav>
 
     <section id="source" aria-labelledby="source-title">
@@ -53,8 +55,8 @@
       <p>Use the instructions for the branch you intend to test. These are development setups, not packaged releases.</p>
 
       <h3>Retained DrRacket experiment</h3>
-      <p>Requires an official Racket 9.3 installation and a graphical desktop session. Its setup script prepares an isolated package and preferences profile and can download missing official dependencies.</p>
-      <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/README.md#prepare-and-run-the-actual-retained-host">Retained-host setup and launch instructions</a></p>
+      <p>Requires a full official Racket 9.3 installation and a graphical desktop session. Its setup script prepares an isolated package and preferences profile and can download missing official dependencies.</p>
+      <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Retained-host setup and launch instructions</a></p>
 
       <h3>Earlier Rust preview</h3>
       <p>Requires Rust 1.94.0, Racket, and a graphical desktop session. The repository README lists platform prerequisites, build commands, runtime configuration, and the preview’s limitations.</p>
@@ -71,6 +73,7 @@
         <li>The earlier Rust preview has documented gaps in debugging, teaching tools, macro stepping, rich documents, and DrRacket integration.</li>
         <li>Performance comparisons must use the same hardware, settings, instrumentation, and workloads. No speed multiplier is claimed.</li>
       </ul>
+      <p><strong>Recorded 2026-10-11:</strong> three matched Mac replacement-autosave pairs for a 1 MiB fixture reduced command medians from 266.735 to 172.400 ms (35.4% between arm medians), with exact recovery checks passing. Actual Mac installation and combined save/recovery gates also passed in a later run whose independent expansion-replay preparation failed. Initial lexer-validity waits were about 34–40 seconds; combined performance has not been retimed. <a href="changelog.html">Changelog and evidence</a> · <a href="blog.html">Measurement details and limits</a>.</p>
       <ul class="resource-links">
         <li><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/NATIVE-ACCEPTANCE.md">Native acceptance criteria</a></li>
         <li><a href="https://github.com/alikatgh/openracket/tree/prototype/retained-drracket/retained-host/performance">Performance measurement tools</a></li>

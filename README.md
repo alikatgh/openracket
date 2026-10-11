@@ -1,8 +1,24 @@
 # OpenRacket
 
-A focused native Racket editor, written in Rust. Familiar Definitions above, Interactions below, with quieter chrome and the **real Racket runtime** underneath.
+An experimental project to update DrRacket’s interface while retaining its editor and tools.
 
-This is an early working preview, not a full DrRacket replacement. It uses Iced 0.14, native text editing, and a separate Racket process. There is no webview, AI service, or interpreter reimplementation.
+## Current work and measured results
+
+Current development is the [retained DrRacket 9.3 host](https://github.com/alikatgh/openracket/tree/prototype/retained-drracket/retained-host) on `prototype/retained-drracket`. It keeps the genuine DrRacket editors, tools and evaluator. The Rust/Iced application preserved on `main` is an earlier, separate preview; its build instructions follow below.
+
+Verified milestones, recorded 2026-10-11:
+
+- **Mac autosave:** for a 1 MiB fixture, three matched replacement-save pairs measured actual synchronous autosave command medians of **266.735 → 172.400 ms**, a **35.4% reduction between arm medians**. Individual paired reductions were 19.1–42.8% (median paired reduction 24.6%). The queued GUI callback delay median fell from 268.036 to 173.187 ms. Exact source/recovery, activation and settings checks passed. [Measurement report](https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/PERFORMANCE-AUTOSAVE-38061486888.md) · [test run](https://github.com/alikatgh/openracket/actions/runs/38061486888).
+- **Mac source installation:** actual setup, default/guard-opt-out/stock launchers, combined appearance-plus-autosave save/recovery, and original-runtime preservation gates passed in [run 38064415026](https://github.com/alikatgh/openracket/actions/runs/38064415026). [Installation report](https://github.com/alikatgh/openracket/blob/b22ced970504e53eb1012c91f6b355e1b4d5dddd/retained-host/reports/PORTABLE-INSTALLATION-38064415026.md). The overall run failed in an independent expansion-replay preparation test; the replay did not run. This is a source installer requiring the full official Racket 9.3 distribution, not a signed or packaged Mac app.
+- **Mac appearance:** the app-local appearance and exact-restoration gate passed in [the macOS job of run 38055256934](https://github.com/alikatgh/openracket/actions/runs/38055256934). The Linux job in that run failed a separate preservation gate.
+
+These are scoped results, not full DrRacket parity or an overall editor speedup. Only three autosaves per arm were timed. Initial Mac lexer-validity waits were about **34–40 seconds**, peak memory was essentially unchanged, and large GC pauses remain unresolved. Combined appearance-plus-autosave performance has not been retimed. The original 20 ms lexer budget is retained; the 8 ms experiment was rejected and the separate scan shortcut is not enabled. Windows is untested.
+
+[Current installation and opt-outs](https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md) · [Plain project website source](website/index.html) · [Changelog](website/changelog.html) · [Technical blog: autosave measurements](website/blog.html)
+
+## Earlier Rust editor preview
+
+The remaining sections describe the application source on `main`: a native Rust/Iced 0.14 editor using a separate real Racket process. It is an early preview with incomplete DrRacket coverage. There is no webview, AI service, or interpreter reimplementation.
 
 ## Build and run
 
@@ -31,7 +47,7 @@ The default build uses the native Iced software renderer, with X11 and Wayland s
 sudo apt install build-essential pkg-config libx11-dev libxkbcommon-dev libwayland-dev
 ```
 
-Native file dialogs use the desktop's XDG portal. Ensure the portal backend for your desktop is installed and running. No GTK build dependency is required. The separately tested Linux x86_64 review binary requires glibc 2.39 or newer; this repository contains source only, so build locally for your distribution. Release builds were compiled and inspected on Linux x86_64; the verification environment has no desktop session, so OS windowing, clipboard and file-dialog integration remain manual checks.
+Native file dialogs use the desktop's XDG portal. Ensure the portal backend for your desktop is installed and running. No GTK build dependency is required. The separately tested Linux x86_64 review binary requires glibc 2.39 or newer; this repository contains source only, so build locally for your distribution. Compilation and real-runtime checks passed on Linux and macOS in the preserved-preview CI run linked below. OS windowing, clipboard and file-dialog integration remain separate manual checks.
 
 ### macOS
 
@@ -43,7 +59,7 @@ cargo build --release --locked
 RACKET_BIN="/Applications/Racket v9.3/bin/racket" ./target/release/openracket
 ```
 
-The source uses cross-platform Iced and native file dialogs. **macOS compilation, native window behavior, signing, notarization and app-bundle packaging have not been tested.** This repository contains source only; no downloadable Mac app or release is included. A [manual build-only workflow](docs/macos/BUILD-PLAN.md) is prepared for Apple Silicon macOS, but it has not been run and does not retain a downloadable app.
+The source uses cross-platform Iced and native file dialogs. macOS compilation and real-runtime checks passed in [preserved-preview CI run 38050843404](https://github.com/alikatgh/openracket/actions/runs/38050843404). This does not verify native window behavior, signing, notarization or app-bundle packaging. This repository contains source only; no packaged Rust Mac app is included. The [build-only plan](docs/macos/BUILD-PLAN.md) remains background documentation.
 
 ## The workflow
 
@@ -120,9 +136,9 @@ RACKET_BIN=/path/to/racket python3 runtime-tests/test_bridge.py
 RACKET_BIN=/path/to/racket python3 qa/test_runtime_adversarial.py
 ```
 
-The ignored Rust tests require a real Racket executable. See the [recorded Linux QA report](qa/RESULTS.md) for the exact commands and checks actually run. These are pre-publication local results, not a GitHub CI pass. Native-widget screenshots are rendered by the actual Iced/tiny-skia widgets without a window. They validate layout and in-process event dispatch; they do not establish OS focus, clipboard, dialogs, compositor performance or macOS support.
+The ignored Rust tests require a real Racket executable. See the [recorded Linux QA report](qa/RESULTS.md) for the exact commands and checks actually run. That report records pre-publication local results. Later, [preserved-preview CI run 38050843404](https://github.com/alikatgh/openracket/actions/runs/38050843404) passed Linux and macOS compilation and real-runtime checks; the run passed 59 Rust tests on each OS, plus 50 Python tests on Linux and 48 on macOS (two Linux-specific checks skipped). These are separate from native retained-host acceptance. Native-widget screenshots are rendered by the actual Iced/tiny-skia widgets without a window. They validate layout and in-process event dispatch; they do not establish OS focus, clipboard, dialogs, compositor performance or macOS support.
 
-Performance records distinguish process-level timing, native widget/model work, and untested end-to-end OS behavior. There is no measured speedup claim against DrRacket.
+Performance records distinguish process-level timing, native widget/model work, and untested end-to-end OS behavior. No Rust-preview speedup against DrRacket is established. The autosave result above belongs only to the separate retained-host experiment.
 
 ## Source layout
 
@@ -135,4 +151,4 @@ Performance records distinguish process-level timing, native widget/model work, 
 
 ## License
 
-Original OpenRacket code is MIT licensed. Font licenses are included in `assets/FONTS-LICENSE.txt`. See `THIRD_PARTY_NOTICES.md` for the main dependencies. This project is independent of the official Racket/DrRacket project and does not reuse DrRacket or OpenCode UI source.
+Original OpenRacket code is MIT licensed. Font licenses are included in `assets/FONTS-LICENSE.txt`. See `THIRD_PARTY_NOTICES.md` for the main dependencies. This project is independent of the official Racket/DrRacket project. The Rust preview does not reuse DrRacket or OpenCode UI source; the separate retained-host branch patches and uses the original DrRacket host, with its own provenance and licensing notes.

@@ -106,4 +106,31 @@ export async function testSiteInteractions({ page, context, check, go, shot, axe
     } finally { await nojs.close(); }
     return 'All information and section navigation remain identical with JavaScript disabled';
   });
+  await check('Changelog and blog navigation, layout and accessibility', async () => {
+    await page.emulateMedia({ colorScheme: 'light', forcedColors: 'none' });
+    for (const file of ['changelog.html', 'blog.html']) {
+      await go('/');
+      await page.locator(`nav a[href="${file}"]`).click();
+      assert.equal(new URL(page.url()).pathname, '/' + file);
+      assert.equal(await page.locator('main,h1,header,footer').count(), 4);
+      const body = await page.locator('main').innerText();
+      for (const text of ['266.735', '172.400', '35.4%', 'retimed', 'Windows']) assert.ok(body.includes(text), text);
+      for (const width of [1440, 768, 390, 320]) {
+        await page.setViewportSize({ width, height: 950 });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      }
+      await axe(file.replace('.html', '') + '-mobile');
+      const links = await page.locator('a').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
+      for (const href of links) {
+        if (!href.startsWith('https:') && !href.startsWith('#')) assert.equal((await page.request.get(new URL(href, page.url()).href)).status(), 200);
+      }
+      await page.locator('nav a[href="index.html"]').click();
+      assert.equal((await page.locator('h1').innerText()).trim(), 'OpenRacket');
+      await page.goBack(); assert.equal(new URL(page.url()).pathname, '/' + file);
+      await go('/website/' + file);
+      assert.ok(await page.locator('main').evaluate(el => el.getBoundingClientRect().width <= 960));
+    }
+    return 'Both new pages pass navigation/history, 320–1440px overflow, mobile axe and subdirectory stylesheet checks';
+  });
+
 }
