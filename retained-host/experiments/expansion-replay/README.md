@@ -171,6 +171,15 @@ The outside supervisor owns TERM/KILL, process membership verification and direc
 child reaping. Ordinary same-group descendants are cleaned up; a descendant that
 creates a new session/group is outside this supervisor's supported containment.
 
+The outside cleanup budget is divided at entry into TERM grace, KILL/direct-child
+reap, and final membership verification phases. A known-live direct child is
+signaled without a pre-signal process-list scan. Scans cannot consume the reserved
+reap phase, and no blocking scan/wait is started after its deadline. The final
+nonblocking poll accounts for a child exiting during the last scan. Unknown group
+membership still fails cleanup acceptance. Bounded stage/deadline traces and any
+OS scheduling overrun are recorded; cleanup failures also emit a compact JSON
+diagnostic to the supervisor's stderr. The total configured budget is unchanged.
+
 Each cleanup component is independently attempted. The control channel must return
 exactly `stopped`; the place must be observed dead; the root logger must stop; and
 the diagnostic custodian is shut down. Any missing/wrong acknowledgement or cleanup

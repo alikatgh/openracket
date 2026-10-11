@@ -120,7 +120,7 @@ while True: time.sleep(.1)
         self.assertEqual(report["status"], "timeout")
         self.assertTrue(report["timeout"]["triggered"])
         self.assertIn("SIGKILL", report["cleanup"]["signals"])
-        self.assertEqual(report["death"]["signal"], signal.SIGKILL)
+        self.assertEqual(report["death"]["signal"], signal.SIGKILL, report["cleanup"])
         self.assertTrue(report["cleanup"]["complete"], report["cleanup"])
         self.assertLess(time.monotonic() - before, report["hard_wall_budget_seconds"] + 0.4)
         self.assertEqual(report["intervals"][0]["closure"], "supervisor_stop")
@@ -218,6 +218,37 @@ os._exit(7)
         self.assertEqual([m["pid"] for m in supervise.live_members(result)], [123])
         self.assertEqual(run.call_args.args[0][0], "ps")
 
+    def test_ps_snapshot_does_not_inflate_small_timeout_or_start_after_deadline(self):
+        response = subprocess.CompletedProcess(["ps"], 0, "", "")
+        with mock.patch.object(supervise.sys, "platform", "darwin"), \
+             mock.patch.object(supervise.time, "monotonic", return_value=1.0), \
+             mock.patch.object(supervise.subprocess, "run", return_value=response) as run:
+            result = supervise.process_group_snapshot(456, timeout=0.003)
+        self.assertTrue(result["complete"])
+        self.assertAlmostEqual(run.call_args.kwargs["timeout"], 0.003)
+        with mock.patch.object(supervise.sys, "platform", "darwin"), \
+             mock.patch.object(supervise.time, "monotonic", side_effect=[1.0, 1.004]), \
+             mock.patch.object(supervise.subprocess, "run") as run:
+            result = supervise.process_group_snapshot(456, timeout=0.003)
+        run.assert_not_called()
+        self.assertFalse(result["complete"])
+        self.assertIsNone(result["members"])
+
+    def test_linux_snapshot_deadline_exhaustion_is_unknown_membership(self):
+        procdir = mock.Mock()
+        procdir.is_dir.return_value = True
+        entry = mock.Mock(name="unread-proc-entry")
+        procdir.iterdir.return_value = [entry]
+        with mock.patch.object(supervise.sys, "platform", "linux"), \
+             mock.patch.object(supervise, "Path", return_value=procdir), \
+             mock.patch.object(supervise.os, "sysconf", return_value=4096), \
+             mock.patch.object(supervise.time, "monotonic", side_effect=[1.0, 1.02]):
+            result = supervise.process_group_snapshot(456, timeout=0.01)
+        self.assertFalse(result["complete"])
+        self.assertIsNone(supervise.live_members(result))
+        self.assertIn("deadline exhausted", result["errors"][0])
+        self.assertEqual(entry.mock_calls, [])
+
     def test_empty_mac_group_does_not_signal_or_treat_eperm_as_alive(self):
         proc = mock.Mock(pid=123456789, returncode=0)
         response = subprocess.CompletedProcess(["ps"], 0, "", "")
@@ -246,6 +277,125 @@ os._exit(7)
             result = supervise.cleanup_group(proc, time.monotonic() + 0.04)
         self.assertFalse(result["complete"])
         self.assertIsNone(result["remaining_live_pids"])
+
+
+class CleanupDeadlineTests(unittest.TestCase):
+    """Deterministic scheduling, with no real processes or wall-clock sleeps."""
+    def setUp(self):
+        self.now = 10.0
+        self.events = []
+        self.killed = False
+        self.reap_delay = 0.04
+        self.exit_during_snapshot = False
+        self.proc = mock.Mock(pid=123456789, returncode=None)
+        self.proc.poll.side_effect = self.poll
+        self.proc.wait.side_effect = self.wait
+        self.empty = {"members": [], "complete": True, "errors": []}
+        self.occupied = {"members": [{"pid": 456, "state": "S"}], "complete": True, "errors": []}
+
+    def poll(self):
+        self.events.append(("poll", self.now))
+        if self.exit_during_snapshot:
+            self.proc.returncode = -signal.SIGKILL
+        return self.proc.returncode
+
+    def wait(self, timeout):
+        self.events.append(("wait", self.now, timeout))
+        if self.killed and self.reap_delay is not None and self.reap_delay <= timeout:
+            self.now += self.reap_delay
+            self.proc.returncode = -signal.SIGKILL
+            return self.proc.returncode
+        self.now += timeout
+        raise subprocess.TimeoutExpired("fake-child", timeout)
+
+    def sleep(self, seconds):
+        self.events.append(("sleep", self.now, seconds))
+        self.now += seconds
+
+    def kill(self, pgid, sig):
+        self.assertEqual(pgid, self.proc.pid)
+        self.events.append((signal.Signals(sig).name, self.now))
+        if sig == signal.SIGKILL:
+            self.killed = True
+
+    def run_cleanup(self, snapshot, budget=0.35):
+        with mock.patch.object(supervise.time, "monotonic", side_effect=lambda: self.now), \
+             mock.patch.object(supervise.time, "sleep", side_effect=self.sleep), \
+             mock.patch.object(supervise.os, "getpgrp", return_value=999), \
+             mock.patch.object(supervise.os, "killpg", side_effect=self.kill), \
+             mock.patch.object(supervise, "process_group_snapshot", side_effect=snapshot):
+            return supervise.cleanup_group(self.proc, self.now + budget)
+
+    def test_slow_snapshot_cannot_precede_kill_or_consume_reserved_reap_time(self):
+        def snapshot(pgid, timeout):
+            self.events.append(("snapshot", self.now, timeout))
+            self.assertTrue(self.killed)
+            self.assertEqual(self.proc.returncode, -signal.SIGKILL)
+            self.now += timeout  # Spend the entire remaining verification budget.
+            return self.empty
+        result = self.run_cleanup(snapshot)
+        self.assertTrue(result["complete"], result)
+        kinds = [e[0] for e in self.events]
+        self.assertLess(kinds.index("SIGKILL"), kinds.index("snapshot"))
+        waits = [e for e in self.events if e[0] == "wait"]
+        self.assertEqual(len(waits), 2)
+        self.assertAlmostEqual(waits[1][2], 0.35 / 3)
+        self.assertLessEqual(self.now, 10.35 + 1e-12)
+        self.assertEqual(self.events[-1][0], "poll")
+
+    def test_final_poll_reaps_exit_during_last_snapshot_without_stale_timeout_error(self):
+        self.reap_delay = None  # Both bounded waits time out.
+        def snapshot(pgid, timeout):
+            self.events.append(("snapshot", self.now, timeout))
+            self.now += timeout + 0.02  # Simulate an OS scheduling overrun.
+            self.exit_during_snapshot = True
+            return self.empty
+        result = self.run_cleanup(snapshot)
+        self.assertTrue(result["complete"], result)
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(self.proc.returncode, -signal.SIGKILL)
+        self.assertAlmostEqual(result["timing"]["deadline_overrun_seconds"], 0.02)
+        snapshots = [e for e in self.events if e[0] == "snapshot"]
+        self.assertEqual(len(snapshots), 1)
+        self.assertTrue(all(e[1] < 10.35 for e in self.events if e[0] in ("snapshot", "wait", "sleep")))
+        self.assertEqual(self.events[-1][0], "poll")
+
+    def test_slow_initial_membership_does_not_delay_descendant_kill_phase(self):
+        self.proc.returncode = 7  # Leader reaped; a resistant descendant remains.
+        def snapshot(pgid, timeout):
+            self.events.append(("snapshot", self.now, timeout))
+            self.now += timeout
+            return self.empty if self.killed else self.occupied
+        result = self.run_cleanup(snapshot)
+        self.assertTrue(result["complete"], result)
+        self.assertEqual(self.proc.returncode, 7)
+        killed_at = next(e[1] for e in self.events if e[0] == "SIGKILL")
+        self.assertAlmostEqual(killed_at, 10 + 0.35 / 3)
+        self.assertEqual(len([e for e in self.events if e[0] == "snapshot"]), 2)
+        self.assertFalse(any(e[0] == "wait" for e in self.events))
+
+    def test_expired_deadline_still_signals_but_starts_no_blocking_work(self):
+        snapshot = mock.Mock(side_effect=AssertionError("No scan after deadline"))
+        result = self.run_cleanup(snapshot, budget=0)
+        self.assertEqual(result["signals"], ["SIGTERM", "SIGKILL"])
+        self.assertFalse(result["child_reaped"])
+        self.assertFalse(result["membership_verified"])
+        self.assertFalse(result["complete"])
+        self.assertIsNone(result["remaining_live_pids"])
+        snapshot.assert_not_called()
+        self.assertFalse(any(e[0] in ("wait", "sleep") for e in self.events))
+
+    def test_unknown_final_membership_fails_even_after_child_reap(self):
+        def snapshot(pgid, timeout):
+            self.events.append(("snapshot", self.now, timeout))
+            self.now += timeout
+            return {"members": None, "complete": False, "errors": ["ps unavailable"]}
+        result = self.run_cleanup(snapshot)
+        self.assertTrue(result["child_reaped"])
+        self.assertFalse(result["complete"])
+        self.assertFalse(result["membership_verified"])
+        self.assertIn("ps unavailable", result["errors"])
+        self.assertFalse(any("not reaped" in error for error in result["errors"]))
 
 
 class LaunchContextTests(unittest.TestCase):

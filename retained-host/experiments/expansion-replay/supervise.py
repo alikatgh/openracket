@@ -85,6 +85,7 @@ def process_group_snapshot(pgid: int, timeout: float = 0.3) -> dict[str, Any]:
     """
     members: list[dict[str, Any]] = []
     errors: list[str] = []
+    snapshot_deadline = time.monotonic() + timeout
     if sys.platform.startswith("linux") and Path("/proc").is_dir():
         source = "linux_proc_stat"
         try:
@@ -94,6 +95,9 @@ def process_group_snapshot(pgid: int, timeout: float = 0.3) -> dict[str, Any]:
                     "complete": False, "errors": [str(exc)]}
         page_size = os.sysconf("SC_PAGE_SIZE")
         for entry in entries:
+            if time.monotonic() >= snapshot_deadline:
+                errors.append("Process-group snapshot deadline exhausted")
+                break
             if not entry.name.isdigit():
                 continue
             try:
@@ -110,11 +114,15 @@ def process_group_snapshot(pgid: int, timeout: float = 0.3) -> dict[str, Any]:
                     errors.append(f"/proc/{entry.name}/stat: {exc}")
     else:
         source = "ps"
+        remaining = snapshot_deadline - time.monotonic()
+        if remaining <= 0:
+            return {"source": source, "members": None, "rss_bytes": None,
+                    "complete": False, "errors": ["Process-group snapshot deadline exhausted"]}
         try:
             result = subprocess.run(
                 ["ps", "-e", "-o", "pid=", "-o", "pgid=", "-o", "rss=", "-o", "stat="],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
-                text=True, timeout=max(0.01, timeout),
+                text=True, timeout=remaining,
             )
             for row in result.stdout.splitlines():
                 fields = row.split()
@@ -221,65 +229,129 @@ class PhaseReader:
 
 
 def cleanup_group(proc: subprocess.Popen[bytes], deadline: float) -> dict[str, Any]:
-    """TERM, escalate to KILL, reap our child. Never signal our own group."""
+    """Reserve TERM, KILL/reap and verification phases inside one hard deadline."""
+    started = time.monotonic()
+    budget = max(0.0, deadline - started)
+    term_deadline = started + budget / 3
+    reap_deadline = started + 2 * budget / 3
     result: dict[str, Any] = {"attempted": True, "signals": [], "errors": [],
                               "child_reaped": False, "remaining_live_pids": None,
-                              "membership_verified": False, "complete": False}
+                              "membership_verified": False, "complete": False,
+                              "timing": {"budget_seconds": budget,
+                                         "term_phase_end_seconds": budget / 3,
+                                         "reap_phase_end_seconds": 2 * budget / 3,
+                                         "stages": [], "dropped_stages": 0}}
+    timing = result["timing"]
     pgid = proc.pid
+
+    def note(stage: str, **extra: Any) -> None:
+        now = time.monotonic()
+        if len(timing["stages"]) < 32:
+            timing["stages"].append({"stage": stage, "elapsed_seconds": now - started,
+                                      "remaining_seconds": max(0.0, deadline - now), **extra})
+        else:
+            timing["dropped_stages"] += 1
+
     if pgid == os.getpgrp():
         result["errors"].append("Refusing to signal supervisor's own process group")
+        note("refused_own_group")
         return result
 
-    def snapshot() -> dict[str, Any]:
-        return process_group_snapshot(pgid, timeout=min(0.2, max(0.01, deadline - time.monotonic())))
+    last: dict[str, Any] = {"members": None, "complete": False,
+                           "errors": ["Membership was not observed before the cleanup deadline"]}
+    pending_permission_errors: list[str] = []
+
+    def snapshot(stage: str, phase_deadline: float) -> None:
+        nonlocal last
+        remaining = min(deadline, phase_deadline) - time.monotonic()
+        if remaining <= 0:
+            note(stage + "_skipped_deadline")
+            return
+        timeout = min(0.2, remaining)
+        note(stage + "_start", timeout_seconds=timeout)
+        last = process_group_snapshot(pgid, timeout=timeout)
+        timing["last_membership_observed_seconds"] = time.monotonic() - started
+        # A child can exit during ps. Always reap again after this slow operation.
+        proc.poll()
+        note(stage + "_end", membership_known=live_members(last) is not None,
+             child_returncode=proc.returncode)
 
     def send(sig: int) -> None:
-        # A verified empty group is already clean; EPERM alone is not membership.
-        before = snapshot()
-        if live_members(before) == []:
+        # A live direct child proves the group is occupied. Do not delay signaling
+        # for ps; an exited leader's descendants use the last membership evidence.
+        proc.poll()
+        if proc.returncode is not None and live_members(last) == []:
+            note("skip_" + signal.Signals(sig).name + "_empty_group")
             return
         try:
             os.killpg(pgid, sig)
             result["signals"].append(signal.Signals(sig).name)
+            note(signal.Signals(sig).name)
         except ProcessLookupError:
-            pass
+            note(signal.Signals(sig).name + "_group_missing")
         except PermissionError as exc:
-            after = snapshot()
-            if live_members(after) != []:
-                result["errors"].append(f"{signal.Signals(sig).name}: {exc}")
+            # macOS may return EPERM for an empty group. Only later verified-empty
+            # membership can clear this error; unknown membership still fails.
+            pending_permission_errors.append(f"{signal.Signals(sig).name}: {exc}")
+            note(signal.Signals(sig).name + "_permission_error")
         except OSError as exc:
             result["errors"].append(f"{signal.Signals(sig).name}: {exc}")
+            note(signal.Signals(sig).name + "_error")
 
+    def reap_until(stage: str, phase_deadline: float) -> None:
+        proc.poll()
+        remaining = min(deadline, phase_deadline) - time.monotonic()
+        if proc.returncode is None and remaining > 0:
+            note(stage + "_start", timeout_seconds=remaining)
+            try:
+                proc.wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                note(stage + "_timeout")
+        # A timed-out wait is provisional: a later snapshot/final poll may reap.
+        proc.poll()
+        note(stage + "_end", child_returncode=proc.returncode)
+
+    proc.poll()
+    if proc.returncode is not None:
+        snapshot("initial_membership", term_deadline)
     send(signal.SIGTERM)
-    term_deadline = min(deadline, time.monotonic() + max(0, deadline - time.monotonic()) / 2)
-    last: dict[str, Any] | None = None
-    while time.monotonic() < term_deadline:
-        proc.poll()  # Reap the leader, even if its descendants still run.
-        last = snapshot()
+    reap_until("term_wait", term_deadline)
+    if proc.returncode is not None and live_members(last) != []:
+        snapshot("term_membership", term_deadline)
+    if proc.returncode is None or live_members(last) != []:
+        # Descendants get the remainder of the TERM phase, without repeated scans.
+        remaining = term_deadline - time.monotonic()
+        if remaining > 0:
+            time.sleep(remaining)
+        send(signal.SIGKILL)
+    reap_until("kill_reap", reap_deadline)
+
+    # Only now spend the remaining time on group verification. An earlier verified
+    # empty group remains empty, but a reaped leader alone never establishes this.
+    while live_members(last) != [] and time.monotonic() < deadline:
+        snapshot("final_membership", deadline)
         if live_members(last) == []:
             break
-        time.sleep(min(0.025, max(0, term_deadline - time.monotonic())))
-    if last is None or live_members(last) != []:
-        send(signal.SIGKILL)
-    while time.monotonic() < deadline:
-        proc.poll()
-        last = snapshot()
-        if live_members(last) == [] and proc.returncode is not None:
-            break
-        time.sleep(min(0.025, max(0, deadline - time.monotonic())))
-    try:
-        proc.wait(timeout=max(0, deadline - time.monotonic()))
-        result["child_reaped"] = True
-    except subprocess.TimeoutExpired:
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            time.sleep(min(0.025, remaining))
+    proc.poll()  # No blocking operation follows the final membership observation.
+    result["child_reaped"] = proc.returncode is not None
+    timing["final_poll_seconds"] = time.monotonic() - started
+    note("final_poll", child_returncode=proc.returncode)
+    if not result["child_reaped"]:
         result["errors"].append("Direct child was not reaped within the cleanup deadline")
-    last = snapshot()
     live = live_members(last)
     result["membership_verified"] = live is not None
     result["remaining_live_pids"] = None if live is None else [m["pid"] for m in live]
     result["remaining_zombie_pids"] = (None if last["members"] is None else
         [m["pid"] for m in last["members"] if m["state"].startswith("Z")])
+    if live != []:
+        result["errors"].extend(pending_permission_errors)
     if live is None:
         result["errors"].extend(last["errors"] or ["Could not establish process-group membership"])
+    timing["elapsed_seconds"] = time.monotonic() - started
+    timing["deadline_overrun_seconds"] = max(0.0, time.monotonic() - deadline)
     result["complete"] = result["child_reaped"] and live == [] and not result["errors"]
     return result
 
@@ -407,6 +479,9 @@ def run_supervised(command: list[str], output: Path, config: dict[str, Any], *,
                 report["cleanup"]["elapsed_seconds"] = time.monotonic() - cleanup_started
                 report["death"]["returncode"] = proc.returncode
                 report["death"]["signal"] = -proc.returncode if proc.returncode is not None and proc.returncode < 0 else None
+                if not report["cleanup"]["complete"]:
+                    print("OPENRACKET_REPLAY_CLEANUP_FAILURE " + json.dumps(report["cleanup"], allow_nan=False),
+                          file=sys.stderr, flush=True)
             # Drain finite captured output after cleanup without holding a pipe open.
             # Parsing is bounded by time and bytes; all bytes remain in the raw log.
             drain_deadline = min(hard_deadline, time.monotonic() + 0.25)

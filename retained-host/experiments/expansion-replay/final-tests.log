@@ -22,6 +22,11 @@ test_generated_modules_are_reader_valid_without_instantiation (test_implementati
 test_missing_and_duplicate_anchors_fail_closed (test_implementation.SourceBoundaries.test_missing_and_duplicate_anchors_fail_closed) ... ok
 test_previous_terminal_released_only_at_replacement_response_and_objects_survive_cleanup (test_implementation.SourceBoundaries.test_previous_terminal_released_only_at_replacement_response_and_objects_survive_cleanup) ... ok
 test_worker_has_only_one_guarded_insertion (test_implementation.SourceBoundaries.test_worker_has_only_one_guarded_insertion) ... ok
+test_expired_deadline_still_signals_but_starts_no_blocking_work (test_supervise.CleanupDeadlineTests.test_expired_deadline_still_signals_but_starts_no_blocking_work) ... ok
+test_final_poll_reaps_exit_during_last_snapshot_without_stale_timeout_error (test_supervise.CleanupDeadlineTests.test_final_poll_reaps_exit_during_last_snapshot_without_stale_timeout_error) ... ok
+test_slow_initial_membership_does_not_delay_descendant_kill_phase (test_supervise.CleanupDeadlineTests.test_slow_initial_membership_does_not_delay_descendant_kill_phase) ... ok
+test_slow_snapshot_cannot_precede_kill_or_consume_reserved_reap_time (test_supervise.CleanupDeadlineTests.test_slow_snapshot_cannot_precede_kill_or_consume_reserved_reap_time) ... ok
+test_unknown_final_membership_fails_even_after_child_reap (test_supervise.CleanupDeadlineTests.test_unknown_final_membership_fails_even_after_child_reap) ... ok
 test_cli_preserves_captured_environment_through_symlink_alias (test_supervise.LaunchContextTests.test_cli_preserves_captured_environment_through_symlink_alias) ... ok
 test_cli_restores_cwd_and_environment_for_fake_executable (test_supervise.LaunchContextTests.test_cli_restores_cwd_and_environment_for_fake_executable) ... ok
 test_rejects_environment_values_other_than_strings_or_false (test_supervise.LaunchContextTests.test_rejects_environment_values_other_than_strings_or_false) ... ok
@@ -36,9 +41,11 @@ test_empty_mac_group_does_not_signal_or_treat_eperm_as_alive (test_supervise.Sup
 test_existing_output_is_not_overwritten (test_supervise.SupervisionTests.test_existing_output_is_not_overwritten) ... ok
 test_group_disappearing_at_signal_eperm_is_already_clean (test_supervise.SupervisionTests.test_group_disappearing_at_signal_eperm_is_already_clean) ... ok
 test_launch_failure_still_writes_separate_failure_report (test_supervise.SupervisionTests.test_launch_failure_still_writes_separate_failure_report) ... ok
+test_linux_snapshot_deadline_exhaustion_is_unknown_membership (test_supervise.SupervisionTests.test_linux_snapshot_deadline_exhaustion_is_unknown_membership) ... ok
 test_missing_finished_event_is_not_success (test_supervise.SupervisionTests.test_missing_finished_event_is_not_success) ... ok
 test_missing_result_is_not_success (test_supervise.SupervisionTests.test_missing_result_is_not_success) ... ok
 test_ps_membership_and_rss_without_kill_zero_probe (test_supervise.SupervisionTests.test_ps_membership_and_rss_without_kill_zero_probe) ... ok
+test_ps_snapshot_does_not_inflate_small_timeout_or_start_after_deadline (test_supervise.SupervisionTests.test_ps_snapshot_does_not_inflate_small_timeout_or_start_after_deadline) ... ok
 test_success_raw_logs_events_rss_and_environment (test_supervise.SupervisionTests.test_success_raw_logs_events_rss_and_environment) ... ok
 test_supervisor_sigterm_still_kills_and_reaps (test_supervise.SupervisionTests.test_supervisor_sigterm_still_kills_and_reaps) ... ok
 test_timeout_kills_term_resistant_child_and_reaps (test_supervise.SupervisionTests.test_timeout_kills_term_resistant_child_and_reaps) ... ok
@@ -47,7 +54,7 @@ test_unknown_group_has_null_rss (test_supervise.SupervisionTests.test_unknown_gr
 test_unknown_membership_is_not_claimed_clean (test_supervise.SupervisionTests.test_unknown_membership_is_not_claimed_clean) ... ok
 
 ----------------------------------------------------------------------
-Ran 47 tests in 14.631s
+Ran 54 tests in 13.299s
 
 OK
 #t

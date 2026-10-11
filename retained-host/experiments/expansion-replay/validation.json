@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "python_tests": {
-    "passed": 47,
+    "passed": 54,
     "failed": 0
   },
   "racket_support_test_assertions": 37,
@@ -14,13 +14,13 @@
   "performance_measurements": null,
   "log": "final-tests.log",
   "portable_ci_python_tests": {
-    "passed": 40,
+    "passed": 47,
     "failed": 0,
     "source_input": "pinned official source directory, no cached ZIP access",
     "explicit_profile_override": true,
     "log": "portable-tests.log"
   },
-  "previous_freeze_sha256": "8690bf099d65ce52842d541839d58cb4b5f51e823e0d51c5b83098b6a3042519",
+  "previous_freeze_sha256": "efacaee48b586845a58fea6fb411eae3bdd375a3d002998e5753836e2a58e94c",
   "superseded_unpublished_intermediate_freeze_sha256": [
     "eb7e998de3cc33a1d116fc11f5891937fbf6a753e15fe3bd425321e76c4ce1d2",
     "f49b43fb580210b218a3cad725530578fa426b4c7c230b2dd84b5eb57aa511f6"
@@ -34,5 +34,25 @@
     "failure_scope": "test-only raw PLTUSERHOME versus resolved config path assertion; capture and replay were not reached",
     "regression": "explicit symlink alias; exact captured environment preserved with separate resolved path identity",
     "runtime_sources_and_native_cli_unchanged": true
-  }
+  },
+  "cleanup_deadline_repair": {
+    "native_failure_run": "38065125842",
+    "failure_scope": "direct child was not reaped after SIGKILL when repeated membership snapshots consumed cleanup budget; native capture/replay not reached",
+    "deterministic_regressions": 7,
+    "coverage": [
+      "known-live leader signaled without pre-scan",
+      "reserved direct-child reap time",
+      "final-poll recovery after slow snapshot",
+      "descendant cleanup after leader reaped",
+      "no blocking work begun after deadline",
+      "unknown membership fails acceptance",
+      "ps timeout not inflated",
+      "Linux /proc deadline expiry reports unknown membership"
+    ],
+    "stage_trace_and_failure_stderr": true,
+    "configured_cleanup_and_hard_wall_budgets_unchanged": true,
+    "native_cli_and_source_insertions_unchanged": true,
+    "native_mac_runtime_verification": "pending CI"
+  },
+  "prior_lifetime_repair_freeze_sha256": "8690bf099d65ce52842d541839d58cb4b5f51e823e0d51c5b83098b6a3042519"
 }
