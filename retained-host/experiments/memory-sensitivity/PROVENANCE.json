@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "purpose": "Stock memory-limit configuration sensitivity; no code-speed claim",
+  "baseline_performance_sha256": {
+    "activation.rkt": "c73dbb0aa51169ad73f074181443c2e7a4e1c9580aaeebb9efbf382d892a4e48",
+    "budget-activation.rkt": "8e7dd28acd59a54e1a0791df49fcc90550d8b0b8cee32884d1d95b69a60d9230",
+    "diagnostics.rkt": "ae9d15a7f556a293a188ae2633157ab9d61133b9c30453ce69965f5df6e15319",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "retained-host.rkt": "bdd09123bdd69512fe3c2ce8f652e9174b09a497373871665b03a78fbddf1afe",
+    "run.py": "207f2114c02594376319f26cefcabbecd31beca6f14e2aecdc35efa63111916e",
+    "settings.rkt": "728c9b4afb53ef6a5e117dbdc7118a5b64744457dffffe65a6b002fb14b7a950",
+    "test_harness.py": "f3fb046a01b8bc073e0017f8dd15bebb04fb0f8b9c273d2e43fceb94d7398f6c",
+    "test_observation.py": "bfa93b2d7add4528e47ecae5642d92ebbd049996ae0724cd8b971056aaf4e3bf",
+    "validate_observation.py": "4dee4922cf34c4a59953903ffbdf3e84cd81b949d90a352644881a895d5f77dc"
+  },
+  "common_observer_manifest_sha256": "f1c6077caac6bc352d9c5c3511952618d0428046a0b4a7dd044c202d104954af",
+  "gui_workload_change": "Only measurement kind and expected-limit metadata line",
+  "local_tests": {
+    "performance_python": 27,
+    "observer_source": 13,
+    "profile_source": 2
+  },
+  "new_native_profile_status": "pending native CI; no local Racket runtime",
+  "native_gates": [
+    "profile/test_memory_profile.py with explicit --racket and --runtime-root",
+    "observer/test_support.rkt",
+    "caller/helper compilation",
+    "real stock host Check Syntax"
+  ],
+  "limits_mib": [
+    128,
+    256,
+    512
+  ],
+  "gui_timeout_seconds": 60,
+  "lexer_gate_seconds": 45,
+  "terminal_gate_seconds": 15,
+  "setup_timeout_seconds": 30
+}

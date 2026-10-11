@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "purpose": "Headless Racket 9.3 memory-sensitivity profile setup, before timed GUI",
+  "files": [
+    {
+      "path": "memory-profile.rkt",
+      "sha256": "9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0",
+      "bytes": 15117
+    },
+    {
+      "path": "test_memory_profile.py",
+      "sha256": "dcdc0f46c781ccfce1e89533789379f75cbea7b831ba9ee046e57985ac2f8415",
+      "bytes": 11116
+    },
+    {
+      "path": "README.md",
+      "sha256": "414d36690ca6e0bfbc4a87d0d98b0f764456623be31f92a996457cd4f32e1a46",
+      "bytes": 8127
+    }
+  ],
+  "verification": {
+    "python_contract_tests_passed": 2,
+    "python_compilation": "passed",
+    "racket_delimiter_scan": "passed_static_only",
+    "native_racket_tests": "not_run_no_local_executable",
+    "native_gui_runs": 0,
+    "independent_source_review": "completed; Unix legacy HOME fallback preflight fixed"
+  },
+  "native_test_command": "python3 test_memory_profile.py --racket <clone>/bin/racket --runtime-root <clone> -v",
+  "source_provenance_scope": "Runtime version, executable/source containment and pinned source bytes; full runtime and compiled artifact provenance belongs to supervisor."
+}

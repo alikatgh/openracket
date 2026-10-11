@@ -1,4 +1,4 @@
-name: Isolated Mac xref correctness and GUI telemetry (public free runner)
+name: Mac stock memory-limit sensitivity (public free runner)
 
 'on':
   push:
@@ -60,30 +60,26 @@ jobs:
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Prepare pristine and xref-only independent runtimes
-        id: xref_prepare
-        timeout-minutes: 9
-        run: python3 retained-host/scripts/ci/run-xref.py prepare
-      - name: Collect service, exact trace and real-host correctness gates
-        id: xref_correctness
-        timeout-minutes: 22
-        run: python3 retained-host/scripts/ci/run-xref.py correctness
-      - name: Equal observer setup and interleaved GUI telemetry after full correctness
-        if: success() && steps.xref_correctness.outcome == 'success'
-        timeout-minutes: 18
-        run: python3 retained-host/scripts/ci/run-xref.py telemetry
+      - name: Prepare pristine runtime, stock host and memory-setting gates
+        id: memory_prepare
+        timeout-minutes: 14
+        run: python3 retained-host/scripts/ci/run-memory.py prepare
+      - name: Nine sequential balanced fresh-profile memory-limit trials
+        if: success() && steps.memory_prepare.outcome == 'success'
+        timeout-minutes: 20
+        run: python3 retained-host/scripts/ci/run-memory.py measure
       - name: Verify original runtime source and bytecode stayed unchanged
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 3
-        run: python3 retained-host/scripts/ci/run-xref.py verify
+        run: python3 retained-host/scripts/ci/run-memory.py verify
       - name: Report correctness, actual tool outcomes and measured limits
         if: always()
         run: |
-          if test -f retained-host/reports/xref-ci/summary.md; then
-            cat retained-host/reports/xref-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/memory-ci/summary.md; then
+            cat retained-host/reports/memory-ci/summary.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo 'Preparation failed before an xref result was available.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Preparation failed before a memory sensitivity result was available.' >> "$GITHUB_STEP_SUMMARY"
           fi
-          echo 'Candidate default-off, separate from delivered preview. Stock 128 MiB memory limit, 20 ms coloring budget and tools stay enabled.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Actual background OOM and success outcomes remain explicit. Different terminal outcomes are not equal completed work for a speed ratio.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only disposable profile memory varies: 128/256/512 MiB. Actual worker setting verified; original 20 ms coloring budget and all stock tools remain.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Configuration sensitivity, no product default change. All actual OOM, successes, incomplete work and timeouts remain explicit. Different outcomes do not support equal-work speed ratios.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Earlier Stop and broader release gates remain recorded. No artifact/cache/release/package upload or paid runner.' >> "$GITHUB_STEP_SUMMARY"

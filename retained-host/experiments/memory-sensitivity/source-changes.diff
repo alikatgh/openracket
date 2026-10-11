@@ -1,0 +1,276 @@
+--- xref-performance/retained-host.rkt
++++ memory-performance/retained-host.rkt
+@@ -37,7 +37,8 @@
+ (hash-set! report 'os (~a (system-type 'os)))
+ (hash-set! report 'vm (~a (system-type 'vm)))
+ (hash-set! report 'status "running")
+-(hash-set! report 'measurement_kind "matched_gui_with_common_compact_observer")
++(hash-set! report 'expected_memory_limit_bytes (hash-ref config 'expected_memory_limit_bytes))
++(hash-set! report 'measurement_kind "stock_memory_configuration_with_common_compact_observer")
+ (define (persist!)
+   (call-with-output-file output #:exists 'truncate/replace
+     (lambda (port) (write-json report port) (newline port))))
+--- xref-performance/run.py
++++ memory-performance/run.py
+@@ -14,6 +14,9 @@
+ import sys
+ import time
+ from fixtures import write_fixtures
++from profile_setup import prepare_memory_profile
++
++STOCK_XREF_SHA256 = "acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7"
+ from validate_observation import validate as validate_observation
+ 
+ ROOT = Path(__file__).resolve().parent
+@@ -42,7 +45,8 @@
+                 'online_terminal_wait', 'observer_registration_ms',
+                 'open_to_terminal_callback_observed_ms', 'open_to_terminal_callback_ms',
+                 'memory_after_terminal_observation',
+-                'observer_validation', 'worker_observer_overhead'):
++                'observer_validation', 'worker_observer_overhead', 'memory_profile_setup',
++                'memory_limit_configuration', 'expected_memory_limit_bytes'):
+         if key in report:
+             out[key] = report[key]
+     for key in ('initial_coloring_key_samples',):
+@@ -114,11 +118,11 @@
+     output = directory / 'measurements.json'
+     env = os.environ.copy()
+     xref_flag = env.get('OPENRACKET_XREF_REPLY_CELL')
+-    expected_flag = '1' if args.xref_activation == 'candidate' else None
++    expected_flag = None
+     if xref_flag != expected_flag:
+         raise ValueError('Caller xref flag does not match the requested timing arm')
+-    # Only the one candidate flag survives. Other experiments/appearance/probes
+-    # cannot accidentally enter either arm through the CI environment.
++    # No candidate flags survive. Experiments, appearance changes and probes
++    # cannot accidentally enter any limit through the CI environment.
+     for key in list(env):
+         if key.startswith('OPENRACKET_'):
+             env.pop(key)
+@@ -135,7 +139,7 @@
+     env['PLTUSERHOME'] = str(home)
+     env['XDG_CONFIG_HOME'] = str(home / '.config')
+     env['XDG_CACHE_HOME'] = str(home / '.cache')
+-    # PLTADDONDIR, active package set and OpenRacket mode remain caller-controlled.
++    # CI supplies a fresh PLTADDONDIR and the verified pristine package set.
+     env['OPENRACKET_BENCH_CONFIG'] = json.dumps({
+         'fixture': fixture['path'], 'output': str(output), 'mode': args.mode,
+         'edit_position': fixture['edit_position'], 'characters': fixture['characters'],
+@@ -144,7 +148,8 @@
+         'scan_activation': 'stock', 'budget_activation': 'stock',
+         'xref_activation': args.xref_activation,
+         'xref_source_sha256': args.xref_source_sha256,
+-        'observer_support_sha256': hashlib.sha256(helper.read_bytes()).hexdigest()})
++        'observer_support_sha256': hashlib.sha256(helper.read_bytes()).hexdigest(),
++        'expected_memory_limit_bytes': args.memory_limit_mib * 1024 * 1024})
+     command = [args.racket, str(ROOT / 'retained-host.rkt')]
+     system = platform.system()
+     resource_file = directory / 'native-resource.txt'
+@@ -152,6 +157,21 @@
+         command = ['/usr/bin/time', '-v', '-o', str(resource_file)] + command
+     elif Path('/usr/bin/time').exists() and system == 'Darwin':
+         command = ['/usr/bin/time', '-l'] + command
++    setup = prepare_memory_profile(args, env, directory, terminate_group)
++    if not setup['verified']:
++        report = {'schema_version': 1, 'mode': args.mode, 'status': 'setup_failed',
++                  'error': '; '.join(setup['errors']), 'fixture_metadata': fixture,
++                  'repetition': repetition, 'native_max_rss_bytes': None,
++                  'process_wall_ms': 0, 'exit_code': None, 'timeout': False,
++                  'expected_memory_limit_bytes': args.memory_limit_mib * 1024 * 1024,
++                  'memory_profile_setup': setup, 'memory_limit_configuration': setup['configuration'],
++                  'measurement_kind': 'stock_memory_configuration_with_common_compact_observer'}
++        output.write_text(json.dumps(report, indent=2) + '\n')
++        print('OPENRACKET_PERFORMANCE_TRIAL_JSON_BEGIN', flush=True)
++        print(json.dumps(report, separators=(',', ':')), flush=True)
++        print('OPENRACKET_PERFORMANCE_TRIAL_JSON_END', flush=True)
++        return report
++    # The profile setup process and disk verification are outside this timer.
+     started = time.monotonic()
+     timeout = False
+     with (directory / 'stdout.log').open('w') as stdout, (directory / 'stderr.log').open('w') as stderr:
+@@ -172,11 +192,14 @@
+     resources = resource_file.read_text(errors='replace') if resource_file.exists() else stderr
+     report.update({'fixture_metadata': fixture, 'repetition': repetition,
+                    'process_wall_ms': (time.monotonic() - started) * 1000,
++                   'memory_profile_setup': setup, 'memory_limit_configuration': setup['configuration'],
++                   'expected_memory_limit_bytes': args.memory_limit_mib * 1024 * 1024,
+                    'native_max_rss_bytes': native_rss(resources, system),
+                    'exit_code': process.returncode, 'timeout': timeout})
+     try:
+         observed = validate_observation(report, observer_output, fixture, args.xref_activation,
+-                                        args.xref_source_sha256, args.racket)
++                                        args.xref_source_sha256, args.racket,
++                                        expected_limit_bytes=args.memory_limit_mib * 1024 * 1024)
+     except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
+         observed = {'verified': False, 'errors': ['Invalid observer evidence: ' + str(error)],
+                     'actual_worker': None}
+@@ -205,15 +228,19 @@
+     parser.add_argument('--fixture', choices=['all', 'mixed-100k', 'mixed-1mib'], default='all')
+     parser.add_argument('--profile', action='store_true', help='Separate attribution-only trial; adds sampling/logging overhead')
+     parser.add_argument('--metadata-only', action='store_true', help='Open fixture and read settings; no latency workload')
+-    parser.add_argument('--xref-activation', required=True, choices=['stock', 'candidate'])
+-    parser.add_argument('--xref-source-sha256', required=True)
++    parser.add_argument('--xref-activation', choices=['stock'], default='stock')
++    parser.add_argument('--xref-source-sha256', default=STOCK_XREF_SHA256)
++    parser.add_argument('--memory-limit-mib', type=int, required=True, choices=[128, 256, 512])
++    parser.add_argument('--profile-helper', type=Path, required=True)
+     parser.add_argument('--observer-support', required=True, type=Path)
+     parser.add_argument('--budget-activation', choices=['none', 'stock', '4', '8', '12', '20'], default='none')
+     parser.add_argument('--scan-activation', choices=['none', 'stock', 'candidate'], default='none',
+                         help='Read-only assertion of scan helper absence/selection; never enables it')
+     args = parser.parse_args()
+-    if not re.fullmatch(r'[0-9a-f]{64}', args.xref_source_sha256):
+-        parser.error('xref source SHA-256 must be 64 lowercase hex characters')
++    if args.xref_source_sha256 != STOCK_XREF_SHA256:
++        parser.error('only the original stock xref source is allowed')
++    if not args.profile_helper.is_file() or args.profile_helper.is_symlink():
++        parser.error('profile helper must be the reviewed regular helper file')
+     if not args.observer_support.is_file() or args.observer_support.is_symlink():
+         parser.error('observer support must be the reviewed regular helper file')
+     if args.profile or args.metadata_only:
+@@ -230,13 +257,14 @@
+     if args.fixture != 'all':
+         fixtures = [fixture for fixture in fixtures if fixture['name'] == args.fixture]
+     metadata = {'schema_version': 1, 'mode': args.mode,
+-                'measurement_kind': 'matched_gui_with_common_compact_observer',
++                'measurement_kind': 'stock_memory_configuration_with_common_compact_observer',
+                 'platform': platform.platform(),
+                 'machine': platform.machine(), 'logical_cpus': os.cpu_count(),
+                 'runner_os': os.getenv('RUNNER_OS'), 'runner_arch': os.getenv('RUNNER_ARCH'),
+                 'github_sha': os.getenv('GITHUB_SHA'), 'repetitions': args.repetitions,
+-                'per_trial_timeout_seconds': args.timeout,
+-                'measurement_warning': 'Synthetic editor events and event-loop fences; not physical input-to-photon. Fresh process, not cold filesystem cache. Stock settings unchanged.'}
++                'per_trial_timeout_seconds': args.timeout, 'memory_limit_mib': args.memory_limit_mib,
++                'profile_setup_timeout_seconds': 30,
++                'measurement_warning': 'Synthetic editor events and event-loop fences; not physical input-to-photon. Fresh process, not cold filesystem cache. Only the isolated stock memory preference varies.'}
+     plan = [(fixture, repetition)
+             for repetition in range(1, args.repetitions + 1) for fixture in fixtures]
+     reports, skipped = [], []
+--- xref-performance/test_harness.py
++++ memory-performance/test_harness.py
+@@ -38,8 +38,8 @@
+     def test_repeated_startup_failure_skips_remaining_trials(self):
+         with tempfile.TemporaryDirectory() as directory:
+             argv = ['run.py', '--mode', 'test-only', '--output', directory,
+-                    '--repetitions', '3', '--xref-activation', 'stock',
+-                    '--xref-source-sha256', '0' * 64, '--observer-support', __file__]
++                    '--repetitions', '3', '--memory-limit-mib', '128', '--profile-helper', __file__, '--xref-activation', 'stock',
++                    '--xref-source-sha256', runner.STOCK_XREF_SHA256, '--observer-support', __file__]
+             def fake_trial(args, fixture, repetition):
+                 return {'status': 'timeout', 'fixture_metadata': fixture,
+                         'repetition': repetition, 'native_max_rss_bytes': None,
+@@ -90,9 +90,10 @@
+             fixture = write_fixtures(root / 'fixtures')[0]
+             args = types.SimpleNamespace(output=root, mode='test-only',
+                                          racket=str(executable), timeout=.3,
+-                                         xref_activation='stock', xref_source_sha256='0' * 64,
++                                         xref_activation='stock', xref_source_sha256=runner.STOCK_XREF_SHA256,
++                                         memory_limit_mib=128, profile_helper=Path(__file__),
+                                          observer_support=Path(__file__))
+-            with contextlib.redirect_stdout(io.StringIO()):
++            with mock.patch.object(runner, 'prepare_memory_profile', return_value={'verified': True, 'configuration': {}}), contextlib.redirect_stdout(io.StringIO()):
+                 report = run_trial(args, fixture, 1)
+             self.assertEqual(report['status'], 'timeout')
+             self.assertTrue(group_file.exists())
+@@ -107,9 +108,10 @@
+             fixture = write_fixtures(root / 'fixtures')[0]
+             args = types.SimpleNamespace(output=root, mode='test-only',
+                                          racket=str(executable), timeout=.15,
+-                                         xref_activation='stock', xref_source_sha256='0' * 64,
++                                         xref_activation='stock', xref_source_sha256=runner.STOCK_XREF_SHA256,
++                                         memory_limit_mib=128, profile_helper=Path(__file__),
+                                          observer_support=Path(__file__))
+-            with contextlib.redirect_stdout(io.StringIO()):
++            with mock.patch.object(runner, 'prepare_memory_profile', return_value={'verified': True, 'configuration': {}}), contextlib.redirect_stdout(io.StringIO()):
+                 report = run_trial(args, fixture, 1)
+             self.assertTrue(report['timeout'])
+             self.assertEqual(report['status'], 'timeout')
+--- xref-performance/test_observation.py
++++ memory-performance/test_observation.py
+@@ -44,7 +44,12 @@
+             'actual_prefab_truncated': False, 'monitor_messages': 1,
+             'monitor_string_errors': 0, 'monitor_pair_messages': 1,
+             'monitor_empty_messages': 0, 'monitor_other_messages': 0}
++        self.configuration = {'expected_limit_bytes':134217728, 'selected_limit_bytes':134217728,
++                              'persisted_limit_bytes':134217728, 'only_expected_preference_changed':True}
+         self.report = {
++            'expected_memory_limit_bytes':134217728,
++            'memory_limit_configuration':self.configuration,
++            'memory_profile_setup':{'verified':True,'configuration':self.configuration},
+             'online_expansion_outcome': copy.deepcopy(self.outcome),
+             'online_expansion_observer': {'enabled': True, 'complete_observation': True,
+                 'dropped_requests': 0, 'observer_error_count': 0, 'generation': 1,
+@@ -59,15 +64,27 @@
+             'budget_activation': {'status': 'verified', 'expected': 'stock'},
+             'initial_coloring_key_samples': [{} for _ in range(80)], 'keys_starting_with_lexer_invalid': 80}
+ 
+-    def check(self, arm='stock'):
++    def check(self, arm='stock', expected_limit_bytes=134217728):
+         (self.observer / 'worker-init.json').write_text(json.dumps(self.worker))
+-        return validate(self.report, self.observer, self.fixture, arm, '0' * 64, self.racket)
++        return validate(self.report, self.observer, self.fixture, arm, '0' * 64, self.racket, expected_limit_bytes=expected_limit_bytes)
+ 
+     def test_stock_and_candidate_loaded_activation(self):
+         self.assertTrue(self.check()['verified'])
+         self.worker.update(xref_export_status='boolean', xref_reply_cell_enabled=True, xref_flag='1')
+-        self.assertTrue(self.check('candidate')['verified'])
++        self.assertFalse(self.check('candidate')['verified'])
+         self.assertFalse(self.check('stock')['verified'])
++
++    def test_all_three_exact_memory_limits(self):
++        for limit in (134217728, 268435456, 536870912):
++            self.worker['child_memory_limit'] = limit
++            self.report['preserved_settings']['drracket:child-only-memory-limit'] = str(limit)
++            self.report['expected_memory_limit_bytes'] = limit
++            for key in ('expected_limit_bytes', 'selected_limit_bytes', 'persisted_limit_bytes'):
++                self.configuration[key] = limit
++            self.assertTrue(self.check(expected_limit_bytes=limit)['verified'])
++            self.assertFalse(self.check(expected_limit_bytes=limit * 3)['verified'])
++        self.report['memory_profile_setup']['verified'] = False
++        self.assertFalse(self.check(expected_limit_bytes=536870912)['verified'])
+ 
+     def test_failed_monitor_is_real_outcome_not_hidden_success(self):
+         for target in (self.outcome, self.report['online_expansion_outcome']):
+--- xref-performance/validate_observation.py
++++ memory-performance/validate_observation.py
+@@ -9,11 +9,21 @@
+ def finite_ms(value):
+     return type(value) in (int, float) and math.isfinite(value) and value >= 0
+ 
+-def validate(report, directory, fixture, arm, expected_xref_hash, racket):
++def validate(report, directory, fixture, arm, expected_xref_hash, racket, *, expected_limit_bytes=134217728):
+     errors = []
+     def check(condition, message):
+         if not condition:
+             errors.append(message)
++    check(arm == 'stock', 'Only pristine stock xref is allowed')
++    check(type(expected_limit_bytes) is int and expected_limit_bytes in (134217728, 268435456, 536870912),
++          'Unsupported expected memory limit')
++    check(report.get('expected_memory_limit_bytes') == expected_limit_bytes, 'GUI requested limit differs')
++    setup = report.get('memory_profile_setup', {})
++    configuration = report.get('memory_limit_configuration', {})
++    check(setup.get('verified') is True and setup.get('configuration') == configuration, 'Pre-timing setup missing')
++    check(configuration.get('expected_limit_bytes') == configuration.get('selected_limit_bytes') ==
++          configuration.get('persisted_limit_bytes') == expected_limit_bytes and
++          configuration.get('only_expected_preference_changed') is True, 'One-key memory setup differs')
+     worker = None
+     path = Path(directory) / 'worker-init.json'
+     try:
+@@ -27,7 +37,7 @@
+         check(worker.get('worker_context') is True and worker.get('xref_already_instantiated') is True,
+               'Actual worker xref was not proven already instantiated')
+         check(worker.get('racket_version') == '9.3', 'Worker is not Racket9.3')
+-        check(worker.get('child_memory_limit') == 134217728, 'Worker memory limit changed')
++        check(worker.get('child_memory_limit') == expected_limit_bytes, 'Worker memory limit changed')
+         check(worker.get('memory_accounting_available') is True, 'Worker memory accounting is unavailable')
+         check(worker.get('xref_sha256') == expected_xref_hash, 'Worker xref source hash mismatch')
+         resolved_source = Path(worker.get('xref_path', '')).resolve()
+@@ -127,7 +137,7 @@
+     check(settings.get('status') == 'complete' and settings.get('errors') == {} and
+           settings.get('effective_annotations') == 'debug', 'Pending-next-Run settings/instrumentation unavailable or changed')
+     preferences = report.get('preserved_settings', {})
+-    check(preferences.get('drracket:child-only-memory-limit') == '134217728' and
++    check(preferences.get('drracket:child-only-memory-limit') == str(expected_limit_bytes) and
+           preferences.get('framework:coloring-active') == '#t' and
+           preferences.get('drracket:online-compilation-default-on') == '#t' and
+           'UNAVAILABLE' not in preferences.values(), 'Stock preferences unavailable or changed')

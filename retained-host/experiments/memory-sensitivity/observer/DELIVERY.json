@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "frozen": true,
+  "status": "source-tests-passed-native-tests-not-run",
+  "native_test_blocker": "No installed Racket executable; no installs/downloads permitted for this subtask.",
+  "source_tests": 13,
+  "native_kill_scenarios_not_yet_run": 12,
+  "files": {
+    "prepare.py": "485983c449dc2a02e342700ae4ed82e53c293006cdbff70400bd8d9bcc57402b",
+    "support.rkt": "79c02e6652e7fa4158531384c2d0382a32487b21620522529e325c44394d0d7b",
+    "test_source.py": "d9a4227bfeedf50fc7ff835519c60cc965e72eef4a02291b759ca396bb7b0a27",
+    "test_support.rkt": "a56f1d2145d4620be1c1baac31df42b13278700418c1052e3a6ac858c84e407b",
+    "README.md": "51a8b48b797de2d5dc8501b44a0f480b507aa0f96a172cf822143fd8286b9531"
+  }
+}

@@ -1,0 +1,484 @@
+{
+  "publication": 21,
+  "commit": "6165c48f71fe601cf9b2d2e4692347cacdb0a380",
+  "tree": "5fd4766229f5d091d502da208382ef8dd2586cd2",
+  "run_id": 38106066111,
+  "job_id": 114371750112,
+  "conclusion": "success",
+  "log_sha256": "1d169089ebee26cbc4a829456304cf246c73f4ee3dd952d1b0022516084f676d",
+  "artifacts": 0,
+  "results": [
+    {
+      "name": "Reviewed frozen xref source hashes",
+      "passed": true,
+      "detail": "46"
+    },
+    {
+      "name": "CI isolation contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless xref and diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict paired metadata and outcome classifier checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent xref-control runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent xref-candidate runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "Pinned xref-only application",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "Pinned source and installer refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on compile actual xref module",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact observer source boundaries",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Telemetry supervisor and observation rejection tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native observer protocol and kill-safety tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock uninstrumented telemetry caller/helper compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on uninstrumented telemetry caller/helper compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual stock/off/on reply concurrency and cancellation suite",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock/off/on complete semantic trace and rename equivalence; raw order diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "xref-stock-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17916868911791686891299\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "xref-candidate-on-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17916869031791686903414\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "stock identical compact observer installation and actual module compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "stock actual telemetry caller/helper compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on identical compact observer installation and actual module compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate xref source may differ"
+    },
+    {
+      "name": "candidate-on actual telemetry caller/helper compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Both runtime copies use identical observer bytes",
+      "passed": true,
+      "detail": "{\"support_sha256\": \"79c02e6652e7fa4158531384c2d0382a32487b21620522529e325c44394d0d7b\", \"generator_sha256\": \"485983c449dc2a02e342700ae4ed82e53c293006cdbff70400bd8d9bcc57402b\", \"files\": {\"module-language.rkt\": {\"stock_sha256\": \"e76f13b6700df1ce1096f978353c938ef7816672efe9532483ffd38b710ffd53\", \"observer_sha256\": \"74a78ef827c046d99671008631616de9ff966b863cd8e96cfbe829397187d68d\"}, \"expanding-place.rkt\": {\"stock_sha256\": \"f6daeb1c8ca26d6f5a3c4c6920cc484f43d5bcd4116aa8d592334f037005a383\", \"observer_sha256\": \"bc043f1ce0dbb13fe3cbf7ecdb9e52a735fb00178d3987035e55f59b8347ab93\"}}}"
+    },
+    {
+      "name": "pair-1-stock matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-stock complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-1-candidate complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-candidate complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-2-stock complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-stock complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate matched real GUI workload",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate complete measurements.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate complete summary.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate complete worker-init.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pair-3-candidate complete worker-init-overhead.json log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Six complete matched metadata records with explicit actual tool outcomes",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "trials": [
+    {
+      "pair": 1,
+      "arm": "candidate",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 25.129000000001724
+    },
+    {
+      "pair": 1,
+      "arm": "stock",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 24.410000000001673
+    },
+    {
+      "pair": 2,
+      "arm": "candidate",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 14.370999999994638
+    },
+    {
+      "pair": 2,
+      "arm": "stock",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 16.1850000000004
+    },
+    {
+      "pair": 3,
+      "arm": "candidate",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 24.26800000000094
+    },
+    {
+      "pair": 3,
+      "arm": "stock",
+      "status": "complete",
+      "exit_code": 0,
+      "timeout": false,
+      "observer_verified": true,
+      "contention_observed": true,
+      "tool_succeeded": false,
+      "tool_outcome": {
+        "abnormal_message": "Expansion thread terminated unexpectedly (out of memory)",
+        "explicit_out_of_memory": true,
+        "tag": "abnormal-termination"
+      },
+      "child_memory_limit": 134217728,
+      "complete_lexer": true,
+      "dropped_requests": 0,
+      "hook_self_ms": 20.558000000000902
+    }
+  ],
+  "scope": "All targeted correctness and measurement validity gates passed; all six actual final background requests still end with explicit out of memory. No general speed or total tool success claim."
+}
