@@ -44,6 +44,12 @@ def validate_envelope(r,c,stage):
     need(type(r.get('schema')) is int,'Exact schema type')
     for k,v in envelope(c,stage).items():need(r.get(k)==v,'Envelope '+k)
 
+def validate_activation(a,frame_id):
+    need(type(a) is dict and set(a)=={'active_focus','focus_frame_id','edit_target_frame_id'},'Exact activation witness required')
+    need(a['active_focus'] is True,'Actual active original frame required')
+    for key in ('focus_frame_id','edit_target_frame_id'):
+        need(type(a[key]) is int and a[key]>0 and a[key]==frame_id,'Actual original-frame activation '+key)
+
 def validate_ready(r,c,stage,pid,baseline=None):
     need(type(pid) is int and pid>1,'Exact external child PID')
     validate_envelope(r,c,stage);need(stage!='terminal-response' and r.get('status')=='ready','Real stage READY required')
@@ -68,13 +74,17 @@ def validate_ready(r,c,stage,pid,baseline=None):
     sources=r.get('sources',[]);need(isinstance(sources,list) and len(sources)==len(SOURCE_PINS),'Complete source witness')
     need({s.get('module'):s.get('sha256') for s in sources}==SOURCE_PINS,'Exact source pins')
     e=r.get('evidence',{})
-    if stage=='ready':need(e.get('fixture_opened_by_driver') is False and e.get('fixture_mutated') is False,'Genuine original fixture open')
+    if stage=='ready':
+        need(e.get('fixture_opened_by_driver') is False and e.get('fixture_mutated') is False,'Genuine original fixture open')
+        validate_activation(e.get('activation'),h['frame_id'])
     elif stage.startswith('quit-confirm'):
+        validate_activation(e.get('request_activation'),h['frame_id'])
         need(type(e.get('request_attempt')) is int and e['request_attempt']==int(stage[-1]) and type(e.get('request_frame_id')) is int and e['request_frame_id']==h['frame_id'] and e.get('parent_frame_id') is False,'Quit request/frame binding')
         need(e.get('kind')=='quit' and e.get('shown') is True and e.get('checkbox_values')==[False],'Actual stock Quit confirmation')
         need(type(e.get('dialog_id')) is int and e['dialog_id']>0 and isinstance(e.get('message'),str) and e['message'],'Actual stock modal identity/message')
         need(isinstance(e.get('labels'),list) and len(e['labels'])==2,'Stock Quit controls')
     elif stage.startswith('unsaved'):
+        validate_activation(e.get('request_activation'),h['frame_id'])
         need(type(e.get('request_attempt')) is int and e['request_attempt']==int(stage[-1]) and type(e.get('request_frame_id')) is int and e['request_frame_id']==h['frame_id'] and type(e.get('parent_frame_id')) is int and e['parent_frame_id']==h['frame_id'],'Unsaved request/parent binding')
         need(e.get('kind')=='unsaved' and e.get('shown') is True and e.get('checkbox_values')==[],'Actual unsaved dialog')
         need(type(e.get('dialog_id')) is int and e['dialog_id']>0 and isinstance(e.get('message'),str) and e['message'],'Actual unsaved modal identity/message')

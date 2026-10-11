@@ -3,7 +3,15 @@ P=pathlib.Path(__file__).with_name('run-native-quit.py');S=P.read_text();A=ast.p
 def fn(name):return ast.get_source_segment(S,next(x for x in A.body if isinstance(x,ast.FunctionDef) and x.name==name))
 class Contracts(unittest.TestCase):
  def test_exact_sources(self):
-  for x in ('932b9036e3d52d6b6aa723500c18c5c500ba28ae4b29dd3800bdf950b15b64fc','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552','b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee','175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b'):self.assertIn(x,S)
+  for x in ('b4560ffb7831a28c51d378d78da96e5695643e01857f8753a8dda0c312a684a4','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552','b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee','175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b'):self.assertIn(x,S)
+ def test_activation_freeze_exact_inventory_and_source_count(self):
+  t=fn('exact_sources')
+  self.assertIn('assert len(members)==23',t)
+  self.assertIn("set(members)|{'FROZEN-NATIVE-ALLOWLIST.json'}",t)
+  self.assertIn("EXP.rglob('*')",t)
+  self.assertIn('assert len(pins)==12',t)
+  self.assertIn("len({p['module'] for p in pins})==12",t)
+  self.assertIn("p['module']=='mred/private/mrtop.rkt'",t)
  def test_no_optimized_assertions(self):self.assertIn("if sys.flags.optimize:raise SystemExit",S)
  def test_private_registration_no_u(self):
   self.assertNotIn("'-U'",fn('raco'));self.assertIn("'--scope','user'",fn('prepare_case'));self.assertIn("'--avoid-main'",fn('prepare_case'));self.assertIn('collection-file-path',fn('prepare_case'))

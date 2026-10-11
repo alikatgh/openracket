@@ -1,7 +1,8 @@
 {
   "status": "passed",
-  "source_tests": 40,
-  "original_checks": [
+  "source_tests": 41,
+  "revision": "run48 explicit diagnostic import repair",
+  "checks": [
     {
       "command": [
         "python3",
@@ -21,80 +22,36 @@
     {
       "command": [
         "python3",
-        "tests/stock-tool-source-test.py"
+        "tests/stock-tool-source-test.py",
+        "-v"
       ],
       "exit": 0
     },
     {
       "command": [
         "python3",
-        "tests/coordinator-standalone-source-test.py"
+        "tests/coordinator-standalone-source-test.py",
+        "-v"
       ],
       "exit": 0
     },
     {
       "command": [
         "python3",
-        "tests/tool-dispatch-source-test.py"
+        "tests/tool-dispatch-source-test.py",
+        "-v"
       ],
       "exit": 0
     },
     {
       "command": [
         "python3",
-        "tests/light-tool-source-test.py"
+        "tests/light-tool-source-test.py",
+        "-v"
       ],
       "exit": 0
     }
   ],
-  "fresh_isolated_copy_checks": [
-    {
-      "command": [
-        "python3",
-        "scripts/prepare-stock-tool-host.py",
-        "--check"
-      ],
-      "exit": 0
-    },
-    {
-      "command": [
-        "python3",
-        "scripts/prepare-light-tool-host.py",
-        "--check"
-      ],
-      "exit": 0
-    },
-    {
-      "command": [
-        "python3",
-        "tests/stock-tool-source-test.py"
-      ],
-      "exit": 0
-    },
-    {
-      "command": [
-        "python3",
-        "tests/coordinator-standalone-source-test.py"
-      ],
-      "exit": 0
-    },
-    {
-      "command": [
-        "python3",
-        "tests/tool-dispatch-source-test.py"
-      ],
-      "exit": 0
-    },
-    {
-      "command": [
-        "python3",
-        "tests/light-tool-source-test.py"
-      ],
-      "exit": 0
-    }
-  ],
-  "baseline_sibling_required": false,
-  "archive_required": false,
   "racket_executed": false,
   "native_executed": false,
   "network_used": false

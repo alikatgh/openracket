@@ -12,15 +12,16 @@ class Contracts(unittest.TestCase):
     def tokens(self):self.c['step_tokens']={x:secrets.token_hex(24) for x in C.stages(self.c)}
     def records(self):
         c=self.c;rows=[];frame=10
+        activation={'active_focus':True,'focus_frame_id':frame,'edit_target_frame_id':frame}
         for stage in C.stages(c):
             r={**C.envelope(c,stage),'status':'ready','checks':42,'test_actor':True,'handler_replaced':False,'test_exit_used':False,'entrypoint_replaced':False,
                'identity':{'pid':42,'running_pid':42,'same_running_application':True,'process_image_path':c['native_executable_path'],'running_bundle_path':c['app_path'],'main_bundle_path':c['app_path'],'running_bundle_identifier':c['bundle_id'],'main_bundle_identifier':c['bundle_id']},
                'host':{**{k:i+10 for i,k in enumerate(C.ID_KEYS)},'filename':c['fixture_path'],'text':c['original_text'] if stage=='ready' or c['case']=='clean' else c['edited_text'],'modified':stage!='ready' and c['case']!='clean','disk_sha256':C.digest(c['original_text'].encode()),'verify_exit':True,'handler_unchanged':True},
                'mode_evidence':{'mode':c['mode'],'memory_mib':c['memory_mib'],'finder_or_apple_event_route_tested':False,'stock_control':'official-generator native app running unchanged DrRacket','native':False},'sources':[{'module':m,'sha256':v} for m,v in C.SOURCE_PINS.items()],'evidence':{}}
             e=r['evidence']
-            if stage=='ready':e.update(fixture_opened_by_driver=False,fixture_mutated=False)
-            elif stage.startswith('quit-confirm'):e.update(kind='quit',shown=True,dialog_id=100+len(rows),message='unit-only localized confirmation',labels=['Quit','Do not quit'],checkbox_values=[False],request_attempt=int(stage[-1]),request_frame_id=frame,parent_frame_id=False)
-            elif stage.startswith('unsaved'):e.update(kind='unsaved',shown=True,dialog_id=100+len(rows),message='unit-only localized unsaved message',labels=['Save','Cancel','Do not save'],checkbox_values=[],request_attempt=int(stage[-1]),request_frame_id=frame,parent_frame_id=frame)
+            if stage=='ready':e.update(fixture_opened_by_driver=False,fixture_mutated=False,activation=activation.copy())
+            elif stage.startswith('quit-confirm'):e.update(request_activation=activation.copy(),kind='quit',shown=True,dialog_id=100+len(rows),message='unit-only localized confirmation',labels=['Quit','Do not quit'],checkbox_values=[False],request_attempt=int(stage[-1]),request_frame_id=frame,parent_frame_id=False)
+            elif stage.startswith('unsaved'):e.update(request_activation=activation.copy(),kind='unsaved',shown=True,dialog_id=100+len(rows),message='unit-only localized unsaved message',labels=['Save','Cancel','Do not save'],checkbox_values=[],request_attempt=int(stage[-1]),request_frame_id=frame,parent_frame_id=frame)
             elif stage=='cancelled':e.update(exit_state_reset=True,live_identity_preserved=True,responsive_gui_turns=11,stable_ms=1050,focus_restored=True,focus_frame_id=frame,edit_target_frame_id=frame)
             elif stage=='terminal-response':
                 prior=rows[-1]['report']['evidence'];r={**C.envelope(c,stage),'status':'response-dispatched','case':c['case'],'pid':42,'test_exit_used':False,'handler_replaced':False,'cleanup_used':False,'response':{'callback_returned':True,'modal_dismissed':True,'event':'button','dialog_id':prior['dialog_id'],'button_id':500,'label':prior['labels'][2 if c['case']=='discard' else 0]}}
@@ -76,6 +77,29 @@ class Contracts(unittest.TestCase):
             for p in path[:-1]:d=d[p]
             d[path[-1]]=val
             with self.subTest(path=path),self.assertRaises(ValueError):self.valid(rows)
+    def test_initial_and_every_quit_request_require_actual_activation(self):
+        for case in ('clean','save','discard'):
+            self.c['case']=case;self.tokens()
+            for index,row in enumerate(self.records()):
+                stage=row['stage']
+                if stage!='ready' and not stage.startswith(('quit-confirm','unsaved')):continue
+                key='activation' if stage=='ready' else 'request_activation'
+                for bad in (None,False,True,[],{}, {'active_focus':True,'focus_frame_id':10},
+                            {'active_focus':True,'focus_frame_id':10,'edit_target_frame_id':10,'extra':True}):
+                    rows=self.records();rows[index]['report']['evidence'][key]=bad
+                    with self.subTest(case=case,stage=stage,bad=bad),self.assertRaises(ValueError):self.valid(rows)
+                rows=self.records();del rows[index]['report']['evidence'][key]
+                with self.subTest(case=case,stage=stage,missing=True),self.assertRaises(ValueError):self.valid(rows)
+                for field,values in (('active_focus',(False,None,0,1,'true')),
+                                     ('focus_frame_id',(False,True,None,0,-1,11,10.0,'10')),
+                                     ('edit_target_frame_id',(False,True,None,0,-1,11,10.0,'10'))):
+                    for value in values:
+                        rows=self.records();rows[index]['report']['evidence'][key][field]=value
+                        with self.subTest(case=case,stage=stage,field=field,value=value),self.assertRaises(ValueError):self.valid(rows)
+    def test_edit_target_alone_cannot_establish_startup_or_request_readiness(self):
+        for index,key in ((0,'activation'),(2,'request_activation'),(5,'request_activation')):
+            rows=self.records();rows[index]['report']['evidence'][key]={'active_focus':False,'focus_frame_id':False,'edit_target_frame_id':10}
+            with self.subTest(index=index),self.assertRaises(ValueError):self.valid(rows)
     def test_cancel_retains_all_objects_and_dirty_text(self):
         for key in C.ID_KEYS+('text','modified','disk_sha256','verify_exit','handler_unchanged'):
             rows=self.records();h=rows[4]['report']['host'];h[key]=False

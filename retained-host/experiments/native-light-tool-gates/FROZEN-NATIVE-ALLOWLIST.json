@@ -1,5 +1,5 @@
 {
-  "status": "local-only source prepared; native reader/compile/headless/GUI acceptance not run; publication held",
+  "status": "test-only missing diagnostic import repaired after run38152590660; native retry pending",
   "baseline_native_source": "accepted 1125 (coordinator acceptance run38140896349)",
   "files": {
     "tests/independent-native-host.rkt": "80907227bdfb077485f7575b52d42d044bd41da53387b4d034add2118a6eaba8",
@@ -16,7 +16,7 @@
     "tests/independent-native-light-tools-host.rkt": "402c4b4fffbbf03f4593a17a0c13a116d59fb497dfd873030d6ddd3366d22451",
     "tests/native-light-state-observer.rkt": "b36e6db63b2bc0d85321b76b3d67d91819604ce19fb86127d332870a116316f4",
     "tests/native-light-state-contract.rkt": "54b5db77e7954fc49a2ea8e46d95e4fe8741657015fe8180353b4e7c319a90e7",
-    "tests/native-light-state-standalone.rkt": "065e74839e6207aea2ce560df79bc2d637cd0f310f25b6f912058cc9135214a4",
+    "tests/native-light-state-standalone.rkt": "0cde15ddac503fdea67f0b96082349e7ea1106fefc2c57f7224fbac35571574a",
     "tests/native-light-state-expected.json": "b6e55cb90506ba65478ce44b7d1b228a4a599d5a233f970b2e8721909848904e"
   },
   "unchanged_native_files": 11,

@@ -53,5 +53,10 @@
     "module": "framework/private/group.rkt",
     "sha256": "a753923bdf328ff3888c0def1d747fb4bbb9f3edd73847b250b5ef438bf72e4a",
     "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/group.rkt"
+  },
+  {
+    "module": "mred/private/mrtop.rkt",
+    "sha256": "677b5a75926581973a8eb28b34a9ef46003150241460f5655245940fb9bf7e51",
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/mrtop.rkt"
   }
 ]

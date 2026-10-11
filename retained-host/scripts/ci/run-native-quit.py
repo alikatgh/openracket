@@ -17,7 +17,7 @@ LAUNCH_BLOCKED=False
 CASE_ROOT=TEMP/"OpenRacket Quit Cases λ's";CHECKS=TEMP/'openracket-quit-checks'
 SPEC=importlib.util.spec_from_file_location('app_contract',ROOT/'scripts/ci/app-ci-contract.py');CONTRACT=importlib.util.module_from_spec(SPEC);SPEC.loader.exec_module(CONTRACT)
 sys.path.insert(0,str(ROOT/'performance'));from run import terminate_group
-QUIT_PIN='932b9036e3d52d6b6aa723500c18c5c500ba28ae4b29dd3800bdf950b15b64fc'
+QUIT_PIN='b4560ffb7831a28c51d378d78da96e5695643e01857f8753a8dda0c312a684a4'
 SOURCE_PIN='2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'
 BUILDER_PIN='b4e5638c409b018a8dec030ea7dafb60291bfffc2645a5d087d7e91d4cfd77ee'
 READER_PIN='175e8b8e8d9a74eb275998054764016bc15addc4eeebeb387eb9167bef43d53b'
@@ -100,7 +100,10 @@ def default_handler(label,baseline=False):
 
 def exact_sources():
  assert hashlib.sha256((EXP/'FROZEN-NATIVE-ALLOWLIST.json').read_bytes()).hexdigest()==QUIT_PIN
- members=json.loads((EXP/'FROZEN-NATIVE-ALLOWLIST.json').read_text())['files'];assert len(members)==21
+ members=json.loads((EXP/'FROZEN-NATIVE-ALLOWLIST.json').read_text())['files'];assert len(members)==23
+ assert set(members)|{'FROZEN-NATIVE-ALLOWLIST.json'}=={str(p.relative_to(EXP)) for p in EXP.rglob('*') if p.is_file()}
+ pins=json.loads((EXP/'driver/source-pins.json').read_text());assert len(pins)==12
+ assert len({p['module'] for p in pins})==12 and any(p['module']=='mred/private/mrtop.rkt' for p in pins)
  for n,h in members.items():
   p=EXP/n;assert not p.is_symlink() and p.is_file() and hashlib.sha256(p.read_bytes()).hexdigest()==h,n
  assert hashlib.sha256((BUILDER/'CANDIDATE-SHA256.json').read_bytes()).hexdigest()==BUILDER_PIN

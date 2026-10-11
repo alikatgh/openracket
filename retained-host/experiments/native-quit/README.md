@@ -1,7 +1,10 @@
 # Native normal-Quit gate design
 
-Status: separate source implementation prepared, 2026-10-11. Native execution and publication are
-on hold. No Racket process has run locally. No delivered source, application,
+Status: test-only activation-readiness repair candidate, 2026-10-11. See
+reports/RUN47-ACTIVATION-REPAIR.md for prior Run47 evidence, exact source mechanism,
+validation, and remaining native gate. The prior four Save/Don't Save workflows
+passed; stock clean failed and modern clean was unrun. This repair is not yet a
+native pass. No Racket process has run locally. No delivered source, application,
 accepted builder or accepted app observer has been modified.
 
 ## Scope and smallest matrix
@@ -42,6 +45,9 @@ Official 9.3 source chain (all hashes in reports/OFFICIAL-SOURCE-PINS.json):
   the original toolkit handler when an application window exists.
 - mred/private/app.rkt:33–53 and 96–106: getter returns the original registered
   thunk; default queues the active native frame's exit request.
+- mred/private/mrtop.rkt:302–324 and wxtop.rkt:620–659: require actual public
+  focus plus edit target before initial READY and each original Quit request;
+  edit target alone does not prove native activation.
 - mred/private/wxtop.rkt:629–634: the native frame checks can-exit? and invokes
   on-exit only when allowed.
 - framework/private/frame.rkt:168–181: can-exit? shows the stock quit

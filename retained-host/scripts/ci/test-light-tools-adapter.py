@@ -40,11 +40,11 @@ def good_records():
 
 
 class LightAdapter(unittest.TestCase):
-    def test_pinned_frozen45_plus_manifest_native16_racket15(self):
+    def test_pinned_frozen47_plus_manifest_native16_racket15(self):
         files = C.frozen_sources(EXP)
         self.assertEqual(len(files), 16)
         self.assertEqual(sum(n.endswith('.rkt') for n in files), 15)
-        self.assertEqual(len(json.loads((EXP / 'DELIVERABLE-SHA256.json').read_text())['files']), 45)
+        self.assertEqual(len(json.loads((EXP / 'DELIVERABLE-SHA256.json').read_text())['files']), 47)
         self.assertEqual(C.sha(EXP / 'DELIVERABLE-SHA256.json'), C.FREEZE_PIN)
 
     def test_full_manifest_members_refuse_corruption_symlinks_and_traversal(self):

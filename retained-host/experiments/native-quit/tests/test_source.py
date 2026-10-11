@@ -51,6 +51,44 @@ class Source(unittest.TestCase):
         for text in ('(send button command (new control-event% [event-type \'button]))','(send d get-message)','(send d get-parent)','(eq? request-frame frame)','(not (memq d request-windows))','"Same screenshot-acknowledged shown modal"','"Persistence checkbox remains unchecked"'):
             self.assertIn(text,self.s)
         self.assertNotIn('(send cb set-value',self.s)
+    def test_activation_witness_uses_public_read_only_observations(self):
+        observer=self.s[self.s.index('(define (observe-activation!)'):self.s.index('(define (sources!)')]
+        for text in ('(define focus (get-top-level-focus-window))','(define edit-target (get-top-level-edit-target-window))',
+                     "'active_focus (eq? focus frame)","'focus_frame_id (and focus (id focus))",
+                     "'edit_target_frame_id (and edit-target (id edit-target))",
+                     "(equal? (hash-ref a 'focus_frame_id) (id frame))",
+                     "(equal? (hash-ref a 'edit_target_frame_id) (id frame))"):
+            self.assertIn(text,observer)
+        self.assertNotIn('(send ',observer)
+        self.assertNotIn('(define/override (on-activate',self.s)
+    def test_startup_activation_precedes_initial_ready_with_original_deadline(self):
+        startup=self.s[self.s.index('(define (startup!)'):self.s.index('(define (tick)')]
+        observation=startup.index('(define activation (observe-activation!))')
+        guard=startup.index('(when (activation-ready? activation)')
+        ready=startup.index('(publish! "ready"')
+        self.assertLess(observation,guard);self.assertLess(guard,ready)
+        self.assertIn("'activation activation",startup)
+        self.assertEqual(self.s.count('(send dc focus)'),1)
+        self.assertEqual(self.s.count('(send frame show #t)'),1)
+        self.assertIn('(define stage-deadline (+ (current-inexact-monotonic-milliseconds) 60000))',self.s)
+        self.assertIn('(define overall-deadline (+ (current-inexact-monotonic-milliseconds) 150000))',self.s)
+        self.assertEqual(self.s.count('(+ (current-inexact-monotonic-milliseconds) 20000)'),2)
+    def test_every_one_time_quit_is_guarded_and_recorded_before_dispatch(self):
+        request=self.s[self.s.index('(define (request-quit!'):self.s.index('(define (command!')]
+        observation=request.index('(set! request-activation (observe-activation!))')
+        guard=request.index('(assert! (activation-ready? request-activation)')
+        receipt=request.index('OPENRACKET_QUIT_REQUEST')
+        dispatch=request.index('((application-quit-handler))')
+        self.assertLess(observation,guard);self.assertLess(guard,receipt);self.assertLess(receipt,dispatch)
+        self.assertLess(request.index('(flush-output)'),dispatch)
+        self.assertEqual(self.s.count('((application-quit-handler))'),1)
+        after=self.s[self.s.index('(define (after-capture!)'):self.s.index('(define (startup!)')]
+        self.assertEqual(after.count('(request-quit! 1)'),2)
+        self.assertEqual(after.count('(request-quit! 2)'),1)
+        for text in ('(sleep ', '(yield ', '(send dc focus)', '(send frame show', 'set! stage-deadline'):
+            self.assertNotIn(text,request)
+        self.assertIn("'request_activation request-activation",self.s)
+        self.assertIn("'activation last-activation 'quit_request request-evidence",self.s)
     def test_cancel_focus_is_observed_not_forced(self):
         cancelled=self.s[self.s.index('[(cancelled)'):self.s.index('[else (error \'native-quit-driver "Unexpected timer state")')]
         self.assertIn('(eq? (get-top-level-focus-window) frame)',cancelled)
@@ -64,8 +102,8 @@ class Source(unittest.TestCase):
         self.assertEqual(hashlib.sha256((ROOT/'driver/cocoa-identity.rkt').read_bytes()).hexdigest(),expected)
     def test_source_chain_complete(self):
         rows=json.loads((ROOT/'driver/source-pins.json').read_text());names={r['module'] for r in rows}
-        self.assertEqual(len(names),11)
-        for n in ('mred/private/app.rkt','mred/private/wxtop.rkt','framework/private/editor-misc.rkt','framework/gui-utils.rkt','mred/private/messagebox.rkt','drracket/private/unit.rkt'):self.assertIn(n,names)
+        self.assertEqual(len(names),12)
+        for n in ('mred/private/mrtop.rkt','mred/private/app.rkt','mred/private/wxtop.rkt','framework/private/editor-misc.rkt','framework/gui-utils.rkt','mred/private/messagebox.rkt','drracket/private/unit.rkt'):self.assertIn(n,names)
     def test_supervisor_no_open_or_success_cleanup(self):
         self.assertNotIn("'/usr/bin/open'",self.runner);self.assertIn('start_new_session=True',self.runner)
         self.assertIn('returncode=p.wait(timeout=deadline-time.monotonic())',self.runner)

@@ -5,6 +5,6 @@ test_symlinked_components_refused_without_outside_mutation (__main__.Metadata.te
 test_wrong_identity_and_environment_claim_refused_without_write (__main__.Metadata.test_wrong_identity_and_environment_claim_refused_without_write) ... ok
 
 ----------------------------------------------------------------------
-Ran 5 tests in 0.005s
+Ran 5 tests in 0.007s
 
 OK

@@ -1,10 +1,10 @@
-COMMAND: python3 scripts/prepare-stock-tool-host.py --check
+$ python3 scripts/prepare-stock-tool-host.py --check
 Pinned host, patch and metadata verified
 
-COMMAND: python3 scripts/prepare-light-tool-host.py --check
+$ python3 scripts/prepare-light-tool-host.py --check
 Exact light host derivation verified
 
-COMMAND: python3 tests/stock-tool-source-test.py
+$ python3 tests/stock-tool-source-test.py -v
 test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok
 test_failure_payload_keeps_typed_rackunit_info (__main__.StockToolSourceTests.test_failure_payload_keeps_typed_rackunit_info) ... ok
 test_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok
@@ -20,18 +20,24 @@ test_source_traversal_has_one_twenty_second_launch_budget (__main__.StockToolSou
 test_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.026s
+Ran 13 tests in 0.024s
 
 OK
 
-COMMAND: python3 tests/coordinator-standalone-source-test.py
-......
+$ python3 tests/coordinator-standalone-source-test.py -v
+test_diagnostic_failure_catch_cannot_swallow_original_exception (__main__.StandaloneSourceTests.test_diagnostic_failure_catch_cannot_swallow_original_exception) ... ok
+test_failure_evidence_comes_from_verified_exception_info (__main__.StandaloneSourceTests.test_failure_evidence_comes_from_verified_exception_info) ... ok
+test_negative_control_precedes_unique_success (__main__.StandaloneSourceTests.test_negative_control_precedes_unique_success) ... ok
+test_only_injected_check_has_typed_handler_and_same_exception_reraise (__main__.StandaloneSourceTests.test_only_injected_check_has_typed_handler_and_same_exception_reraise) ... ok
+test_original_regression_and_wrapper_unchanged (__main__.StandaloneSourceTests.test_original_regression_and_wrapper_unchanged) ... ok
+test_original_submodule_runs_under_strict_outer_handler (__main__.StandaloneSourceTests.test_original_submodule_runs_under_strict_outer_handler) ... ok
+
 ----------------------------------------------------------------------
 Ran 6 tests in 0.002s
 
 OK
 
-COMMAND: python3 tests/tool-dispatch-source-test.py
+$ python3 tests/tool-dispatch-source-test.py -v
 test_bridge_preserves_real_eventspace_and_handler_pump (__main__.DispatchSourceTests.test_bridge_preserves_real_eventspace_and_handler_pump) ... ok
 test_bridge_returns_or_reraises_after_worker_death_and_always_joins (__main__.DispatchSourceTests.test_bridge_returns_or_reraises_after_worker_death_and_always_joins) ... ok
 test_headless_regression_models_initial_thread_as_handler (__main__.DispatchSourceTests.test_headless_regression_models_initial_thread_as_handler) ... ok
@@ -46,10 +52,11 @@ Ran 8 tests in 0.002s
 
 OK
 
-COMMAND: python3 tests/light-tool-source-test.py
+$ python3 tests/light-tool-source-test.py -v
 test_all_accepted_source_bytes_unchanged (__main__.SourceTests.test_all_accepted_source_bytes_unchanged) ... ok
 test_bad_native_receipts_refused (__main__.SourceTests.test_bad_native_receipts_refused) ... ok
 test_cocoa_inspection_keys_and_aqua_are_source_supported (__main__.SourceTests.test_cocoa_inspection_keys_and_aqua_are_source_supported) ... ok
+test_every_private_check_info_accessor_is_explicitly_imported (__main__.SourceTests.test_every_private_check_info_accessor_is_explicitly_imported) ... ok
 test_exact_palette_matches_read_only_production_source (__main__.SourceTests.test_exact_palette_matches_read_only_production_source) ... ok
 test_hook_brackets_tools_on_actual_handler (__main__.SourceTests.test_hook_brackets_tools_on_actual_handler) ... ok
 test_light_host_is_exact_pinned_derivation (__main__.SourceTests.test_light_host_is_exact_pinned_derivation) ... ok
@@ -62,7 +69,6 @@ test_workflow_body_and_deadlines_byte_identical (__main__.SourceTests.test_workf
 test_wrong_or_missing_light_state_refused (__main__.SourceTests.test_wrong_or_missing_light_state_refused) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.041s
+Ran 14 tests in 0.036s
 
 OK
-

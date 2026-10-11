@@ -1,5 +1,7 @@
+test_activation_witness_uses_public_read_only_observations (__main__.Source.test_activation_witness_uses_public_read_only_observations) ... ok
 test_actual_racket_contract_tests_not_marked_executed (__main__.Source.test_actual_racket_contract_tests_not_marked_executed) ... ok
 test_cancel_focus_is_observed_not_forced (__main__.Source.test_cancel_focus_is_observed_not_forced) ... ok
+test_every_one_time_quit_is_guarded_and_recorded_before_dispatch (__main__.Source.test_every_one_time_quit_is_guarded_and_recorded_before_dispatch) ... ok
 test_failure_only_explicit_exit (__main__.Source.test_failure_only_explicit_exit) ... ok
 test_genuine_modal_commands_and_bound_frame (__main__.Source.test_genuine_modal_commands_and_bound_frame) ... ok
 test_inert_separate_tool (__main__.Source.test_inert_separate_tool) ... ok
@@ -7,10 +9,11 @@ test_only_get_original_quit_handler_and_no_direct_save (__main__.Source.test_onl
 test_python_ast_parse (__main__.Source.test_python_ast_parse) ... ok
 test_racket_lexical_balance (__main__.Source.test_racket_lexical_balance) ... ok
 test_source_chain_complete (__main__.Source.test_source_chain_complete) ... ok
+test_startup_activation_precedes_initial_ready_with_original_deadline (__main__.Source.test_startup_activation_precedes_initial_ready_with_original_deadline) ... ok
 test_supervisor_no_open_or_success_cleanup (__main__.Source.test_supervisor_no_open_or_success_cleanup) ... ok
 test_unchanged_identity_and_input_sources (__main__.Source.test_unchanged_identity_and_input_sources) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 0.018s
+Ran 14 tests in 0.024s
 
 OK

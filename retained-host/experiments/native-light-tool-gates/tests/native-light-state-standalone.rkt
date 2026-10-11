@@ -1,7 +1,8 @@
 #lang racket/base
 ;; Direct supervised headless entrypoint; no GUI, no native-pass claim.
 (require rackunit racket/list json "native-light-state-contract.rkt"
-         "native-tool-failure-diagnostics.rkt")
+         "native-tool-failure-diagnostics.rkt"
+         (only-in rackunit/private/check-info pretty-info? pretty-info-value))
 (define arguments (current-command-line-arguments))
 (unless (or (equal? arguments #()) (equal? arguments #("--inject-wrong-painter")))
   (error 'native-light-state "Unsupported arguments"))

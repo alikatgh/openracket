@@ -1,8 +1,10 @@
-# Modern-light real-tool gate: local-only derivative
+# Modern-light real-tool gate: test-only import repair
 
-Prepared 2026-10-11. No publication, CI trigger, download, installation, Racket
-reader/compiler, headless Racket execution or native GUI execution was performed.
-Remote publication remains on the coordinator's explicit authorization hold.
+Prepared 2026-10-11 after native run38152590660. That run passed both native
+readers and modern registration, but both compilers rejected one missing
+RackUnit diagnostic import; no tool cases ran. This revision adds that import
+and an explicit-import regression. Native compilation and all original
+headless/GUI acceptance remain pending. See reports/RUN48-IMPORT-REPAIR.md.
 
 ## Minimal change and provenance
 

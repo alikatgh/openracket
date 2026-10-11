@@ -1,43 +1,20 @@
-# Source preparation status
+# Activation repair source status
 
-2026-10-11. Separate test-only working tree; product0520, accepted app builder,
-accepted read-only observer and publication45 source inputs remain unchanged.
+2026-10-11. See RUN47-ACTIVATION-REPAIR.md for exact prior native evidence,
+source mechanism, scope, and unresolved historical-cause caveat.
 
-Passed locally without Racket:
+This new test-only candidate passes 41 local Python/source tests: 22 protocol,
+14 source/lexical, and 5 stock-bundle fixture tests. The original 8-case Racket
+contract module remains unchanged and was not run locally. Current logs are
+contract-tests.log, source-tests.log, stock-bundle-tests.log, and all-tests.log.
 
-- 20 independent protocol/configuration/report validator tests, including
-  false-success refusals for bad tokens, missing screenshots, wrong PID/image,
-  changed live objects, incorrect disk data, missing modal responses, focus not
-  restored, changed checkbox/parent/attempt binding, nonzero/signal/late exit,
-  cleanup, replayed/reordered stages, NaN/Infinity/float overflow/oversized integers and inexact IDs/counts.
-- 11 source/lexical checks: preserved source inputs and unchanged identity reader,
-  inert driver without configuration, zero-argument Quit getter only, genuine
-  stock button callback, no direct Save/Close/modified reset/handler replacement,
-  failure-only test exit, observed Cancel focus return, native supervisor bounds,
-  Python parsing and lexical Racket delimiter balance.
-- 5 pure plist fixture tests: removal of only document associations, exact native
-  bytes, no rewrite if the key is absent, refusal of unexpected metadata and an
-  already-prepared app, plus linked Contents/Info.plist/MacOS/native-component
-  refusal with unchanged outside witnesses. Fixture bytes are explicitly not native executables.
-- All14 retrieved GUI/DrRacket official source files in the source-review cache
-  were byte-verified against their Git blob IDs before source pins were recorded.
-  The exact core generator and framework signature source was separately read
-  and backed up. Official source was not installed or executed.
+The current candidate has not been compiled or run natively. Run47 tested the
+old baseline, with four Save/Don't Save workflow passes, one stock-clean failure,
+and modern clean unrun. It is not evidence that this repair passes clean Quit.
+No product source, CI, original freeze, installed runtime, or user profile was
+changed. No publication or CI trigger was performed by this task.
 
-Not run:
-
-- Racket parsing/expansion/compilation and the8 real pure RackUnit contracts.
-- Official-generator stock control creation and native metadata/identity probes.
-- Private package registration and all six genuine GUI cases.
-- OS screenshots, actual Save/Cancel/Don't Save effects, natural child exit0.
-- New whole-runtime/preferences/default-handler preservation gate.
-
-The driver deliberately invokes the installed public Quit thunk and real shown
-stock dialog callbacks, while the independent supervisor owns acceptance. Its
-passed result proves installed application Quit handling only, not a new Finder,
-input-device or Apple-event route. There is no successful test-side exit path.
-
-No remote mutation, GitHub publication/trigger, package archive download,
-installation or local native execution was performed. Fresh publication approval
-and parent-owned free-native workflow integration are still required. The
-existing57-row tool run and114-check app run are unchanged historical results.
+Parent and performance owner source review approved on 2026-10-11. The parent
+independently reran all 41 portable checks successfully. The exact reviewed
+five-file source diff is unchanged. A new full-byte/hash snapshot and session
+backup were prepared after both acknowledgments; native clean Quit is pending.

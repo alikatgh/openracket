@@ -62,6 +62,9 @@
       (define request-attempt #f)
       (define request-frame #f)
       (define request-windows '())
+      (define last-activation #f)
+      (define request-activation #f)
+      (define request-evidence #f)
       (define checks 0)
       (define closed? #f)
       (define focused? #f)
@@ -84,6 +87,7 @@
             (hash 'schema 1 'status "failed" 'stage stage 'phase phase
                   'run_id (if c (hash-ref c 'run_id) #f) 'error (bounded problem 4000)
                   'checks checks 'last_state last-state
+                  'activation last-activation 'quit_request request-evidence
                   'windows (with-handlers ([(lambda (_) #t) (lambda (e) (list (bounded e)))])
                              (diagnostics))))
           ;; Failure is durable before the only explicit application exit here.
@@ -100,6 +104,22 @@
                       (eq? (current-thread) (eventspace-handler-thread (send frame get-eventspace)))
                       (current-eventspace-has-standard-menus?))
                  "Actual initial GUI handler and standard application menus"))
+      ;; Public focus observes the toolkit's actual activation flag. Edit-target
+      ;; alone can select a shown frame whose activation timestamps are still 0.
+      ;; These are observations, not installed on-activate handlers or native writes.
+      (define (observe-activation!)
+        (gui!)
+        (define focus (get-top-level-focus-window))
+        (define edit-target (get-top-level-edit-target-window))
+        (set! last-activation
+              (hash 'active_focus (eq? focus frame)
+                    'focus_frame_id (and focus (id focus))
+                    'edit_target_frame_id (and edit-target (id edit-target))))
+        last-activation)
+      (define (activation-ready? a)
+        (and (hash-ref a 'active_focus)
+             (equal? (hash-ref a 'focus_frame_id) (id frame))
+             (equal? (hash-ref a 'edit_target_frame_id) (id frame))))
       (define (sources!)
         (for/list ([p (in-list (read-json-file pins-path))])
           (define parts (string-split (hash-ref p 'module) "/"))
@@ -254,6 +274,7 @@
                (set! active-dialog d)
                (hash 'dialog_id (id d) 'kind kind 'shown #t 'message (send d get-message)
                      'request_attempt request-attempt 'request_frame_id (id request-frame)
+                     'request_activation request-activation
                      'parent_frame_id (if (send d get-parent) (id (send d get-parent)) #f)
                      'labels labels 'checkbox_values (map (lambda (b) (send b get-value)) boxes)
                      'geometry (geometry d))]))
@@ -263,11 +284,19 @@
       (define (request-quit! attempt)
         (assert! (null? (shown-dialogs)) "No modal before application Quit")
         (assert! (not (exit:exiting?)) "Original exit state reset before Quit")
-        (assert! (eq? (get-top-level-edit-target-window) frame) "Original frame is actual edit target")
+        (set! request-activation (observe-activation!))
+        (assert! (activation-ready? request-activation) "Original frame has actual active focus and edit target before Quit")
         (assert! (eq? quit-handler (application-quit-handler)) "Original installed Quit thunk retained")
         (set! request-attempt attempt) (set! request-frame frame)
         (set! request-windows (get-top-level-windows))
         (next-wait! (format "quit-confirm-~a" attempt) 'quit-dialog)
+        (set! request-evidence
+              (hash-set* (envelope c stage) 'status "pre-dispatch"
+                         'request_attempt request-attempt 'request_frame_id (id request-frame)
+                         'activation request-activation))
+        ;; Preserve the observed precondition even when no modal ever appears.
+        (printf "OPENRACKET_QUIT_REQUEST ~a\n" (jsexpr->string (json-safe request-evidence)))
+        (flush-output)
         ;; Public zero-argument getter only. No application handler is installed.
         ((application-quit-handler)))
       (define (command! kind label)
@@ -330,7 +359,8 @@
             (set! tab (send f get-current-tab)) (set! dc (send f get-definitions-canvas))
             (set! ic (send f get-interactions-canvas))
             (unless focused? (send frame show #t) (send dc focus) (set! focused? #t))
-            (when (eq? (get-top-level-edit-target-window) frame)
+            (define activation (observe-activation!))
+            (when (activation-ready? activation)
               (gui!) (check-profile!)
               (set! quit-handler (application-quit-handler))
               (assert! (and (procedure? quit-handler) (procedure-arity-includes? quit-handler 0)
@@ -340,7 +370,8 @@
               (set! identity-reader ((dynamic-require identity-path 'make-cocoa-identity-reader)
                                      (lambda () (eq? (current-thread) (eventspace-handler-thread es)))))
               (set! mode-report (mode-evidence!))
-              (publish! "ready" (hash 'fixture_opened_by_driver #f 'fixture_mutated #f) #f)))))
+              (publish! "ready" (hash 'fixture_opened_by_driver #f 'fixture_mutated #f
+                                      'activation activation) #f)))))
       (define (tick)
         (with-handlers ([(lambda (_) #t) (lambda (e) (fail! (if (exn? e) (exn-message e) e)))])
           (assert! (< (current-inexact-monotonic-milliseconds) stage-deadline)

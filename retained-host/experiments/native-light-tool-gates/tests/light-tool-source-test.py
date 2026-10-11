@@ -116,6 +116,17 @@ class SourceTests(unittest.TestCase):
         self.assertIn('(pretty-info-value actual) "dark"',source)
         self.assertIn('(pretty-info-value expected) "light"',source)
         self.assertEqual(verify.EXPECTED,json.loads((ROOT/'tests/native-light-state-expected.json').read_text()))
+    def test_every_private_check_info_accessor_is_explicitly_imported(self):
+        imported='(only-in rackunit/private/check-info pretty-info? pretty-info-value)'
+        users=[]
+        for path in (ROOT/'tests').glob('*.rkt'):
+            source=path.read_text()
+            if '(pretty-info?' in source or '(pretty-info-value' in source:
+                users.append(path.name)
+                with self.subTest(path=path.name):self.assertIn(imported,source)
+        self.assertEqual(sorted(users),sorted(['native-light-state-standalone.rkt',
+            'native-tool-coordinator-standalone.rkt','native-tool-dispatch-standalone.rkt',
+            'native-tool-failure-diagnostics.rkt']))
     def test_six_synthetic_success_receipts(self):
         for arm in ('stock','modern-light'):
             for case in verify.CASES:

@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 import shutil
 
-FREEZE_PIN = 'afc635cd538ecbf39fe9c1427c5bddfd06684d4336281ad5667084f33cd70795'
-ALLOWLIST_PIN = 'c1ea6a1017813e567ed4e9e09566d2a287a81a9865a1edcd05a3437a0dc5f3f4'
+FREEZE_PIN = '57f3f084869ee1d2907c25dce06a23885f650cc3908a49b3091de6566b404c03'
+ALLOWLIST_PIN = '85185f6682f917385ce61809ecf94c26885344f6d8b0c091a31f5239f3080d98'
 ACCEPTED_PIN = '2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'
 CASES = ('debugger', 'macro-stepper', 'teaching-tests')
 ARMS = ('stock', 'modern-light')
@@ -30,8 +30,8 @@ def check_members(root, members):
 def frozen_sources(exp):
     require(sha(exp / 'DELIVERABLE-SHA256.json') == FREEZE_PIN, 'Frozen payload manifest pin mismatch')
     members = json.loads((exp / 'DELIVERABLE-SHA256.json').read_text())['files']
-    # 46 total files means 45 listed members plus the manifest itself.
-    require(len(members) == 45, 'Exactly 45 frozen members plus manifest required')
+    # 48 total files means 47 listed members plus the manifest itself.
+    require(len(members) == 47, 'Exactly 47 frozen members plus manifest required')
     check_members(exp, members)
     require(sha(exp / 'FROZEN-NATIVE-ALLOWLIST.json') == ALLOWLIST_PIN, 'Native allowlist pin mismatch')
     native = json.loads((exp / 'FROZEN-NATIVE-ALLOWLIST.json').read_text())['files']

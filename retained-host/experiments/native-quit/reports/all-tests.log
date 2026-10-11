@@ -1,0 +1,46 @@
+test_all_three_complete_protocols (test_contract.Contracts.test_all_three_complete_protocols) ... ok
+test_bad_envelope_pid_or_image_refused (test_contract.Contracts.test_bad_envelope_pid_or_image_refused) ... ok
+test_cancel_focus_and_liveness_required (test_contract.Contracts.test_cancel_focus_and_liveness_required) ... ok
+test_cancel_retains_all_objects_and_dirty_text (test_contract.Contracts.test_cancel_retains_all_objects_and_dirty_text) ... ok
+test_cleanup_failure_and_survivor_can_never_pass (test_contract.Contracts.test_cleanup_failure_and_survivor_can_never_pass) ... ok
+test_each_exit_failure_is_final (test_contract.Contracts.test_each_exit_failure_is_final) ... ok
+test_edit_target_alone_cannot_establish_startup_or_request_readiness (test_contract.Contracts.test_edit_target_alone_cannot_establish_startup_or_request_readiness) ... ok
+test_every_screenshot_and_ack_required (test_contract.Contracts.test_every_screenshot_and_ack_required) ... ok
+test_every_source_pin_and_scope_flag_required (test_contract.Contracts.test_every_source_pin_and_scope_flag_required) ... ok
+test_exact_schema_keys_types_and_modes (test_contract.Contracts.test_exact_schema_keys_types_and_modes) ... ok
+test_fixtures_bounded_and_edit_append_only (test_contract.Contracts.test_fixtures_bounded_and_edit_append_only) ... ok
+test_independent_post_exit_disk_bytes (test_contract.Contracts.test_independent_post_exit_disk_bytes) ... ok
+test_initial_and_every_quit_request_require_actual_activation (test_contract.Contracts.test_initial_and_every_quit_request_require_actual_activation) ... ok
+test_initial_disk_and_symlink_refusal (test_contract.Contracts.test_initial_disk_and_symlink_refusal) ... ok
+test_json_loader_rejects_constants_and_duplicate_keys (test_contract.Contracts.test_json_loader_rejects_constants_and_duplicate_keys) ... ok
+test_missing_duplicate_or_reordered_stage_refused (test_contract.Contracts.test_missing_duplicate_or_reordered_stage_refused) ... ok
+test_modal_parent_attempt_and_checkbox_refusals (test_contract.Contracts.test_modal_parent_attempt_and_checkbox_refusals) ... ok
+test_nonfinite_stability_and_inexact_count_fields_refused (test_contract.Contracts.test_nonfinite_stability_and_inexact_count_fields_refused) ... ok
+test_terminal_callback_and_expected_choice_required (test_contract.Contracts.test_terminal_callback_and_expected_choice_required) ... ok
+test_timeout_exit_cannot_pass (test_contract.Contracts.test_timeout_exit_cannot_pass) ... ok
+test_tokens_exact_unique_and_stage_bound (test_contract.Contracts.test_tokens_exact_unique_and_stage_bound) ... ok
+test_valid_config (test_contract.Contracts.test_valid_config) ... ok
+test_activation_witness_uses_public_read_only_observations (test_source.Source.test_activation_witness_uses_public_read_only_observations) ... ok
+test_actual_racket_contract_tests_not_marked_executed (test_source.Source.test_actual_racket_contract_tests_not_marked_executed) ... ok
+test_cancel_focus_is_observed_not_forced (test_source.Source.test_cancel_focus_is_observed_not_forced) ... ok
+test_every_one_time_quit_is_guarded_and_recorded_before_dispatch (test_source.Source.test_every_one_time_quit_is_guarded_and_recorded_before_dispatch) ... ok
+test_failure_only_explicit_exit (test_source.Source.test_failure_only_explicit_exit) ... ok
+test_genuine_modal_commands_and_bound_frame (test_source.Source.test_genuine_modal_commands_and_bound_frame) ... ok
+test_inert_separate_tool (test_source.Source.test_inert_separate_tool) ... ok
+test_only_get_original_quit_handler_and_no_direct_save (test_source.Source.test_only_get_original_quit_handler_and_no_direct_save) ... ok
+test_python_ast_parse (test_source.Source.test_python_ast_parse) ... ok
+test_racket_lexical_balance (test_source.Source.test_racket_lexical_balance) ... ok
+test_source_chain_complete (test_source.Source.test_source_chain_complete) ... ok
+test_startup_activation_precedes_initial_ready_with_original_deadline (test_source.Source.test_startup_activation_precedes_initial_ready_with_original_deadline) ... ok
+test_supervisor_no_open_or_success_cleanup (test_source.Source.test_supervisor_no_open_or_success_cleanup) ... ok
+test_unchanged_identity_and_input_sources (test_source.Source.test_unchanged_identity_and_input_sources) ... ok
+test_absent_claim_does_not_even_rewrite_plist (test_stock_bundle.Metadata.test_absent_claim_does_not_even_rewrite_plist) ... ok
+test_existing_preparation_receipt_prevents_retry (test_stock_bundle.Metadata.test_existing_preparation_receipt_prevents_retry) ... ok
+test_removes_only_association_and_preserves_native_bytes (test_stock_bundle.Metadata.test_removes_only_association_and_preserves_native_bytes) ... ok
+test_symlinked_components_refused_without_outside_mutation (test_stock_bundle.Metadata.test_symlinked_components_refused_without_outside_mutation) ... ok
+test_wrong_identity_and_environment_claim_refused_without_write (test_stock_bundle.Metadata.test_wrong_identity_and_environment_claim_refused_without_write) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 0.246s
+
+OK
