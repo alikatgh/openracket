@@ -5,7 +5,10 @@ replay, copied from verified baseline manifest
 `4ea9857a282b38da5d8c1d8033e405b13b64bf4340966fe50575dcffd95ca661`.
 The recovered canonical directory is unchanged. Baseline native Mac run
 38099774787 observed the stock 128 MiB OOM after finished-expansion in capture and
-both replays. This new probe has **not yet executed in Racket or native CI**.
+both replays. Native Mac run 38101560719 passed the three Racket phase preflight
+tests, then stopped on a test-fixture path-alias assertion before capture/replay.
+This replacement resolves that fixture root and adds explicit alias/pin/confinement
+checks. All runtime files remain byte-identical to phase freeze 95f1c2c4e3b9cb15c89fbd96c10e915ecec116c89cfc4b67b08d2cef48669e59.
 It is an initialization/phase-instrumented stock copy, not byte-identical stock.
 
 ## Exact native command, macOS first
@@ -128,7 +131,8 @@ generations, custodian shutdown and missing-frame acceptance; it never runs DrRa
 This recovered environment has no available Racket executable. Local checks cover
 Python compilation, exact source pins/insertions, source contracts, fake executable
 supervision and the existing supervisor suite. The three Racket gates are explicitly
-skipped; reader/compilation/thread execution must pass on native CI before capture.
+skipped locally. The prior native run passed reader/disabled-hook/thread tests;
+the replacement still requires all native preflight gates before capture.
 validation.json and phase-python-tests.log are current. baseline-validation.json,
 final-tests.log, portable-tests.log and BASELINE-README.md are preserved historical
 baseline evidence, not validation of this new Racket helper.

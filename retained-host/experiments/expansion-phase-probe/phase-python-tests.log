@@ -7,6 +7,7 @@ test_both_flags_are_required_before_loading_hook_closure (test_phase_probe.Phase
 test_missing_anchors_or_source_pin_mismatch_fail_closed (test_phase_probe.PhaseSourceTests.test_missing_anchors_or_source_pin_mismatch_fail_closed) ... ok
 test_monitor_only_adds_guarded_insertions_to_actual_traversal_thread (test_phase_probe.PhaseSourceTests.test_monitor_only_adds_guarded_insertions_to_actual_traversal_thread) ... ok
 test_no_capture_changes_or_stock_logger_subscription (test_phase_probe.PhaseSourceTests.test_no_capture_changes_or_stock_logger_subscription) ... ok
+test_resolved_symlink_alias_keeps_source_pins_and_confinement_strict (test_phase_probe.PhaseSourceTests.test_resolved_symlink_alias_keeps_source_pins_and_confinement_strict) ... ok
 test_three_official_pins_and_worker_matches_recovered_contract (test_phase_probe.PhaseSourceTests.test_three_official_pins_and_worker_matches_recovered_contract) ... ok
 test_weak_thread_lifetimes_generations_and_retention_caps_are_explicit (test_phase_probe.PhaseSourceTests.test_weak_thread_lifetimes_generations_and_retention_caps_are_explicit) ... ok
 test_worker_only_adds_guarded_insertions_and_original_readiness (test_phase_probe.PhaseSourceTests.test_worker_only_adds_guarded_insertions_and_original_readiness) ... ok
@@ -43,6 +44,6 @@ test_unknown_group_has_null_rss (test_supervise.SupervisionTests.test_unknown_gr
 test_unknown_membership_is_not_claimed_clean (test_supervise.SupervisionTests.test_unknown_membership_is_not_claimed_clean) ... ok
 
 ----------------------------------------------------------------------
-Ran 43 tests in 1.812s
+Ran 44 tests in 1.814s
 
 OK (skipped=3)

@@ -1,0 +1,50 @@
+{
+  "run": 38101560719,
+  "commit": "d4e42c5bdb4ed155a6c5f792b6f06203e2bc4f52",
+  "job": 114358355172,
+  "conclusion": "failure",
+  "log_sha256": "4037bec368c0ac9ef35b953aa926625b7b1305b2d36b81165db18bdc12defb13",
+  "results": [
+    {
+      "name": "Frozen diagnostic source hashes",
+      "passed": true,
+      "detail": "95f1c2c4e3b9cb15c89fbd96c10e915ecec116c89cfc4b67b08d2cef48669e59"
+    },
+    {
+      "name": "Readable evidence transport unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dedicated independent stock diagnostic clone",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Source boundaries and real-place mock protocol checks",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "prepare diagnostic orchestration",
+      "passed": false,
+      "detail": "Source boundaries and real-place mock protocol checks failed"
+    },
+    {
+      "name": "Pristine complete runtime unchanged after diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "native_capture": "skipped",
+  "native_replay": "skipped",
+  "source_test_count": 60,
+  "source_test_failures": 1,
+  "failure": "test_phase_probe temporary fixture uses unresolved /var root; confinement fails before expected altered-source digest refusal",
+  "transport_tests_passed": 12
+}

@@ -1,16 +1,16 @@
 {
   "schema_version": 3,
-  "status": "frozen_for_native_preflight_not_yet_racket_executed",
+  "status": "test_fixture_alias_repair_frozen_native_capture_pending",
   "baseline_manifest_sha256": "4ea9857a282b38da5d8c1d8033e405b13b64bf4340966fe50575dcffd95ca661",
   "recovered_canonical_verified_unchanged": true,
   "python_tests": {
-    "passed": 40,
+    "passed": 41,
     "skipped": 3,
     "failed": 0,
     "log": "phase-python-tests.log"
   },
   "python_compilation": "passed",
-  "racket_reader_compilation_and_thread_checks": "not run: no local Racket executable; three explicit skips require CI execution",
+  "racket_reader_compilation_and_thread_checks": "No local Racket executable. Native Mac run38101560719 passed reader, disabled-phase and real-thread phase tests; full native preparation/capture/replay was not reached.",
   "source_pins": {
     "module-language.rkt": "e76f13b6700df1ce1096f978353c938ef7816672efe9532483ffd38b710ffd53",
     "expanding-place.rkt": "f6daeb1c8ca26d6f5a3c4c6920cc484f43d5bcd4116aa8d592334f037005a383",
@@ -29,5 +29,13 @@
     "fresh native capture",
     "bounded replay and evidence completeness inspection"
   ],
-  "scope": "Replay-only phase counters and approximate actual-thread contexts including diagnostic overhead; no allocator ownership or timing speedup claim"
+  "scope": "Replay-only phase counters and approximate actual-thread contexts including diagnostic overhead; no allocator ownership or timing speedup claim",
+  "previous_phase_freeze_sha256": "95f1c2c4e3b9cb15c89fbd96c10e915ecec116c89cfc4b67b08d2cef48669e59",
+  "test_fixture_alias_repair": {
+    "runtime_files_unchanged": true,
+    "native_failure_run": "38101560719",
+    "regression": "Reject unresolved alias; canonical pinned sources pass; canonical tampered source fails pin; correct bytes through escaping parent symlink fail confinement",
+    "local_racket_checks_skipped": 3,
+    "prior_native_phase_racket_checks_passed": 3
+  }
 }

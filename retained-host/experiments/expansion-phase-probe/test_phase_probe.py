@@ -90,12 +90,38 @@ class PhaseSourceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             phase.transform_phase_monitor('')
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             (root / 'syncheck').mkdir()
             for name, content in self.original.items():
                 (root / name).write_text(content)
             (root / 'syncheck/online-comp.rkt').write_text('modified')
             with self.assertRaisesRegex(ValueError, 'Unexpected official source'):
+                phase.verify_sources(root)
+
+    @unittest.skipUnless(os.name == 'posix', 'POSIX directory aliases')
+    def test_resolved_symlink_alias_keeps_source_pins_and_confinement_strict(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory).resolve()
+            actual = base / 'actual'
+            (actual / 'syncheck').mkdir(parents=True)
+            for name, content in self.original.items():
+                (actual / name).write_text(content)
+            alias = base / 'alias'
+            alias.symlink_to(actual, target_is_directory=True)
+            self.assertNotEqual(alias, alias.resolve())
+            with self.assertRaisesRegex(ValueError, 'independently cloned inside its root'):
+                phase.verify_sources(alias)
+            root = alias.resolve()
+            self.assertEqual(phase.verify_sources(root), self.original)
+            target = root / 'syncheck/online-comp.rkt'
+            target.write_text('modified')
+            with self.assertRaisesRegex(ValueError, 'Unexpected official source'):
+                phase.verify_sources(root)
+            target.write_text(self.original['syncheck/online-comp.rkt'])
+            outside = base / 'outside'
+            (root / 'syncheck').rename(outside)
+            (root / 'syncheck').symlink_to(outside, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'independently cloned inside its root'):
                 phase.verify_sources(root)
 
     def test_actual_terminal_is_recorded_before_phase_end_query(self):
