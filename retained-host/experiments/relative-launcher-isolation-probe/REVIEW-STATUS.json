@@ -1,4 +1,21 @@
 {
+  "base_manifest_sha256": "d8e5844ae4ede6171a9f4bd1d89ba837eb656b06a006f61e53b888d44f6eedc2",
+  "base_portable_tests": {
+    "base_ordinary_passed": 59,
+    "base_symlinked_TMPDIR_passed": 59,
+    "derivative_ordinary_passed": 80,
+    "derivative_symlinked_TMPDIR_passed": 80,
+    "failed": 0,
+    "kind": "Python source/refusal/fake-filesystem/mocked-process tests only",
+    "log": "evidence/ISOLATION-PORTABLE-TESTS.log"
+  },
+  "base_review_provenance": {
+    "post_review_changes": "Review-status metadata and MANIFEST only; executable source/test/doc bytes unchanged",
+    "reviewed_candidate_manifest_sha256": "8f06c6534f3ee1d3e9a15f4c42be8cd78410958768ece5c25eaac465ec1c5b0b",
+    "reviewed_source_diff_sha256": "e835c7fa8629032e503ddf2f4aa0b518e90f23989bb12f99f66022b3569148c1"
+  },
+  "case_collision_coverage": "Explicit modeled mkdir collision; no claim that local Linux filesystem is case-insensitive",
+  "case_fixture_repair": "evidence/CASE-FIXTURE-REPAIR.json",
   "clean_destination_tested": false,
   "cleanup_wait_timeout_seconds": 5,
   "derivative_native_construction": "not run",
@@ -19,23 +36,22 @@
   "nested_runtime_metadata_audit": "Fixed top-level DrRacket.app copy exclusion; all retained nested metadata byte-identical; unexpected claims block launch",
   "original_accepted_builder_unchanged": true,
   "outer_generated_claims": "Refused before writing identity/bootstrap fields; no claim stripping",
+  "physical_case_insensitive_filesystem_tested": false,
   "portable_tests": {
-    "base_ordinary_passed": 59,
-    "base_symlinked_TMPDIR_passed": 59,
-    "derivative_ordinary_passed": 80,
-    "derivative_symlinked_TMPDIR_passed": 80,
     "failed": 0,
-    "kind": "Python source/refusal/fake-filesystem/mocked-process tests only",
-    "log": "evidence/ISOLATION-PORTABLE-TESTS.log"
+    "log": "evidence/CASE-FIXTURE-PORTABLE-TESTS.log",
+    "normal_passed": 81,
+    "symlinked_TMPDIR_passed": 81
   },
-  "post_review_changes": "Review-status metadata and MANIFEST only; executable source/test/doc bytes unchanged",
+  "post_review_changes": "REVIEW-STATUS and MANIFEST only; test/source bytes unchanged",
   "remote_mutation": false,
-  "review_status": "Parent and independent profiler passed exact source delta; each independently passed all 80 tests under explicitly symlinked TMPDIR",
-  "reviewed_candidate_manifest_sha256": "8f06c6534f3ee1d3e9a15f4c42be8cd78410958768ece5c25eaac465ec1c5b0b",
-  "reviewed_source_diff_sha256": "e835c7fa8629032e503ddf2f4aa0b518e90f23989bb12f99f66022b3569148c1",
+  "review_status": "Parent and independent profiler approved the exact test-only diff and each passed all 81 tests under explicitly symlinked TMPDIR",
+  "reviewed_candidate_manifest_sha256": "f6236f60f0650b29f904679866307dd7fb5cb5a4cacb20aecf099063aebbb57c",
+  "reviewed_test_diff_sha256": "bd980c01d9d61e8f606210cb99a190320ce769d98ff0744bbed2d424749b978c",
   "runtime_paths_and_identity": "not run",
   "runtime_provenance": "not supplied or verified by this source task",
   "schema": 1,
   "source_api_review": "all used setup/dirs exports and normalize-path import checked against exact 9.3 source; complete transitive startup remains native-only",
-  "status": "source-only launcher-isolation derivative reviewed; native construction and launch unrun"
+  "status": "source-only test fixture repair reviewed; native construction and relocation unrun",
+  "unchanged_supervisor_sha256": "366783356095b8badd9ac1deb49c532e4cf1a2125b01b29307896f0f37ea94d0"
 }

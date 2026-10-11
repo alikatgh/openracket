@@ -126,8 +126,8 @@ class IsolationTests(unittest.TestCase):
                 'clean_destination_tested': False, 'full_distribution_acceptance': False,
                 'initially_unset_handler_tested': False, 'unresolved_static_loader_context': []}
 
-    def test_exact27_file_freeze(self):
-        self.assertEqual(len(c.frozen_sources(EXP)), 26)
+    def test_exact29_file_freeze(self):
+        self.assertEqual(len(c.frozen_sources(EXP)), 28)
         self.assertEqual(c.sha(EXP / 'MANIFEST.json'), c.FREEZE_PIN)
 
     def test_manifest_tamper_refused(self):

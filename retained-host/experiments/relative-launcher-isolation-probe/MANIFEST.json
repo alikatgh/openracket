@@ -20,8 +20,8 @@
     "sha256": "3302f3ede8d00fabfe06142f411b838e95b37d80ec2412acad054073789b96ba"
   },
   "REVIEW-STATUS.json": {
-    "bytes": 2787,
-    "sha256": "edc402790ccefdda9300880f756c7991ad7035f324519b0ff8ab8e29fa3f2cbe"
+    "bytes": 3713,
+    "sha256": "259418735eab215c6afbae451149ceb59182b805b920de25cf8d2cc275329876"
   },
   "bootstrap.sh": {
     "bytes": 1763,
@@ -34,6 +34,14 @@
   "evidence/ADDITIONAL-SOURCE-TEXTS.json": {
     "bytes": 193204,
     "sha256": "0af4424b1e2433f363e8dea097fc589126199b0a0b294d5abcfc4f22b5e961d8"
+  },
+  "evidence/CASE-FIXTURE-PORTABLE-TESTS.log": {
+    "bytes": 19829,
+    "sha256": "7efb5bd4f5c08e83937bd49d3d576053274ffc61f6326fd43af6eb41cad84c5d"
+  },
+  "evidence/CASE-FIXTURE-REPAIR.json": {
+    "bytes": 2794,
+    "sha256": "e8ac0d3efe09b726a38bd8ccf192ae479a451f4509347375df1f0243b66c3253"
   },
   "evidence/INPUT-VERIFICATION.json": {
     "bytes": 637,
@@ -96,8 +104,8 @@
     "sha256": "366783356095b8badd9ac1deb49c532e4cf1a2125b01b29307896f0f37ea94d0"
   },
   "tests/test_isolation.py": {
-    "bytes": 15046,
-    "sha256": "64ee1baeb856b7caeb397f5659555130418ae5bf192a700a694e5aaf9e286018"
+    "bytes": 16710,
+    "sha256": "440a8c9ed09e6b2b5d2c97431da95c6e00e47228749f49f9b9548af1ec6b5994"
   },
   "tests/test_source.py": {
     "bytes": 24522,

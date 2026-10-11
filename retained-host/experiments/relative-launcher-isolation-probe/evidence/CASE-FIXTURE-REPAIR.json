@@ -1,0 +1,54 @@
+{
+  "base_file_count": 27,
+  "base_manifest_sha256": "d8e5844ae4ede6171a9f4bd1d89ba837eb656b06a006f61e53b888d44f6eedc2",
+  "base_tree": "openracket-relative-launcher-isolation-freeze-20261011-1751",
+  "base_unchanged": true,
+  "baseline_model_reproduction": "Original failing test raises FileExistsError under the same explicit mkdir collision model",
+  "collision_regression": "Explicit Path.mkdir FileExistsError model plus mocked inventory exercises copy_isolated_runtime; asserts no mkdir/copytree and unchanged real source inventory",
+  "conflict_spellings": [
+    "drracket.APP",
+    "DRRACKET.app",
+    "DrRacket.APP"
+  ],
+  "filesystem_case_insensitivity_measured": false,
+  "native_execution": false,
+  "native_limits": "No macOS execution or case-insensitive physical filesystem result claimed; native construction/relocation remain unrun for this derivative.",
+  "nearby_naming_audit": [
+    {
+      "finding": "Renames one existing directory from DrRacket.app to DrRacket.APP; does not create two simultaneous siblings; unchanged.",
+      "test": "test_missing_exact_launcher_refused"
+    },
+    {
+      "finding": "Renames one Info.plist to info.PLIST; does not create two simultaneous siblings; unchanged.",
+      "test": "test_mixed_case_other_claims_block_launch"
+    },
+    {
+      "finding": "Creates only Nested.APP/Contents/info.PLIST; no equivalent sibling exists; unchanged.",
+      "test": "test_mixed_case_bundle_claims_block"
+    },
+    {
+      "finding": "Repeated DrRacket.app names are in distinct parent directories; symlink aliases use different names; no other case-fold-equivalent sibling creation found.",
+      "test": "setUp, alias, destination and relocation fixtures"
+    }
+  ],
+  "portable_tests": {
+    "failed": 0,
+    "log": "evidence/CASE-FIXTURE-PORTABLE-TESTS.log",
+    "normal_passed": 81,
+    "symlinked_TMPDIR_passed": 81
+  },
+  "remote_actions": false,
+  "repair": "Copy real inventory and add a second case-fold-equivalent mapping key; call the unchanged runtime_copy_plan guard; no physical conflicting entry",
+  "reported_failure": {
+    "cause": "Fixture attempted to create drracket.APP beside DrRacket.app on a case-insensitive filesystem",
+    "exception": "FileExistsError",
+    "run_label": "run57",
+    "source": "Parent task received 2026-10-11 18:24 UTC; raw native log not independently read in this task",
+    "stage": "portable test before Racket installation",
+    "test": "test_conflicting_top_level_case_refused"
+  },
+  "schema": 1,
+  "scope": "Test fixture only; supervisor, runtime, exclusion, claims, loader and native source unchanged",
+  "supervisor_sha256": "366783356095b8badd9ac1deb49c532e4cf1a2125b01b29307896f0f37ea94d0",
+  "test_isolation_sha256": "440a8c9ed09e6b2b5d2c97431da95c6e00e47228749f49f9b9548af1ec6b5994"
+}

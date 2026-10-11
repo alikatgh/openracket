@@ -10,8 +10,8 @@ from the exact subsequently executed commit, never from portable tests.
 ## Exact input and execution contract
 
 The source at `retained-host/experiments/relative-launcher-isolation-probe` has
-exactly 27 files (26 manifest members plus the manifest). Its MANIFEST SHA-256 is
-`d8e5844ae4ede6171a9f4bd1d89ba837eb656b06a006f61e53b888d44f6eedc2`.
+exactly 29 files (28 manifest members plus the manifest). Its MANIFEST SHA-256 is
+`25af97fe2273422c77135e999d6887c59c35a1b0c51308b6ea435b09ccb057a1`.
 The adapter rejects different content, extra files and source symlinks.
 
 1. Before allocating the standard `macos-15` runner, require a public push to

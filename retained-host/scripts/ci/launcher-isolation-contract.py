@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import stat
 
-FREEZE_PIN = 'd8e5844ae4ede6171a9f4bd1d89ba837eb656b06a006f61e53b888d44f6eedc2'
+FREEZE_PIN = '25af97fe2273422c77135e999d6887c59c35a1b0c51308b6ea435b09ccb057a1'
 CLAIMS = {'CFBundleDocumentTypes', 'UTExportedTypeDeclarations', 'UTImportedTypeDeclarations'}
 NATIVE_TIMEOUT = 120
 CLEANUP_TIMEOUT = 5
@@ -42,13 +42,13 @@ def frozen_sources(root):
     require(not root.is_symlink() and root.is_dir(), 'Unsafe frozen source root')
     require(sha(root / 'MANIFEST.json') == FREEZE_PIN, 'Frozen manifest pin mismatch')
     members = json.loads((root / 'MANIFEST.json').read_text())
-    require(type(members) is dict and len(members) == 26, 'Exactly26 frozen members required')
+    require(type(members) is dict and len(members) == 28, 'Exactly28 frozen members required')
     actual = set()
     for path in root.rglob('*'):
         require(not path.is_symlink(), 'Source symlink refused')
         if path.is_file():
             actual.add(path.relative_to(root).as_posix())
-    require(actual == set(members) | {'MANIFEST.json'}, 'Exact27-file source inventory required')
+    require(actual == set(members) | {'MANIFEST.json'}, 'Exact29-file source inventory required')
     for name, pin in members.items():
         path = Path(name)
         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'Unsafe source path')

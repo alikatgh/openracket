@@ -101,9 +101,33 @@ class LauncherIsolation(unittest.TestCase):
         self.assertFalse(self.copied.exists())
 
     def test_conflicting_top_level_case_refused(self):
-        (self.runtime / "drracket.APP").mkdir()
-        with self.assertRaisesRegex(s.Refusal, "conflicting"):
-            self.copy_runtime()
+        # A case-insensitive disk cannot hold both spellings. Exercise the
+        # inventory guard with real entry metadata and a synthetic second key.
+        for spelling in ("drracket.APP", "DRRACKET.app", "DrRacket.APP"):
+            with self.subTest(spelling=spelling):
+                original = s.inventory(self.runtime)
+                conflicting = copy.deepcopy(original)
+                conflicting[spelling] = copy.deepcopy(original["DrRacket.app"])
+                witness = copy.deepcopy(conflicting)
+                with self.assertRaisesRegex(s.Refusal, "conflicting top-level DrRacket.app spelling"):
+                    s.runtime_copy_plan(conflicting)
+                self.assertEqual(conflicting, witness)
+                self.assertEqual(s.inventory(self.runtime), original)
+        self.assertFalse(self.copied.exists())
+
+    def test_conflicting_case_fixture_needs_no_case_sensitive_disk(self):
+        conflicting = copy.deepcopy(s.inventory(self.runtime))
+        conflicting["drracket.APP"] = copy.deepcopy(conflicting["DrRacket.app"])
+        # Explicit collision model, not a claim about this machine's disk:
+        # any attempted fixture mkdir fails, as a second spelling did on macOS.
+        with mock.patch.object(Path, "mkdir", side_effect=FileExistsError("case-insensitive name collision")) as mkdir, \
+             mock.patch.object(s, "inventory", return_value=conflicting), \
+             mock.patch.object(s.shutil, "copytree") as copytree:
+            with self.assertRaisesRegex(s.Refusal, "conflicting top-level DrRacket.app spelling"):
+                s.copy_isolated_runtime(self.runtime, self.copied, conflicting)
+            mkdir.assert_not_called()
+            copytree.assert_not_called()
+        self.assertEqual(s.inventory(self.runtime), self.before)
         self.assertFalse(self.copied.exists())
 
     def test_launcher_symlink_refused(self):
