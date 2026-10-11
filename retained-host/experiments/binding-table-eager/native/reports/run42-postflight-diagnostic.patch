@@ -1,0 +1,53 @@
+--- openracket-binding-eager-experiment-freeze-20261011-1102/native/tests/binding-postflight.rkt	2026-10-11 19:15:03.930369620 +0800
++++ openracket-binding-eager-native-repair-20261011-1221/tests/binding-postflight.rkt	2026-10-11 20:23:32.513173633 +0800
+@@ -2,7 +2,8 @@
+ ;; Native-only evidence from the real definitions editor after actual Check Syntax.
+ (require json racket/class racket/file racket/gui/base racket/list racket/path
+          racket/port racket/runtime-path racket/set rackunit string-constants
+-         syntax/modresolve "rackunit-failure-propagation.rkt")
++         syntax/modresolve "rackunit-failure-propagation.rkt"
++         "native-tool-failure-diagnostics.rkt")
+ (provide run-binding-postflight!)
+ (define-runtime-path host-path "independent-native-host.rkt")
+ (define-runtime-path workflow-path "independent-native-workflows.rkt")
+@@ -31,7 +32,19 @@
+                                 pending materializations public_keys indexed_edges cached_starts exposed
+                                 unsupported_fallbacks failure_fallbacks fallback_reason))
+ (define (run-binding-postflight! frame)
+-  (parameterize ([current-check-handler raise]) (capture! frame)))
++  (parameterize ([current-check-handler raise])
++    (with-handlers
++        ([(lambda (_) #t)
++          (lambda (failure)
++            ;; Best-effort typed evidence may not replace or suppress failure.
++            (report-failure!
++             failure
++             (lambda (reported)
++               (printf "OPENRACKET_BINDING_POSTFLIGHT_FAILURE ~a\n"
++                       (jsexpr->string (failure->diagnostic reported)))
++               (flush-output)))
++            (raise failure))])
++      (capture! frame))))
+ (define (capture! frame)
+   (require! (not written?) "duplicate/stale postflight")
+   (assert-rackunit-failure-propagation!)
+@@ -93,6 +106,19 @@
+     (cond
+       [candidate?
+        (define state (send defs openracket:get-binding-table-eager-state))
++       ;; Best-effort scalar evidence must not replace an original schema
++       ;; failure if a malformed witness cannot be encoded.
++       (report-failure!
++        state
++        (lambda (observed)
++          (printf "OPENRACKET_BINDING_POSTFLIGHT_STATE ~a\n"
++                  (jsexpr->string
++                   (hash 'mode mode 'flag flag
++                         'state (hash-set observed 'fallback_reason
++                                          (if (hash-ref observed 'fallback_reason)
++                                              (symbol->string (hash-ref observed 'fallback_reason))
++                                              'null)))))
++          (flush-output)))
+        (require! (and (hash? state) (immutable? state)
+                       (= (hash-count state) (length witness-fields))
+                       (andmap (lambda (key) (hash-has-key? state key)) witness-fields))

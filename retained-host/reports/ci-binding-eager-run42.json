@@ -1,0 +1,253 @@
+{
+  "run_id": 38137618373,
+  "job_id": 114464630392,
+  "commit": "a72795b1f00a2a3019f600b8fac61f3f4071ec84",
+  "run_url": "https://github.com/alikatgh/openracket/actions/runs/38137618373",
+  "conclusion": "failure",
+  "log_sha256": "09979e911c7d7e5ab40ca075bef05c6e2bd9ca7112519cf82656dd678f2d10a6",
+  "result_rows": [
+    {
+      "name": "Reviewed frozen telemetry source hashes",
+      "passed": true,
+      "detail": "8c0e0fe66cf94cad688f935346a93fa7792e77b6e3bf7c85d012a1280c4c7fec"
+    },
+    {
+      "name": "Reviewed frozen binding-table source hashes",
+      "passed": true,
+      "detail": "94"
+    },
+    {
+      "name": "CI stage and native-gate contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "CI isolation contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Strict binding matrix rejection tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Lossless binding-table and diagnostic transport checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Full pristine runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-eager-control runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Independent binding-eager-candidate runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding-table-only application",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off exact source/collection verification",
+      "passed": true,
+      "detail": "Only the candidate binding-table source may differ"
+    },
+    {
+      "name": "Pinned binding source and installer refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact actual native host derivative regeneration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual native binding gate source/comparator tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Exact stock-worker comparator regeneration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Binding-arm stock-worker comparator refusal tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Original full trace semantic mutation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-off compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on compile selected binding module and every native dependency",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock mandatory telemetry native preflight; no skips",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "candidate-on mandatory telemetry native preflight; no skips",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "unset actual extracted binding methods and mutation differential",
+      "passed": false,
+      "detail": "exit=124"
+    },
+    {
+      "name": "unset unique differential mode and positive assertion count",
+      "passed": false,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "zero actual extracted binding methods and mutation differential",
+      "passed": false,
+      "detail": "exit=124"
+    },
+    {
+      "name": "zero unique differential mode and positive assertion count",
+      "passed": false,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "unexpected actual extracted binding methods and mutation differential",
+      "passed": false,
+      "detail": "exit=124"
+    },
+    {
+      "name": "unexpected unique differential mode and positive assertion count",
+      "passed": false,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "one actual extracted binding methods and mutation differential",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "one unique differential mode and positive assertion count",
+      "passed": true,
+      "detail": "Exit0 and exact typed terminal mode/count required"
+    },
+    {
+      "name": "stock full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock-again exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "off exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on full actual monitor/go trace and rename endpoints",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "on exact trace log evidence",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Complete semantic trace and real rename equivalence; raw order diagnostic",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "binding-eager-stock-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917209081791720908277\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "binding-eager-stock-check-syntax complete actual binding table",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "binding-eager-candidate-off-check-syntax real host and Check Syntax",
+      "passed": false,
+      "detail": "{\"exit\": 1, \"report\": {\"checks\": 20, \"error\": \"\", \"failure_diagnostic\": true, \"geometry\": {\"height\": 634, \"width\": 600, \"x\": 0, \"y\": 1}, \"status\": \"failed\", \"windows\": [{\"editor_characters\": 54, \"editor_excerpt\": \"#lang racket/base\\n(define (bump x) (+ x 1))\\n(bump 41)\\n\", \"editor_filename\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917209231791720923093/fixture.rkt\", \"geometry\": {\"height\": 634, \"width\": 600, \"x\": 0, \"y\": 1}, \"labels\": [\"fixture.rkt\", \"#f\", \"#f\", \"#f\"], \"shown\": true, \"title\": \"fixture.rkt\"}]}}"
+    },
+    {
+      "name": "binding-eager-candidate-on-check-syntax real host and Check Syntax",
+      "passed": true,
+      "detail": "{\"exit\": 0, \"report\": {\"checks\": 20, \"complete_stock_parity\": false, \"follow_on_case\": \"check-syntax\", \"follow_on_result\": {\"case\": \"check-syntax\", \"status\": \"passed\", \"temporary_directory\": \"/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/openracket-followon-17917209361791720936397\"}, \"genuine_host\": true, \"geometry\": {\"height\": 584, \"width\": 1000, \"x\": 0, \"y\": 1}, \"native_appearance_lifecycle\": null, \"physical_input_to_photon_measured\": false, \"racket\": \"9.3\", \"repeated_real_run\": true, \"status\": \"passed\", \"theme\": \"unspecified\", \"ui\": \"stock\"}}"
+    },
+    {
+      "name": "binding-eager-candidate-on-check-syntax complete actual binding table",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock/off/on complete binding graph, actual navigation and fast-hit parity",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "Original runtime including bytecode unchanged",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "timing_ran": false,
+  "artifacts": [],
+  "boundary": "All three disabled-flag differential processes reached180-second deadlines in the eager state witness after a deliberate throwing custom hash. Enabled differential passed3216 assertions. Stock and enabled native graph/navigation passed; disabled native postflight failed without typed operands and emitted no binding graph, so the final comparator also failed. Both105-case no-skip native preflights, full worker trace/rename checks and original-runtime witness passed. Original failures remain preserved; no candidate speed claim."
+}

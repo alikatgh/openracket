@@ -1,0 +1,21 @@
+{
+  "added_files": {
+    "reports/RUN42-FAULT-AUDIT.md": "2a9ff28242b8d800e31a0f014766d9aea5d91e1b05197e74ed854c7a184ee26d",
+    "reports/run42-repair-aliased-tempdir-tests.log": "8e4cc32085857d4a9009c84cef01f39572588c98dccfe5ece6feef417c54e74b",
+    "reports/run42-repair-source-tests.log": "b45085ca7a57f307e89b8712fd9f1118c12a2c83e152c9c7bbd2259ce75f39c8"
+  },
+  "baseline_manifest_sha256": "d89462fa8acf72f95357652a6743f4d6ddbc721c5828fcd72893bd6b3bda3d3c",
+  "changed_files": {
+    "README.md": "0ffea35122b5077f681a214ed078148643d0c3b775b412f22f7f96142c3028db",
+    "tests/bindings-differential.rkt": "2869c69c908423db50d89b271358c3dc93780daeeb10b986b2e4ba5bb6c9a778",
+    "tests/source-test.py": "95726915f4d136b6e81126a1bbd06a2615b4515c70181885f70df5d52fe49b1d"
+  },
+  "generated_modules_unchanged": {
+    "tests/generated/candidate-fault.rkt": "99aaff2d3beaff52f65ed954209a0e3419654d50573dc2fda5866653b0ec9545",
+    "tests/generated/candidate.rkt": "ec32e89850df75bf692d7b6b4e45feb18d60641471c0dac1f2f7ca87ebfa12d2",
+    "tests/generated/stock-fault.rkt": "d52ce3cde85649e3a069f659b5ab92029d046aab698cbd5384a72bb7362fac71",
+    "tests/generated/stock.rkt": "1aef6dc83ef737a8797eda369bad637997678f8f5c029e4dab125e2104cdcdd3"
+  },
+  "native_execution": "not run locally; native rerun mandatory",
+  "production_sha256_unchanged": "80a32b3ebebbe741fe35a6c47f834cf35c0ea708c505961d0d98ce36ea37d6e3"
+}

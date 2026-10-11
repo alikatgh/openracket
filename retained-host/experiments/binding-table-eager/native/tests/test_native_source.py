@@ -72,6 +72,34 @@ class Tests(unittest.TestCase):
         platform=(ROOT/'tool/native-appearance-platform.rkt').read_text()
         for name in ('native-appearance-cocoa.rkt','native-appearance-gtk.rkt'):
             self.assertIn('"'+name+'"',platform)
+    def test_diagnostics_preserve_every_original_postflight_assertion(self):
+        seams=json.loads((ROOT/'tests/postflight-diagnostic-seams.json').read_text())
+        baseline=(ROOT/'tests/reference-postflight-1102.rkt.txt').read_bytes()
+        self.assertEqual(hashlib.sha256(baseline).hexdigest(),seams['baseline_sha256'])
+        self.assertEqual(seams['baseline_sha256'],'e885f5e08f37fed6846db28c0616e8c2dba9c11dcc3b146f470b829cb717cee6')
+        source=(ROOT/'tests/binding-postflight.rkt').read_text()
+        for added,original in [(seams['new_require'],seams['old_require']),
+                               (seams['new_wrapper'],seams['old_wrapper']),
+                               (seams['witness_insertion'],'')]:
+            self.assertEqual(source.count(added),1)
+            source=source.replace(added,original)
+        self.assertEqual(source.encode(),baseline)
+    def test_diagnostics_rethrow_original_and_pin_native_proven_helper(self):
+        seams=json.loads((ROOT/'tests/postflight-diagnostic-seams.json').read_text())
+        wrapper=seams['new_wrapper']
+        self.assertIn('(parameterize ([current-check-handler raise])',wrapper)
+        self.assertIn('(report-failure!',wrapper)
+        self.assertIn('(raise failure))])\n      (capture! frame)',wrapper)
+        self.assertIn('OPENRACKET_BINDING_POSTFLIGHT_FAILURE',wrapper)
+        self.assertIn('(report-failure!\n        state\n        (lambda (observed)',seams['witness_insertion'])
+        source=(ROOT/'tests/binding-postflight.rkt').read_text()
+        self.assertLess(source.index('OPENRACKET_BINDING_POSTFLIGHT_STATE'),
+                        source.index('(require! (and (hash? state)'))
+        for name,pin in {
+            'native-tool-failure-diagnostics.rkt':'3147fad446f383778b1ae2bb3f55a3eea3d71dc38d26b9ab9b107e1deb7be22a',
+            'native-tool-failure-diagnostics-standalone.rkt':'aaa23198c848e9f3284a296b1621b283458dc04311424b43821b83a5064e2caa',
+        }.items():
+            self.assertEqual(hashlib.sha256((ROOT/'tests'/name).read_bytes()).hexdigest(),pin)
     def test_balanced_source(self):
         for p in (ROOT/'tests').glob('*.rkt'):balanced(p.read_text())
 if __name__=='__main__':unittest.main()

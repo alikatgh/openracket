@@ -1,0 +1,16 @@
+{
+  "status": "source-only retry; native execution required",
+  "tests": {
+    "source": 30,
+    "native_source_comparator": 35,
+    "trace_wrapper": 35,
+    "original_trace": 37,
+    "performance": 97
+  },
+  "total_portable_pass": 234,
+  "host_derivation": "exact",
+  "official_source_fixture": "four source pins verified after read-only individual-file recovery; prior missing-local-fixture attempt is not a source failure",
+  "unchanged_production_gui": "80a32b3ebebbe741fe35a6c47f834cf35c0ea708c505961d0d98ce36ea37d6e3",
+  "prior_failed_run": 38137618373,
+  "prior_log_sha256": "09979e911c7d7e5ab40ca075bef05c6e2bd9ca7112519cf82656dd678f2d10a6"
+}

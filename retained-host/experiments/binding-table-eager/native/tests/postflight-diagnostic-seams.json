@@ -1,0 +1,8 @@
+{
+  "baseline_sha256": "e885f5e08f37fed6846db28c0616e8c2dba9c11dcc3b146f470b829cb717cee6",
+  "new_require": "syntax/modresolve \"rackunit-failure-propagation.rkt\"\n         \"native-tool-failure-diagnostics.rkt\")",
+  "old_require": "syntax/modresolve \"rackunit-failure-propagation.rkt\")",
+  "old_wrapper": "(define (run-binding-postflight! frame)\n  (parameterize ([current-check-handler raise]) (capture! frame)))\n",
+  "new_wrapper": "(define (run-binding-postflight! frame)\n  (parameterize ([current-check-handler raise])\n    (with-handlers\n        ([(lambda (_) #t)\n          (lambda (failure)\n            ;; Best-effort typed evidence may not replace or suppress failure.\n            (report-failure!\n             failure\n             (lambda (reported)\n               (printf \"OPENRACKET_BINDING_POSTFLIGHT_FAILURE ~a\\n\"\n                       (jsexpr->string (failure->diagnostic reported)))\n               (flush-output)))\n            (raise failure))])\n      (capture! frame))))\n",
+  "witness_insertion": "       ;; Best-effort scalar evidence must not replace an original schema\n       ;; failure if a malformed witness cannot be encoded.\n       (report-failure!\n        state\n        (lambda (observed)\n          (printf \"OPENRACKET_BINDING_POSTFLIGHT_STATE ~a\\n\"\n                  (jsexpr->string\n                   (hash 'mode mode 'flag flag\n                         'state (hash-set observed 'fallback_reason\n                                          (if (hash-ref observed 'fallback_reason)\n                                              (symbol->string (hash-ref observed 'fallback_reason))\n                                              'null)))))\n          (flush-output)))\n"
+}

@@ -11,6 +11,9 @@
 (unless (equal? (version) "9.3") (error 'version "Racket 9.3 is required"))
 (define enabled? (equal? expected "on"))
 (define checks 0)
+(define (stage! label)
+  (printf "BINDINGS_EAGER_STAGE ~a mode=~a\n" label expected)
+  (flush-output))
 (define (same a b [why "values"])
   (set! checks (add1 checks))
   (unless (equal? a b) (error 'binding-differential "~a: ~s differs from ~s" why a b)))
@@ -28,6 +31,47 @@
 (define (try f)
   (with-handlers ([exn? (lambda (e) (list 'raised (sig e)))])
     (list 'returned (call-with-values f list))))
+;; A throwing custom hash can abandon stock CS's mutable-hash semaphore.
+;; Observe only in a separately owned worker: never block the main test thread
+;; on that table. A timeout is expected lock-boundary evidence, not a speed gate.
+;; Returned values and all raised values remain distinct, typed test outcomes.
+(define (observe-poisoned-count table label)
+  (define owner (make-custodian))
+  (define entered (make-semaphore 0))
+  (define result (make-channel))
+  (define worker #f)
+  (stage! (format "~a count-probe-begin" label))
+  (define observed
+    (dynamic-wind
+      void
+      (lambda ()
+        (set! worker
+              (parameterize ([current-custodian owner])
+                (thread
+                 (lambda ()
+                   (semaphore-post entered)
+                   (with-handlers ([(lambda (value) #t)
+                                    (lambda (value)
+                                      (channel-put result
+                                                   (list 'raised
+                                                         (if (exn? value) (sig value)
+                                                             (list 'non-exception value)))))])
+                     (channel-put result (list 'returned (hash-count table))))))))
+        (require! (sync/timeout 5 entered) "poisoned-table observer entered")
+        (define answer (sync/timeout 1 result))
+        (unless answer
+          (require! (not (thread-dead? worker)) "poisoned-table observer is live at the bound"))
+        answer)
+      (lambda ()
+        (custodian-shutdown-all owner)
+        (when worker
+          (require! (sync/timeout 5 (thread-dead-evt worker))
+                    "poisoned-table observer stopped and reaped")))))
+  (printf "CUSTOM_HASH_LOCK_BOUNDARY arm=~a outcome=~s mode=~a\n"
+          label (or observed 'blocked-within-window) expected)
+  (flush-output)
+  (same observed #f "stock hash count blocked within one-second observation window")
+  observed)
 (define (add s c a b d e f g)
   (define sr (try (lambda () (send s test:add a b d e f g))))
   (define cr (try (lambda () (send c test:add a b d e f g))))
@@ -52,6 +96,7 @@
                    (set-equal? v)) "ordinary immutable equal? sets")))
 
 ;; All numerical edge cases in the actual owner domain; do not expose early.
+(stage! 'numerical-edges)
 (let-values ([(s c) (pair)])
   (define initial (send c test:peek))
   (for ([p (in-list (list '(0 0 2 2) '(0 1 2 3) '(0 1 2 3)
@@ -88,6 +133,7 @@
   (compare s c))
 
 ;; 1,200 deterministic operations and duplicates; inspect the real table before exposure.
+(stage! 'deterministic-trace)
 (let-values ([(s c) (pair)])
   (define gen (make-pseudo-random-generator))
   (parameterize ([current-pseudo-random-generator gen]) (random-seed 381298))
@@ -101,6 +147,7 @@
   (compare s c "complete deterministic trace"))
 
 ;; Escaped table and immutable prior-set snapshots stay live and exact.
+(stage! 'escaped-table)
 (let-values ([(s c) (pair)])
   (own s c 0 1 2 3)
   (compare s c)
@@ -143,6 +190,7 @@
 ;; Reset before exposure keeps the fully current old hash unchanged, then
 ;; starts a new generation. Numeric = self suppression
 ;; still precedes the exact-integer domain gate (including exact/inexact pairs).
+(stage! 'reset-before-exposure)
 (let-values ([(s c) (pair)])
   (own s c 1 2 3 4)
   (define initial (send c test:peek))
@@ -157,6 +205,7 @@
   (compare s c "fresh generation excludes old generation edges"))
 
 ;; Foreign self-links must not force fallback; other foreign objects must.
+(stage! 'foreign-input)
 (let-values ([(s c) (pair)])
   (define other (new object%))
   (own s c 0 1 2 3)
@@ -172,6 +221,7 @@
 ;; Chaperoned owner, equal-but-distinct transparent objects and non-integer
 ;; coordinates go through the original branch with the real table already current.
 (for ([kind (in-list '(wrapped transparent inexact rational))])
+  (stage! (format "unsupported ~a" kind))
   (let-values ([(s c) (pair)])
     (own s c 0 1 2 3)
     (case kind
@@ -194,6 +244,7 @@
 ;; Stateful foreign equality: constant hashes, actual retained callback state,
 ;; and a changed equality answer for an as-yet-uninserted distinct object.
 ;; The candidate must already be on its stock path before the toggle matters.
+(stage! 'stateful-foreign-equality)
 (let-values ([(s c) (pair)])
   (define equivalent? #f)
   (define equality-calls 0)
@@ -235,6 +286,7 @@
   (compare s c "stateful foreign equality final graph"))
 
 ;; Preserve the first object=?/= error before changing any cache state.
+(stage! 'self-check-errors)
 (for ([args (in-list (list (list #f 0 1 #f 2 3) (list 'bad 0 1 'bad 0 1)))])
   (let-values ([(s c) (pair)])
     (own s c 0 1 2 3)
@@ -251,6 +303,7 @@
 ;; Exercise BOTH standard equal<%> and direct interface* prop:equal+hash, since
 ;; testing only equal<%> is not a sound guard against custom behavior.
 (for ([direct? (in-list '(#f #t))])
+  (stage! (format "custom-callback direct=~a" direct?))
   (define callbacks 0)
   (define (count-hash obj recur) (set! callbacks (add1 callbacks)) 7)
   (define base%
@@ -291,18 +344,51 @@
     (define/public (equal-secondary-hash-code-of recur) (error 'custom-owner-hash "deliberate"))))
 (let-values ([(s c) (pair)])
   (define other (new throwing%))
+  (stage! 'throwing-foreign-endpoint)
   (own s c 0 1 2 3)
   (require! (eq? (car (add s c c 5 6 other 7 8)) 'raised) "foreign custom hash error")
   (compare s c "published prefix preserved before foreign error"))
 (let-values ([(s c) (pair (c:make-test-class throwing%))])
+  (stage! 'throwing-owner)
+  (define initial-stock (send s test:peek))
+  (define initial-candidate (send c test:peek))
   (define stock-result (try (lambda () (send s test:add c 0 1 c 2 3))))
   (define candidate-result (try (lambda () (send c test:add c 0 1 c 2 3))))
   (require! (eq? (car stock-result) 'raised) "stock owner hash raises at insertion")
   (same candidate-result stock-result "owner-hash error still occurs during insertion")
-  (same (state c 'active) #f "failed eager insertion permanently discards caches")
-  (same (state c 'failure_fallbacks) (if enabled? 1 0) "failed eager insertion recorded")
-  (same (state c 'eager_writes) 0 "no publication before throwing set-add")
-  (same (hash-count (send c syncheck:get-bindings-table)) 0 "getter has no deferred error"))
+  (stage! 'throwing-owner-error-parity)
+  ;; The original getter only returns the hash; identity needs no hash lock.
+  (require! (eq? initial-stock (send s syncheck:get-bindings-table))
+            "stock getter returns the same table after callback escape")
+  (observe-poisoned-count initial-stock 'stock)
+  (cond
+    [enabled?
+     ;; Enabled raises in immutable set-add before taking the public hash lock.
+     ;; Keep every original eager cleanup and immediate-error assertion.
+     (same (state c 'active) #f "failed eager insertion permanently discards caches")
+     (same (state c 'failure_fallbacks) 1 "failed eager insertion recorded")
+     (same (state c 'eager_writes) 0 "no publication before throwing set-add")
+     (same (hash-count (send c syncheck:get-bindings-table)) 0 "getter has no deferred error")]
+    [else
+     (require! (eq? initial-candidate (send c syncheck:get-bindings-table))
+               "off getter returns the same table after callback escape")
+     (same (observe-poisoned-count initial-candidate 'candidate-off) #f
+           "off preserves stock callback lock outcome")])
+  ;; Only after recording both outcomes, replace poisoned test tables. Never
+  ;; query their counts, contents or witness again on the main test thread.
+  (stage! 'throwing-owner-reset-after-observation)
+  (send s syncheck:init-arrows) (send c syncheck:init-arrows)
+  (require! (not (eq? initial-stock (send s test:peek))) "stock reset replaces poisoned table")
+  (require! (not (eq? initial-candidate (send c test:peek))) "candidate reset replaces old table")
+  (same (state c 'generation) 1 "reset after callback escape creates a fresh generation")
+  (same (state c 'active) enabled? "fresh generation has its ordinary activation")
+  (same (state c 'failure_fallbacks) 0 "reset clears previous failure diagnostics")
+  (same (state c 'eager_writes) 0 "reset starts with no writes")
+  (same (state c 'public_keys) 0 "fresh public hash is inspectable")
+  (define other (new object%))
+  (same (add s c other 0 1 other 2 3) '(returned (#t))
+        "reset restores ordinary stock writes after callback escape")
+  (compare s c "fresh tables agree after callback escape"))
 
 
 ;; Deterministic fault modules differ only by explicitly declared test hooks.
@@ -312,6 +398,7 @@
 (when enabled?
   (for* ([stage (in-list '(before-public after-public after-first-cache))]
          [kind (in-list '(exception arbitrary break escape))])
+    (stage! (format "fault stage=~a kind=~a" stage kind))
     (define s (new stock%))
     (define c (new (f:make-test-class object%)))
     (define published? (not (eq? stage 'before-public)))
@@ -357,6 +444,7 @@
 ;; unwind each publication/cache seam without leaving an active marker/cache.
 (when enabled?
   (for ([stage (in-list '(before-public after-public after-first-cache))])
+    (stage! (format "requested-break stage=~a" stage))
     (define s (new stock%))
     (define c (new (f:make-test-class object%)))
     (define published? (not (eq? stage 'before-public)))
@@ -387,6 +475,7 @@
 
 ;; Metadata cleanup disables breaks only around private state changes. The
 ;; original real write executes with the caller's break setting unchanged.
+(stage! 'caller-break-state)
 (when enabled?
   (define c (new (f:make-test-class object%)))
   (define seen #f)
@@ -399,8 +488,10 @@
 
 ;; Exposure during either an original set-add or an auxiliary commit must not
 ;; revive the dropped caches. The returned real hash remains the same live hash.
+(stage! 'in-flight-exposure)
 (when enabled?
   (for ([stage (in-list '(before-public after-public after-first-cache))])
+    (stage! (format "exposure stage=~a" stage))
     (define c (new (f:make-test-class object%)))
     (define escaped #f)
     (define before (send c test:peek))
@@ -425,6 +516,7 @@
 
 ;; Reset inside the third hash-set! argument must preserve stock's captured old
 ;; target table. No old insertion may write new-generation cache state/counters.
+(stage! 'in-flight-reset)
 (when enabled?
   (define s (new (g:make-test-class object%)))
   (define c (new (f:make-test-class object%)))
@@ -453,6 +545,7 @@
 ;; behavior) but must never restore a stale private index or cached prior set.
 (when enabled?
   (for ([transition (in-list '(write exposure reset))])
+    (stage! (format "resumed-continuation transition=~a" transition))
     (define s (new (g:make-test-class object%)))
     (define c (new (f:make-test-class object%)))
     (define tag-s (make-continuation-prompt-tag 'stock-insertion))
@@ -501,3 +594,4 @@
     (compare s c)))
 
 (printf "BINDINGS_EAGER_DIFFERENTIAL passed mode=~a checks=~a\n" expected checks)
+(flush-output)

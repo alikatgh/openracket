@@ -153,6 +153,40 @@ class SourceTests(unittest.TestCase):
             self.assertIn(required,source)
     def test_native_test_lexical_integrity(self):
         brackets((ROOT/'tests/bindings-differential.rkt').read_text())
+    def test_throwing_hash_lock_observation_is_owned_bounded_and_typed(self):
+        source=(ROOT/'tests/bindings-differential.rkt').read_text()
+        observer=extract.form_at(source,'(define (observe-poisoned-count ')
+        for required in ['(make-custodian)', '(make-channel)', '(make-semaphore 0)',
+                         '(parameterize ([current-custodian owner])',
+                         '(semaphore-post entered)', '(sync/timeout 5 entered)',
+                         '(sync/timeout 1 result)', '(thread-dead? worker)',
+                         '(custodian-shutdown-all owner)', '(thread-dead-evt worker)',
+                         "(list 'raised", "(list 'returned", "(list 'non-exception",
+                         'CUSTOM_HASH_LOCK_BOUNDARY', '(flush-output)']:
+            self.assertIn(required,observer)
+        self.assertLess(observer.index('(semaphore-post entered)'),observer.index('(hash-count table)'))
+        case=source[source.index("(stage! 'throwing-owner)"):source.index(';; Deterministic fault modules')]
+        self.assertIn('owner-hash error still occurs during insertion',case)
+        self.assertIn("(observe-poisoned-count initial-stock 'stock)",case)
+        self.assertIn("(observe-poisoned-count initial-candidate 'candidate-off)",case)
+        off=case[case.index('    [else'):case.index('  ;; Only after recording')]
+        self.assertNotIn('(state ',off)
+        self.assertNotIn('(hash-count ',off)
+        self.assertNotIn('(compare ',off)
+        self.assertLess(case.index("(observe-poisoned-count initial-candidate 'candidate-off)"),
+                        case.index('(send s syncheck:init-arrows)'))
+        self.assertIn('failed eager insertion permanently discards caches',case)
+        self.assertIn('getter has no deferred error',case)
+        self.assertIn('fresh tables agree after callback escape',case)
+    def test_native_stage_markers_are_flushed(self):
+        source=(ROOT/'tests/bindings-differential.rkt').read_text()
+        marker=extract.form_at(source,'(define (stage! ')
+        self.assertIn('BINDINGS_EAGER_STAGE',marker)
+        self.assertIn('(flush-output)',marker)
+        for required in ['throwing-owner-error-parity', 'throwing-owner-reset-after-observation',
+                         'fault stage=~a kind=~a', 'requested-break stage=~a',
+                         'exposure stage=~a', 'resumed-continuation transition=~a']:
+            self.assertIn(required,source)
     def test_native_boundary_cases_are_explicit(self):
         source=(ROOT/'tests/bindings-differential.rkt').read_text()
         for required in ['in-range 1200','hash-remove!','hash-clear!','mutable-set',

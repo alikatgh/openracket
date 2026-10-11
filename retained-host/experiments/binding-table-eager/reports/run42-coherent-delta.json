@@ -1,0 +1,34 @@
+{
+  "baseline_manifest": "d89462fa8acf72f95357652a6743f4d6ddbc721c5828fcd72893bd6b3bda3d3c",
+  "changed_existing_files": [
+    "CI-CONTRACT.md",
+    "PRODUCTION-SHA256.json",
+    "README.md",
+    "native/NATIVE-SHA256.json",
+    "native/README.md",
+    "native/tests/binding-postflight.rkt",
+    "native/tests/test_native_source.py",
+    "tests/bindings-differential.rkt",
+    "tests/source-test.py"
+  ],
+  "new_files": [
+    "native/reports/RUN42-POSTFLIGHT-DIAGNOSTICS.md",
+    "native/reports/run42-postflight-diagnostic.patch",
+    "native/tests/native-tool-failure-diagnostics-standalone.rkt",
+    "native/tests/native-tool-failure-diagnostics.rkt",
+    "native/tests/postflight-diagnostic-seams.json",
+    "native/tests/reference-postflight-1102.rkt.txt",
+    "reports/RUN42-FAULT-AUDIT.md",
+    "reports/RUN42-REPAIR-SCOPE.md",
+    "reports/run42-original-contents.json",
+    "reports/run42-original-production-manifest.json",
+    "reports/run42-repair-aliased-tempdir-tests.log",
+    "reports/run42-repair-delta.json",
+    "reports/run42-repair-source-tests.log",
+    "reports/run42-repair.diff",
+    "reports/run42-retry-local-validation.json"
+  ],
+  "production_and_all_generated_modules_unchanged": true,
+  "all_33_performance_files_unchanged": true,
+  "all_trace_files_unchanged": true
+}

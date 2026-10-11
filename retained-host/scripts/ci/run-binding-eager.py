@@ -11,7 +11,7 @@ assert os.environ.get('GITHUB_REPOSITORY')=='alikatgh/openracket'
 assert os.environ.get('GITHUB_REF')=='refs/heads/prototype/retained-drracket'
 assert sys.argv[1:] in (['prepare'],['helpers'],['correctness'],['telemetry'],['verify'])
 TELEMETRY=EXP/'performance'
-PRODUCTION_PIN='d89462fa8acf72f95357652a6743f4d6ddbc721c5828fcd72893bd6b3bda3d3c'
+PRODUCTION_PIN='b45348718db6c724823e9ff21056e127252f5baff3da337fd22de5bf685c181d'
 TELEMETRY_PIN='8c0e0fe66cf94cad688f935346a93fa7792e77b6e3bf7c85d012a1280c4c7fec'
 PHASE=sys.argv[1];REPORTS=ROOT/'reports/binding-eager-ci';REPORTS.mkdir(parents=True,exist_ok=True)
 STATE=REPORTS/'results.json';ROWS=json.loads(STATE.read_text()) if STATE.exists() else [];START=len(ROWS)
@@ -67,6 +67,29 @@ def differential_proof(code_ok,text,mode):
  lines=text.splitlines();matches=[re.fullmatch(r'BINDINGS_EAGER_DIFFERENTIAL passed mode=(off|on) checks=([1-9][0-9]*)',line) for line in lines]
  valid=[m for m in matches if m is not None]
  return code_ok is True and len(valid)==1 and valid[0].group(1)==mode and sum('BINDINGS_EAGER_DIFFERENTIAL' in line for line in lines)==1
+
+def diagnostic_proof(code,output,negative):
+ prefix='OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS'
+ success=prefix+'_OK typed-payload-preserved output-failures-contained'
+ injection=prefix+'_INJECTING_FAILURE'
+ failure=prefix+'_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
+ lines=output.splitlines()
+ if negative:
+  return code>0 and code!=124 and lines.count(injection)==1 and output.count(injection)==1 and lines.count(failure)==1 and output.count(prefix+'_FAILURE')==1 and prefix+'_OK' not in output
+ return code==0 and lines.count(success)==1 and output.count(prefix+'_OK')==1 and injection not in output and prefix+'_FAILURE' not in output
+
+def diagnostic_regression():
+ for negative in (False,True):
+  label='Native typed failure diagnostics '+('injected-negative' if negative else 'positive')
+  args=[str(STOCK/'bin/racket'),str(NATIVE/'tests/native-tool-failure-diagnostics-standalone.rkt')]
+  if negative:args.append('--inject-failure')
+  print('::group::'+label,flush=True)
+  p=subprocess.Popen(args,env=env('stock','typed-diagnostic-'+('negative' if negative else 'positive')),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
+  try:output,_=p.communicate(timeout=30);code=p.returncode
+  except subprocess.TimeoutExpired:
+   terminate_group(p);output,_=p.communicate(timeout=5);code=124
+  print(output,flush=True);record(label,diagnostic_proof(code,output,negative),'exit='+str(code)+'; unique typed marker and strict failure control')
+  print('::endgroup::',flush=True)
 
 def host_proof(code,data,text):
  marker='OPENRACKET_NATIVE_BINDINGS_OK complete-graph real-navigation escaped-table'
@@ -155,6 +178,8 @@ try:
   command('Original full trace semantic mutation tests',[sys.executable,'-m','unittest','discover','-s',TRACE/'upstream/tests','-p','test_compare_trace*.py'])
   for mode in ('stock','candidate-off','candidate-on'):
    native_modules=sorted((NATIVE/'tests').glob('*.rkt'))+sorted((NATIVE/'tool').glob('*.rkt'))
+   required_diagnostics=[NATIVE/'tests'/name for name in ('native-tool-failure-diagnostics.rkt','native-tool-failure-diagnostics-standalone.rkt')]
+   assert all(p in native_modules for p in required_diagnostics)
    generated_modules=[EXP/'tests/generated'/name for name in ('stock.rkt','candidate.rkt','stock-fault.rkt','candidate-fault.rkt')]
    assert all(p.is_file() and not p.is_symlink() for p in generated_modules)
    command(mode+' compile selected binding module and every native dependency',
@@ -165,6 +190,7 @@ try:
    command(mode+' mandatory telemetry native preflight; no skips',
            [sys.executable,TELEMETRY/'native_preflight.py','--racket',runtime(mode)/'bin/racket','--pristine-source',private,'--candidate-source',EXP/'overlay/gui.rkt','--profile',TEMP/('binding-eager-'+mode+'-preflight')],mode=mode,purpose='helper-native',timeout=300,cwd=TELEMETRY,required=False)
  elif PHASE=='correctness':
+  diagnostic_regression()
   for label,value in (('unset',None),('zero','0'),('unexpected','unexpected'),('one','1')):
    e=env('candidate-on' if value=='1' else 'candidate-off','differential-'+label)
    if value is None:e.pop('OPENRACKET_BINDING_TABLE_EAGER',None)

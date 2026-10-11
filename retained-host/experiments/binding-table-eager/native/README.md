@@ -33,3 +33,7 @@ The comparison normalizes only verified mode/activation, canonical clone-root di
 The separate large-workload performance harness owns ordinary full application completion and a separately labeled first-public-getter measurement. This small fixture is correctness evidence, not a speed benchmark or proof of arbitrary custom-equality extension parity.
 
 The eager result schema is `openracket-native-binding-eager-graph/v1`, with `eager_witness`; prior lazy result documents cannot satisfy it. New deliberate corruptions reject deferred materialization, missing eager publication, incomplete public keys, leftover indexed work, in-flight operations, failure fallbacks and misclassified fallback calls. The getter latency threshold is owned by the separate paired performance gate, not inferred from this small fixture.
+
+## Run42 additive diagnosis
+
+See `reports/RUN42-POSTFLIGHT-DIAGNOSTICS.md` for the mandatory typed positive/negative helper commands. Every original postflight assertion is unchanged; candidate-off failure details remain native-pending.

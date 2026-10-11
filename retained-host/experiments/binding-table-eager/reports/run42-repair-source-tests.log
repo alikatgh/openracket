@@ -1,0 +1,35 @@
+test_ack_required (__main__.ApplyTests.test_ack_required) ... ok
+test_apply_idempotence_and_revert (__main__.ApplyTests.test_apply_idempotence_and_revert) ... ok
+test_changed_support (__main__.ApplyTests.test_changed_support) ... ok
+test_hardlink_target (__main__.ApplyTests.test_hardlink_target) ... ok
+test_outside_root (__main__.ApplyTests.test_outside_root) ... ok
+test_parent_alias_refused_but_resolved_apply_and_revert_succeed (__main__.ApplyTests.test_parent_alias_refused_but_resolved_apply_and_revert_succeed) ... ok
+test_symlink_target (__main__.ApplyTests.test_symlink_target) ... ok
+test_wrong_collection_suffix (__main__.ApplyTests.test_wrong_collection_suffix) ... ok
+test_wrong_preimage (__main__.ApplyTests.test_wrong_preimage) ... ok
+test_actual_form_generated_files_match (__main__.SourceTests.test_actual_form_generated_files_match) ... ok
+test_default_off_read_only_activation (__main__.SourceTests.test_default_off_read_only_activation) ... ok
+test_eager_public_write_precedes_both_cache_commits (__main__.SourceTests.test_eager_public_write_precedes_both_cache_commits) ... ok
+test_escape_cleanup_and_continuation_reentry_fail_closed (__main__.SourceTests.test_escape_cleanup_and_continuation_reentry_fail_closed) ... ok
+test_exact_original_and_reproduction (__main__.SourceTests.test_exact_original_and_reproduction) ... ok
+test_fault_and_resumption_native_cases_are_required (__main__.SourceTests.test_fault_and_resumption_native_cases_are_required) ... ok
+test_fault_modules_have_only_explicit_test_hook_substitutions (__main__.SourceTests.test_fault_modules_have_only_explicit_test_hook_substitutions) ... ok
+test_mutated_original_refused (__main__.SourceTests.test_mutated_original_refused) ... ok
+test_native_boundary_cases_are_explicit (__main__.SourceTests.test_native_boundary_cases_are_explicit) ... ok
+test_native_stage_markers_are_flushed (__main__.SourceTests.test_native_stage_markers_are_flushed) ... ok
+test_native_test_lexical_integrity (__main__.SourceTests.test_native_test_lexical_integrity) ... ok
+test_only_five_source_seams (__main__.SourceTests.test_only_five_source_seams) ... ok
+test_original_self_check_is_first_and_byte_identical (__main__.SourceTests.test_original_self_check_is_first_and_byte_identical) ... ok
+test_owner_and_four_exact_integer_guards (__main__.SourceTests.test_owner_and_four_exact_integer_guards) ... ok
+test_pinned_runtime_reference_blobs (__main__.SourceTests.test_pinned_runtime_reference_blobs) ... ok
+test_public_identity_and_tooltip_branch (__main__.SourceTests.test_public_identity_and_tooltip_branch) ... ok
+test_reset_replaces_only_current_state (__main__.SourceTests.test_reset_replaces_only_current_state) ... ok
+test_stateful_foreign_equality_coverage (__main__.SourceTests.test_stateful_foreign_equality_coverage) ... ok
+test_stock_core_unchanged_after_prelude (__main__.SourceTests.test_stock_core_unchanged_after_prelude) ... ok
+test_throwing_hash_lock_observation_is_owned_bounded_and_typed (__main__.SourceTests.test_throwing_hash_lock_observation_is_owned_bounded_and_typed) ... ok
+test_witness_is_bounded_readonly (__main__.SourceTests.test_witness_is_bounded_readonly) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.044s
+
+OK

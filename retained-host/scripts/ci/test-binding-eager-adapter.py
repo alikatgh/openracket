@@ -62,4 +62,14 @@ class AdapterTests(unittest.TestCase):
  def test_optimized_entry_refuses_before_access(self):
   p=subprocess.run([sys.executable,'-O',str(ROOT/'run-binding-eager.py'),'prepare'],capture_output=True,text=True,timeout=10)
   self.assertNotEqual(p.returncode,0);self.assertIn('Optimized Python execution',p.stderr)
+ def test_typed_native_diagnostic_gate(self):
+  node=next(n for n in ast.parse(SOURCE).body if isinstance(n,ast.FunctionDef) and n.name=='diagnostic_proof')
+  ns={};exec(compile(ast.Module(body=[node],type_ignores=[]),'<diagnostic>','exec'),ns);valid=ns['diagnostic_proof']
+  prefix='OPENRACKET_NATIVE_TOOL_FAILURE_DIAGNOSTICS';ok=prefix+'_OK typed-payload-preserved output-failures-contained';injection=prefix+'_INJECTING_FAILURE';failure=prefix+'_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong';bad=injection+'\n'+failure
+  self.assertTrue(valid(0,ok,False));self.assertTrue(valid(1,bad,True))
+  for code,text,negative in [(124,bad,True),(-9,bad,True),(0,bad,True),(1,bad+'\n'+failure,True),(1,bad.replace('exn:test:check','exn:fail'),True),(1,bad.replace('actual=actual','actual=other'),True),(1,bad.replace(failure,''),True),(1,'prefix '+bad,True),(1,bad+'\n'+ok,True),(0,ok+'\n'+ok,False),(0,ok+'\n'+failure,False)]:self.assertFalse(valid(code,text,negative))
+  self.assertIn("communicate(timeout=30)",SOURCE)
+  self.assertIn("elif PHASE=='correctness':\n  diagnostic_regression()",SOURCE)
+  for n in ('native-tool-failure-diagnostics.rkt','native-tool-failure-diagnostics-standalone.rkt'):self.assertIn(repr(n),SOURCE)
+  self.assertIn('assert all(p in native_modules for p in required_diagnostics)',SOURCE)
 if __name__=='__main__':unittest.main()
