@@ -1,3 +1,14 @@
+test_diagnostic_failure_catch_cannot_swallow_original_exception (__main__.StandaloneSourceTests.test_diagnostic_failure_catch_cannot_swallow_original_exception) ... ok
+test_failure_evidence_comes_from_verified_exception_info (__main__.StandaloneSourceTests.test_failure_evidence_comes_from_verified_exception_info) ... ok
+test_negative_control_precedes_unique_success (__main__.StandaloneSourceTests.test_negative_control_precedes_unique_success) ... ok
+test_only_injected_check_has_typed_handler_and_same_exception_reraise (__main__.StandaloneSourceTests.test_only_injected_check_has_typed_handler_and_same_exception_reraise) ... ok
+test_original_regression_wrapper_host_and_tools_unchanged (__main__.StandaloneSourceTests.test_original_regression_wrapper_host_and_tools_unchanged) ... ok
+test_original_submodule_runs_under_strict_outer_handler (__main__.StandaloneSourceTests.test_original_submodule_runs_under_strict_outer_handler) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK
 test_debugger_uses_visible_module_toolbar_and_full_state (__main__.StockToolSourceTests.test_debugger_uses_visible_module_toolbar_and_full_state) ... ok
 test_fixture_correction_is_exactly_one_character (__main__.StockToolSourceTests.test_fixture_correction_is_exactly_one_character) ... ok
 test_handler_parameterization_and_errors_not_suppressed (__main__.StockToolSourceTests.test_handler_parameterization_and_errors_not_suppressed) ... ok
@@ -9,6 +20,6 @@ test_racket_lexical_delimiters (__main__.StockToolSourceTests.test_racket_lexica
 test_teaching_checks_real_model_source_link_and_clear (__main__.StockToolSourceTests.test_teaching_checks_real_model_source_link_and_clear) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 0.010s
+Ran 9 tests in 0.013s
 
 OK

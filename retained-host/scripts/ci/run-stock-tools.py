@@ -40,9 +40,11 @@ def coordinator_result_valid(code,output,negative):
  lines=output.splitlines()
  success='OPENRACKET_NATIVE_TOOL_COORDINATOR_OK strict-failures cleanup-complete'
  injection='OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE'
+ failure_prefix='OPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE'
+ failure=failure_prefix+' exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
  if negative:
-  return code>0 and code!=124 and lines.count(injection)==1 and success not in output and 'actual' in output and 'deliberately-wrong' in output
- return code==0 and lines.count(success)==1 and injection not in output
+  return code>0 and code!=124 and lines.count(injection)==1 and output.count(injection)==1 and 'OPENRACKET_NATIVE_TOOL_COORDINATOR_OK' not in output and lines.count(failure)==1 and output.count(failure_prefix)==1
+ return code==0 and lines.count(success)==1 and output.count('OPENRACKET_NATIVE_TOOL_COORDINATOR_OK')==1 and injection not in output and failure_prefix not in output
 
 def coordinator_regression(mode,e):
  for negative in (False,True):
@@ -121,7 +123,7 @@ def native_case(case,modern=False):
 try:
  if PHASE=='prepare':
   tree('baseline',STOCK,'pristine')
-  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='753839e4a470ebf9fb33a95f4100b3954a6f55718cc14c3310cc7cc46d2bd1bc'
+  m=EXP/'DELIVERABLE-SHA256.json';assert hashlib.sha256(m.read_bytes()).hexdigest()=='845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624'
   members=json.loads(m.read_text());assert len(members)==20
   for name,h in members.items():
    p=EXP/name;assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==h
@@ -130,7 +132,7 @@ try:
   command('Standalone driver source preservation',[sys.executable,EXP/'tests/coordinator-standalone-source-test.py'])
   command('Stock-tool adapter isolation tests',[sys.executable,ROOT/'scripts/ci/test-stock-tools-adapter.py'])
   CONTRACT.source_copy(ROOT,PROOF,'2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552',155)
-  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='f74d22a1b1e15956d8a86b6b884fb3d69655523d79e125c777a16b5758fb961a'
+  raw=EXP/'FROZEN-NATIVE-ALLOWLIST.json';assert hashlib.sha256(raw.read_bytes()).hexdigest()=='3268ebaf470a47c70790055c447e692ae46e5eed6c653ff092fa9c8d566338cb'
   allowed=json.loads(raw.read_text())['files'];assert len(allowed)==5
   baseline=json.loads((PROOF/'CONTENTS-SHA256.json').read_text());shutil.copy2(PROOF/'CONTENTS-SHA256.json',PROOF/'BASE-0520-CONTENTS.json')
   for name,h in allowed.items():

@@ -2,7 +2,7 @@ import pathlib,ast,unittest
 P=pathlib.Path(__file__).parent;S=(P/'run-stock-tools.py').read_text()
 class ToolAdapter(unittest.TestCase):
  def test_exact_source_and_complete_candidate(self):
-  for pin in ('753839e4a470ebf9fb33a95f4100b3954a6f55718cc14c3310cc7cc46d2bd1bc','f74d22a1b1e15956d8a86b6b884fb3d69655523d79e125c777a16b5758fb961a','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
+  for pin in ('845e7cffdafd599cc597d464574b21d287e2cf57582b94cfecf22a3572027624','3268ebaf470a47c70790055c447e692ae46e5eed6c653ff092fa9c8d566338cb','2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552'):self.assertIn(pin,S)
   self.assertIn('len(allowed)==5',S);self.assertIn('BASE-0520-CONTENTS.json',S)
  def test_fresh_each_mode_and_original_deadlines(self):
   self.assertIn('assert not home.exists()',S);self.assertIn("shutil.copytree(ADDON,pathlib.Path(e['PLTADDONDIR']),symlinks=True)",S)
@@ -24,9 +24,11 @@ class ToolAdapter(unittest.TestCase):
   node=next(n for n in ast.parse(S).body if isinstance(n,ast.FunctionDef) and n.name=='coordinator_result_valid')
   ns={};exec(compile(ast.Module(body=[node],type_ignores=[]),'<validator>','exec'),ns);valid=ns['coordinator_result_valid']
   ok='OPENRACKET_NATIVE_TOOL_COORDINATOR_OK strict-failures cleanup-complete'
-  bad='OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE\nactual: actual\nexpected: deliberately-wrong'
+  failure='OPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE exception=exn:test:check check=check-equal? actual=actual expected=deliberately-wrong'
+  bad='OPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE\n'+failure
   self.assertTrue(valid(0,ok,False));self.assertTrue(valid(1,bad,True))
-  for code,text,negative in [(1,ok,False),(0,ok+'\n'+ok,False),(0,bad,True),(124,bad,True),(-9,bad,True),(1,'import failed',True),(1,bad+'\n'+ok,True),(1,bad+'\nOPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE',True)]:self.assertFalse(valid(code,text,negative))
+  for code,text,negative in [(1,ok,False),(0,ok+'\n'+ok,False),(0,bad,True),(124,bad,True),(-9,bad,True),(1,'import failed',True),(1,bad+'\n'+ok,True),(1,bad+'\nOPENRACKET_NATIVE_TOOL_COORDINATOR_INJECTING_FAILURE',True),(1,bad+'\n'+failure,True),(1,bad.replace('exn:test:check','exn:fail'),True),(1,bad.replace('actual=actual','actual=wrong'),True),(1,bad.replace('expected=deliberately-wrong','expected=actual'),True),(1,bad.replace(failure,''),True),(1,bad.replace(failure,' '+failure),True),(0,ok+'\n'+failure,False),(0,ok+'\nOPENRACKET_NATIVE_TOOL_COORDINATOR_FAILURE malformed',False)]:self.assertFalse(valid(code,text,negative))
+
  def test_independent_workflow_and_original_tree_witness(self):
   w=(P.parents[2]/'.github/workflows/retained-native.yml').read_text();self.assertIn("if: always() && steps.tools_prepare.outcome == 'success'",w)
   self.assertIn("tree('baseline',STOCK,'pristine')",S);self.assertIn("tree('baseline',MODERN,'selected-modern')",S)
