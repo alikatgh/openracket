@@ -60,6 +60,13 @@ class SourceTests(unittest.TestCase):
         self.assertIn('"existing"', reserve)
         self.assertNotIn("system-type", reserve)
 
+    def test_confinement_explicitly_accepts_self_and_directory_boundaries(self):
+        text = HELPER.read_text()
+        self.assertIn("(find-relative-path boundary target #:more-than-same? #f)", text)
+        self.assertIn("(define-values (base name directory?) (split-path path))", text)
+        self.assertIn("(not (link-exists? boundary))", text)
+        self.assertIn("(not (link-exists? next))", text)
+
     def test_launchers_never_write_or_reapply_memory_preference(self):
         for name in ("launch-openracket.sh", "launch-stock.sh"):
             text = (ROOT / "scripts" / name).read_text()
@@ -230,6 +237,21 @@ class NativeHelperTests(unittest.TestCase):
         self.assertEqual(marker["reservation"], {"store_present": False,
                                                 "store_sha256": None, "store_entries": {}})
         self.assertEqual(self.status()["effective_limit_bytes"], 256 * MIB)
+
+    def test_00_confined_self_child_and_outside_before_profile_creation(self):
+        helper = self.root / "scripts/memory-profile.rkt"
+        # The unit gate must not create profile/ through its own compilation.
+        # Product reservation still uses the ordinary profile-first environment.
+        unit_env = dict(self.env, PLTCOMPILEDROOTS=str(self.base / "unit-compiled-cache") + ":")
+        result = self.ok(self.run_racket("-l", "raco", "--", "test", str(helper), env=unit_env))
+        self.assertNotIn("FAILURE", result.stderr)
+        self.assertNotIn("ERROR", result.stderr)
+        self.assertFalse(self.profile.exists())
+
+    def test_directory_valued_profile_environment_is_allowed(self):
+        self.env["PLTUSERHOME"] = str(self.profile) + os.sep
+        self.env["OPENRACKET_PROFILE"] = str(self.profile) + os.sep
+        self.assertEqual(self.initialize()["effective_limit_bytes"], 256 * MIB)
 
     def test_existing_empty_profile_is_never_fresh(self):
         self.profile.mkdir()
@@ -423,8 +445,7 @@ class NativeHelperTests(unittest.TestCase):
         result = subprocess.run(["sh", str(self.root / "scripts/memory-profile.sh"), "--set-mib", "384"],
                                 env=self.env, capture_output=True, text=True, timeout=120)
         self.assertEqual(json.loads(self.ok(result).stdout)["effective_limit_bytes"], 384 * MIB)
-        expression = "(dynamic-require '(submod (file " + json.dumps(str(HELPER)) + ") test) #f)"
-        result = self.ok(self.run_racket("-e", expression))
+        result = self.ok(self.run_racket("-l", "raco", "--", "test", str(HELPER)))
         self.assertNotIn("FAILURE", result.stderr)
         self.assertNotIn("ERROR", result.stderr)
 

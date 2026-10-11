@@ -173,7 +173,7 @@ changing installed source. Rerun setup to prepare the modern source again.
 - The original toolbar provenance and transaction tests are retained. The
   earlier combined local run passed 214 Racket tests and 34 Python checks.
   The subsequent actual Mac installation and launch gates passed as linked above.
-- The new memory helper has nine local source/shell checks, 18 native helper
+- The new memory helper has ten local source/shell checks, 20 native helper
   cases, and 15 observer contracts. Only the source/shell checks have run locally;
   the native helper, observer and real-launch capacity checks remain pending.
 

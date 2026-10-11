@@ -1,8 +1,31 @@
 # Isolated preview memory-default implementation
 
-Status: source/shell checks pass locally; real Racket/native Mac checks are
-pending. This source is not a new native-accepted build. No UI, toolbar, tool,
+Status: source/shell checks pass locally. The first native Mac attempt compiled
+the helper but failed at its path guard before setup; the narrow repair below
+awaits a native rerun. This source is not a new native-accepted build. No UI, toolbar, tool,
 evaluator, Run/Stop, lexer, autosave, or background-analysis implementation changed.
+
+## First native failure and narrow path repair
+
+Native [run 38110208795](https://github.com/alikatgh/openracket/actions/runs/38110208795)
+reached the real Racket 9.3 helper tests. The guard rejected
+the profile boundary itself before freshness reservation. The cause is the
+documented `find-relative-path` default: for equal base/target paths,
+`#:more-than-same? #t` returns the original absolute target. The guard requires a
+relative path and therefore rejected every normal self-boundary check.
+
+The repaired call specifies `#:more-than-same? #f`, returning the relative same
+path for that case. `profile-aliases` also uses `split-path` to accept a syntactic
+directory boundary with a trailing separator; `file-name-from-path` returns
+`#f` for such a path. Neither change resolves away links under the profile or
+relaxes sibling/parent/descendant-link refusals.
+
+The native suite now runs direct self-boundary, trailing-directory, child,
+parent, escaped-sibling and upward-escape assertions before preference tests.
+It also retains actual root-alias acceptance and descendant-symlink rejection
+tests. Local source/shell checks pass; no local Racket executable is available
+to execute the repaired native gate. The first run reported both runtime hash
+snapshots unchanged. Frozen source 0352 and its original evidence are unchanged.
 
 ## Safety contract
 

@@ -37,9 +37,12 @@
 (define (profile-aliases)
   (for/list ([p (in-list (list profile (build-path source-root "profile")
                               (or (getenv "PLTUSERHOME") profile)))]
-             #:do [(define path (simplify-path (path->complete-path p) #f))]
-             #:when (and (equal? (file-name-from-path path) (string->path "profile"))
-                         (path-only path) (equal? (physical (path-only path)) root)))
+             #:do [(define path (simplify-path (path->complete-path p) #f))
+                   (define-values (base name directory?) (split-path path))]
+             ;; split-path retains a directory's last name; file-name-from-path
+             ;; returns #f for a syntactically directory-valued profile path.
+             #:when (and (equal? name (string->path "profile"))
+                         (path? base) (equal? (physical base) root)))
     path))
 (define (confined p)
   (define target (simplify-path (path->complete-path p) #f))
@@ -47,7 +50,9 @@
   ;; are allowed. Never resolve away a symlink at/below the profile boundary.
   (define match
     (for/or ([boundary (in-list (profile-aliases))])
-      (define relative (find-relative-path boundary target))
+      ;; The default #:more-than-same? #t returns an ABSOLUTE path for self.
+      ;; We intentionally permit the boundary itself, subject to its link check.
+      (define relative (find-relative-path boundary target #:more-than-same? #f))
       (and (relative-path? relative) (not (memq 'up (explode-path relative)))
            (cons boundary relative))))
   (ensure match "path escapes isolated profile: ~a" target)
@@ -279,6 +284,15 @@
 
 (module+ test
   (require rackunit)
+  ;; These path contracts run without profile creation or preference writes.
+  ;; In particular, self must be accepted before reserve can create the profile.
+  (check-not-exn (lambda () (confined profile)))
+  (check-not-exn (lambda () (confined (path->directory-path profile))))
+  (define child (build-path profile ".guard-probe" "nested.pref"))
+  (check-equal? (confined child) child)
+  (check-exn exn:fail? (lambda () (confined root)))
+  (check-exn exn:fail? (lambda () (confined (build-path root "profile-sibling" "prefs"))))
+  (check-exn exn:fail? (lambda () (confined (build-path profile 'up "outside"))))
   (for ([mib '(8 128 256 512 768)])
     (check-equal? (limit-mib (number->string mib)) (* mib 1024 1024)))
   (for ([bad '(#f "0" "7" "-1" "256.0" "0256" " 256" "#f" "unlimited")])
