@@ -91,7 +91,13 @@
     (define ns (observer-namespace actual))
     (define report (in ns `(json-safe (memory-limit-evidence ,actual))))
     (define roundtrip (string->jsexpr (jsexpr->string report)))
-    (check-equal? roundtrip report)
+    ;; JSON objects decode as hasheq in stock9.3; the actual observer constructs
+    ;; an equal?-keyed hash. Compare the complete field/value mapping in the
+    ;; decoder's representation, preserving every key and exact value/type.
+    (check-true (hash-eq? roundtrip))
+    (check-equal? roundtrip
+                  (for/hasheq ([(key value) (in-hash report)])
+                    (values key value)))
     (check-equal? (hash-ref roundtrip 'effective_bytes) actual)
     (check-equal? (hash-ref roundtrip 'expected_bytes) actual)
     (check-false (hash-ref roundtrip 'worker_cap_measured))))

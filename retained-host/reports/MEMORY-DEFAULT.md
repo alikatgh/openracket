@@ -1,9 +1,10 @@
 # Isolated preview memory-default implementation
 
-Status: source/shell checks pass locally. Two native Mac attempts compiled the
-helper but failed at its path guard before setup. A subsequent read-only native
-probe established the directory-identity mismatch described below; the bounded
-repair awaits its native gate. This source is not a new native-accepted build. No UI, toolbar, tool,
+Status: all 31 profile-suite tests (11 source/shell plus 20 native cases) passed
+on macOS in [run 38113980559](https://github.com/alikatgh/openracket/actions/runs/38113980559),
+including the canonical-directory repair. The following observer suite stopped
+at a JSON hash-table representation assertion, so actual setup and launch remain
+pending. This source is not a new native-accepted build. No UI, toolbar, tool,
 evaluator, Run/Stop, lexer, autosave, or background-analysis implementation changed.
 
 ## First native failure and narrow path repair

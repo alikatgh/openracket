@@ -1,0 +1,88 @@
+{
+  "run_id": 38113980559,
+  "commit": "ffede82d348a909ea1efc829c1c3e64e7a5e8ffc",
+  "conclusion": "failure",
+  "log_sha256": "5548162f4bc634fac8af8793346dfe5cea04caaf3c5f99722289e8ccc4341433",
+  "results": [
+    {
+      "name": "Portable adapter isolation unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Runtime immutability witness unit tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Copy verified portable source into fresh spaced path",
+      "passed": true,
+      "detail": "155 source files; /Users/runner/work/_temp/OpenRacket Portable Proof"
+    },
+    {
+      "name": "Deep-copy independent official portable runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "pristine complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-profile-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "portable-dependency-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "autosave-source-test.py",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Compile product memory helper",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Native product memory profile ownership and preservation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable installer observer and combined save contract tests",
+      "passed": false,
+      "detail": "exit=1"
+    },
+    {
+      "name": "prepare orchestration",
+      "passed": false,
+      "detail": "Portable installer observer and combined save contract tests failed"
+    },
+    {
+      "name": "pristine complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-portable complete runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ]
+}

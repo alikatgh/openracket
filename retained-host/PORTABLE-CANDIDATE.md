@@ -175,7 +175,9 @@ changing installed source. Rerun setup to prepare the modern source again.
   The subsequent actual Mac installation and launch gates passed as linked above.
 - The new memory helper has eleven local source/shell checks, 20 native helper
   cases, and 15 observer contracts. Only the source/shell checks have run locally;
-  the native helper, observer and real-launch capacity checks remain pending.
+  the full 31-test profile suite passed on macOS in run 38113980559. A subsequent
+  JSON hash-kind assertion in the observer tests was corrected without changing
+  observer/product code. That contract and real-launch capacity checks remain pending.
 
 The new Mac gate must rerun actual setup and launch, observe the genuine
 launcher-opened file/frame and theme/guard/memory state, verify explicit choices,
