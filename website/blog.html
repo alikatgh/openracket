@@ -21,6 +21,17 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <article aria-labelledby="native-tools-title">
+      <section>
+        <h2 id="native-tools-title">Real Debugger, Macro Stepper and teaching workflows</h2>
+        <p><time datetime="2026-10-11">2026-10-11</time></p>
+        <p><a href="https://github.com/alikatgh/openracket/actions/runs/38140896349">Run 38140896349</a> passed all 57 acceptance rows on Apple Silicon macOS 15 with full official Racket 9.3. Each of the three workflows ran in a fresh pristine stock/light process and a fresh modern/dark process. The tests used the existing preview core, with only reviewed test files added or replaced.</p>
+        <p>The Debugger initially stopped in Racket's library initialization. Two real Step actions reached the fixture, with more than 19.7 seconds remaining in the original 20-second startup budget. Exact source locations and retained editor resolution were checked before another Step, Go and ordinary Run recovery. This corrected the test's earlier assumption that the first stop would already be in the fixture.</p>
+        <p>The Macro Stepper moved through indices 0, 1 and 82, with a changed derivation, then verified Previous and Start, normal close and ordinary Run recovery. The teaching case evaluated two tests with one failure, invoked the real inline report's source link and selected exactly positions 77–102. An unsaved correction from expected 4 to 3 and a real Run produced two passing tests and replaced the stale report. Both successful links retained the original editor and one tab.</p>
+        <p>Both complete 26,838-entry original-runtime witnesses passed. Six hash-verified screenshots show the final recovered editors, output 42 and the corrected teaching result. Each GUI case kept its 60-second acceptance deadline; all failure-propagation and source/range refusal controls also passed.</p>
+        <p>These are programmatic calls to real GUI controls with actual state assertions. They do not measure physical-input latency, prove every language or extension, or add a speed result. The tool cases used fresh stock 128 MiB profiles, independently of the preview's tested 256 MiB capacity default. Modern light mode, normal Quit/unsaved-document prompts and native Windows acceptance remain pending. The tethered app's unsigned and Gatekeeper limitations below still apply.</p>
+      </section>
+    </article>
     <article aria-labelledby="native-app-title">
       <section>
         <h2 id="native-app-title">A destination-built native Mac app</h2>
@@ -36,7 +47,7 @@
       <section aria-labelledby="native-app-limits-title">
         <h3 id="native-app-limits-title">What delivery still requires</h3>
         <p>Build the app on the destination Mac against a full official Racket 9.3 installation and a prepared writable source/profile. It is tethered to those fixed dependency paths. The app alone can move; moving its dependencies requires rebuilding. This is not a self-contained binary download. It is unsigned and not notarized, and transferred-app Gatekeeper behavior was not tested. No security settings were changed or warnings bypassed.</p>
-        <p>The app checks passed independently, but the overall CI run is red: a separate tool-test negative control exited nonzero as intended while omitting the exception details its validator required. Six Debugger, Macro Stepper and teaching workflow cases therefore remain unrun. Normal Quit and unsaved-document prompts, Finder/Dock gestures, full tool compatibility and other platforms need further acceptance.</p>
+        <p>The app checks passed independently, but the overall CI run is red: a separate tool-test negative control exited nonzero as intended while omitting the exception details its validator required. Six Debugger, Macro Stepper and teaching workflow cases were unrun in that batch; the <a href="#native-tools-title">later tool acceptance</a> now records all six passing. Normal Quit and unsaved-document prompts, Finder/Dock gestures, full tool compatibility and other platforms need further acceptance.</p>
         <p>This is a packaging and launch milestone, not a new performance measurement. The earlier autosave improvement and fresh-profile capacity result keep their original measured scope. Large-file responsiveness remains unfinished.</p>
       </section>
     </article>

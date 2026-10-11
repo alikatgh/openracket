@@ -177,6 +177,23 @@ class SiteTests(unittest.TestCase):
                      'initially unset handler was not tested', 'overall CI run is red']:
             self.assertIn(text, readme)
 
+    def test_native_tool_workflow_scope(self):
+        for name in ['index.html', 'changelog.html', 'blog.html']:
+            source = (ROOT / name).read_text()
+            for text in ['57 acceptance rows', '38140896349', 'Debugger',
+                         'Macro Stepper', 'stock/light', 'modern/dark',
+                         'modern light mode', 'Quit']:
+                self.assertIn(text.lower(), source.lower())
+            self.assertIn('native-tools-title', source)
+        blog = (ROOT / 'blog.html').read_text()
+        for text in ['77–102', 'unsaved correction', '60-second',
+                     '128 MiB', '26,838', 'physical-input latency']:
+            self.assertIn(text, blog)
+        self.assertNotIn('cases therefore remain unrun', blog)
+        readme = (ROOT.parent / 'README.md').read_text()
+        self.assertIn('57 acceptance rows', readme)
+        self.assertIn('38140896349', readme)
+
     def test_css_delimiters(self):
         self.assertEqual(self.css.count('{'), self.css.count('}'))
         self.assertEqual(self.css.count('('), self.css.count(')'))
