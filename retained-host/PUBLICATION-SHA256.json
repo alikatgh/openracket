@@ -1147,7 +1147,7 @@
   "retained-host/scripts/ci/test-binding-matrix.py": "06016d713644478e5a5ec7c0957c28bc2718e510b264e211d7a98b3c56ee541d",
   "retained-host/scripts/ci/test-budget-comparison.py": "377b904b00563dba2fa56ae0898ce41f00685ae3408e8b5b5601803f25a60bd5",
   "retained-host/scripts/ci/test-completed-phases-adapter.py": "89bc0bef712e067e59475f5041c86df96d8e689325c446843f17d2a907ceaf41",
-  "retained-host/scripts/ci/test-editor-diagnostic-adapter.py": "a6a1bb96e8d2d1bdcd2daa3d6a5d939ca9c0e9991d71ef17c27d25ddada9e55e",
+  "retained-host/scripts/ci/test-editor-diagnostic-adapter.py": "2d9653de5ca1a458606c6ec0840d322a9e60962852192ced53ee440ba3fee889",
   "retained-host/scripts/ci/test-functional-phase.py": "7dbed464e562d77147ec78a03c14a8d1808c5b6ac38353628734d8373047de81",
   "retained-host/scripts/ci/test-gui-phase-adapter.py": "cad93b4d6cd9c064ee49bfa46ceb4c8d4d4323c0713a3b0a3445f21bd6d34704",
   "retained-host/scripts/ci/test-interval-adapter.py": "2ccafd498b61e84494d3550bcc65ca459978e9bcc5f01c24c96dc723a4917b37",
