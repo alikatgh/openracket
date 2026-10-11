@@ -150,6 +150,16 @@ class SiteTests(unittest.TestCase):
         for value in ['24.6%', 'three pairs', '34.373–39.619', 'statistical significance', '163–216']:
             self.assertIn(value, blog)
 
+    def test_capacity_scope(self):
+        for name in ['index.html', 'changelog.html', 'blog.html']:
+            source = (ROOT / name).read_text()
+            for text in ['256 MiB', '128 MiB', 'capacity']:
+                self.assertIn(text, source)
+        for name in ['changelog.html', 'blog.html']:
+            source = (ROOT / name).read_text()
+            for text in ['38114573816', '38107957744', '1.487–1.543', '33.222–39.155']:
+                self.assertIn(text, source)
+
     def test_css_delimiters(self):
         self.assertEqual(self.css.count('{'), self.css.count('}'))
         self.assertEqual(self.css.count('('), self.css.count(')'))

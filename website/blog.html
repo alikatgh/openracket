@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="How the retained DrRacket experiment measured a localized Mac autosave improvement.">
+  <meta name="description" content="Measured memory-capacity and autosave changes in the retained DrRacket experiment.">
   <title>OpenRacket — Technical blog</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -21,6 +21,31 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <article aria-labelledby="capacity-title">
+      <section>
+        <h2 id="capacity-title">Enough memory to complete the tested analysis</h2>
+        <p><time datetime="2026-10-11">2026-10-11</time></p>
+        <p>A nine-trial stock DrRacket experiment tested the same 1 MiB file with 128, 256 and 512 MiB per-job memory limits. The 128 MiB setting ended out of memory in all three trials. At both 256 and 512 MiB, all three trials delivered the final source's clean Check Syntax monitor message, original handler response and actual GUI callback.</p>
+        <p>256 MiB was the smallest tested limit that completed this workload. Increasing to 512 MiB had no consistent timing advantage. Three trials per limit do not establish a universal sufficient limit or statistical significance. <a href="https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/reports/PERFORMANCE-MEMORY-38107957744.md">Full memory experiment and all nine observations</a>.</p>
+      </section>
+      <section aria-labelledby="capacity-method-title">
+        <h3 id="capacity-method-title">What the experiment changed</h3>
+        <p>Each trial used a fresh GUI process and isolated preferences on the same macOS 15 ARM64 runner, with cyclic 128/256/512, 256/512/128 and 512/128/256 ordering. Only the stock registered child-memory preference varied. The actual worker cap, final source, settings and tool registry were checked. The stock editor, lexer, tools and 20 ms coloring budget were retained; no appearance or autosave candidate was installed.</p>
+        <p>The setting is shared by Run and background analysis. It limits custodian-owned live memory, not total application RSS. At 256 MiB, observed whole-process peak RSS was 1.487–1.543 GB. It would be misleading to describe this as a 256 MiB application.</p>
+      </section>
+      <section aria-labelledby="capacity-speed-title">
+        <h3 id="capacity-speed-title">Completion remains slow</h3>
+        <p>At 256 MiB, the actual final tool callback arrived 33.222–39.155 seconds after open. Observing both valid coloring and that callback took 33.274–44.117 seconds. The synchronous file-open command still blocked for 1.668–2.596 seconds, with further substantial event-loop delays. A lower time for the aborted 128 MiB arm is an early failure, not an equal-work speed comparison.</p>
+        <p>This is a capacity change, not a code optimization or a claim of faster editing. Large-file responsiveness and full DrRacket compatibility remain open. The separate autosave result below retains its original measured scope.</p>
+      </section>
+      <section aria-labelledby="capacity-install-title">
+        <h3 id="capacity-install-title">Adopting the default without changing existing profiles</h3>
+        <p><a href="https://github.com/alikatgh/openracket/actions/runs/38114573816">Mac installer run 38114573816</a>, at source commit <a href="https://github.com/alikatgh/openracket/commit/80e51d78526d718a50c45f3662058a042c3038f7">80e51d7</a>, passed all gates. Eight real launches checked fresh 256 MiB behavior, the autosave opt-out, restoration to 128 MiB, explicit 128/384 MiB choices, repeated setup and the separate stock launcher's 128 MiB profile. Both complete original runtime trees remained unchanged.</p>
+        <p>The automatic default applies only when setup reserves a previously absent isolated profile. Existing profiles, including empty profiles or those without a saved memory key, retain their behavior. Explicit choices are preserved. A guarded restore is available for an unchanged automatically installed default; close the profile's windows before changing preferences and restart afterward.</p>
+        <p>The installed host's save/recovery regression passed with the autosave guard on and off in separate fresh stock-128 test profiles. Those checks do not retime autosave at the new default or establish large-file performance of the combined build. The launcher observer verifies the registered preference in the actual GUI; worker-cap evidence comes from the separate workload experiment.</p>
+        <p>Full official Racket 9.3 is still required. This remains a Mac-first source preview, without signing or a packaged application. Windows is untested. <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Installation, explicit choices and restore instructions</a>.</p>
+      </section>
+    </article>
     <article aria-labelledby="autosave-title">
       <section>
         <h2 id="autosave-title">Measuring the actual autosave call</h2>
@@ -53,7 +78,7 @@
       </section>
       <section aria-labelledby="installation-title">
         <h2 id="installation-title">Installation progress</h2>
-        <p>Later, <a href="https://github.com/alikatgh/openracket/actions/runs/38064415026">run 38064415026</a> passed actual Mac setup, all three launch modes, combined appearance-plus-autosave save/recovery checks and original-runtime preservation. The overall run failed in independent expansion-replay preparation, so that replay remains unverified. Combined performance has not been retimed.</p>
+        <p>Later, <a href="https://github.com/alikatgh/openracket/actions/runs/38064415026">run 38064415026</a> passed actual Mac setup, all three launch modes, combined appearance-plus-autosave save/recovery checks and original-runtime preservation. The overall run failed in independent expansion-replay preparation, so that replay was not verified by that run. Combined performance has not been retimed.</p>
         <p>The current deliverable is a source installer requiring full official Racket 9.3. It is not a signed or packaged app. Windows remains untested and full DrRacket equivalence is not established.</p>
         <p><a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/reports/PERFORMANCE-AUTOSAVE-38061486888.md">Full measurement report, checksums and reproduction details</a> · <a href="https://github.com/alikatgh/openracket/blob/prototype/retained-drracket/retained-host/PORTABLE-CANDIDATE.md">Current installation and opt-outs</a></p>
       </section>

@@ -21,6 +21,16 @@
       <a href="changelog.html">Changelog</a>
       <a href="blog.html">Technical blog</a>
     </nav>
+    <section aria-labelledby="capacity-title">
+      <h2 id="capacity-title">2026-10-11: Fresh-profile memory capacity</h2>
+      <p>The Mac source preview now initializes genuinely new isolated profiles with a 256 MiB per-job limit. Existing profiles and explicit choices are preserved. The original DrRacket preference affects both Run and background analysis; it is not a whole-application RAM cap.</p>
+      <ul>
+        <li>In the separate stock-host 1 MiB workload experiment, 128 MiB failed out of memory in 3/3 trials. Both 256 and 512 MiB completed final background analysis in 3/3. 256 MiB was the smallest tested adequate limit. <a href="https://github.com/alikatgh/openracket/blob/80e51d78526d718a50c45f3662058a042c3038f7/retained-host/reports/PERFORMANCE-MEMORY-38107957744.md">Nine-trial memory report</a>.</li>
+        <li><a href="https://github.com/alikatgh/openracket/actions/runs/38114573816">Mac installer run 38114573816</a> passed in full: eight real launches, fresh default, restore to 128 MiB, explicit settings, repeated-setup preservation, separate stock 128 MiB profile, save/recovery regression and both original-runtime tree comparisons.</li>
+      </ul>
+      <p>This fixes capacity for the tested workload. Final tool callbacks at 256 MiB still took 33.222–39.155 seconds, and whole-process peak RSS was 1.487–1.543 GB. Long pauses and full compatibility remain unresolved. The earlier autosave timing has not been rerun on this combined build.</p>
+      <p><a href="blog.html#capacity-title">Read the capacity experiment and adoption limits</a>.</p>
+    </section>
     <section aria-labelledby="october-title">
       <h2 id="october-title">2026-10-11: Mac autosave and installation results</h2>
       <p>This entry records completed experiments and individual acceptance gates. It is not a packaged application release.</p>
