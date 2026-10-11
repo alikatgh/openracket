@@ -1,0 +1,29 @@
+{
+  "status": "portable_pass_native_pending",
+  "tests_run": 71,
+  "passed": 58,
+  "skipped_native_tests": 13,
+  "python_compile": "passed",
+  "native_preflight_missing_runtime_refusal": "passed",
+  "native_gui_or_real_expansion_executed": false,
+  "runtime_installation_or_network_writes": false,
+  "baseline_manifest_sha256": "d7187ac4708dde9ae5de9c09ce5e369aacd1fcfd9257a16c6c827a94a7362ace",
+  "requested_child_limit_bytes": 268435456,
+  "supervisor_byte_identical": true,
+  "stock_transform_diff_byte_identical": true,
+  "profile_helper_byte_identical": true,
+  "profile_wrapper_byte_identical": true,
+  "native_acceptance": "All unskipped headless gates, then actual cap256 capture and two real same-process replays, evaluated by accept_completed.py; no finished-expansion/OOM-only success",
+  "unchanged_bounds_seconds": {
+    "profile_setup": 30,
+    "capture_process": 190,
+    "capture_frame": 90,
+    "capture_terminal": 90,
+    "capture_cleanup": 5,
+    "worker_init": 30,
+    "replay_terminal": 60,
+    "replay_cleanup": 2,
+    "replay_total_two_trials": 157,
+    "source_compilation": 240
+  }
+}

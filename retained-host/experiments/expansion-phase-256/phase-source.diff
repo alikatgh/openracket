@@ -1,0 +1,218 @@
+--- stock/module-language.rkt
++++ phase-probe/module-language.rkt
+@@ -2508,10 +2508,17 @@
+       (place-channel-put expanding-place module-language-compile-lock)
+       (place-channel-put
+        expanding-place 
+-       (for/list ([o-e-h (in-list (drracket:module-language-tools:get-online-expansion-handlers))])
++       (let ([actual-registry
++(for/list ([o-e-h (in-list (drracket:module-language-tools:get-online-expansion-handlers))])
+          (list (drracket:module-language-tools:online-expansion-handler-mod-path o-e-h)
+                (drracket:module-language-tools:online-expansion-handler-id o-e-h)
+-               (drracket:module-language-tools:online-expansion-handler-monitor? o-e-h)))))
++               (drracket:module-language-tools:online-expansion-handler-monitor? o-e-h)))])
++         (when (equal? (getenv "OPENRACKET_EXPANSION_CAPTURE") "1")
++           ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'capture-registry!) actual-registry))
++         actual-registry)))
+     
+     (for ([o-e-h (in-list (drracket:module-language-tools:get-online-expansion-handlers))])
+       (when (drracket:module-language-tools:online-expansion-handler-monitor? o-e-h)
+@@ -2531,10 +2538,21 @@
+                                    prefab-module-settings
+                                    pc-status-expanding-place
+                                    currently-open-files))
++               (define openracket-capture-request-id
++                 (and (equal? (getenv "OPENRACKET_EXPANSION_CAPTURE") "1")
++                      ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'capture-request!) to-send (preferences:get 'drracket:child-only-memory-limit))))
+                (place-channel-put expanding-place to-send)
+                (define us (current-thread))
+                (thread (λ () 
+                          (define got-status-update (place-channel-get pc-status-drracket-place))
++                         (when openracket-capture-request-id
++                           ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'capture-status!) openracket-capture-request-id got-status-update))
+                          ;; when got-status-update isn't 'finished-expansion, then
+                          ;; that means that expansion won't ever finish (due to
+                          ;; an error or an aborted job)
+@@ -2551,6 +2569,11 @@
+                ;; response here and keeps waiting for the actual result in that case.
+                (let loop ()
+                  (define res (place-channel-get pc-out))
++                 (when openracket-capture-request-id
++                   ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'capture-result!) openracket-capture-request-id res))
+                  (cond
+                    [(equal? (vector-ref res 0) 'monitor-message)
+                     (queue-callback
+--- stock/expanding-place.rkt
++++ phase-probe/expanding-place.rkt
+@@ -10,6 +10,16 @@
+          wxme
+          errortrace/stacktrace)
+ (module+ test (require rackunit))
++
++;; BEGIN OPENRACKET REPLAY-ONLY PHASE HOOK
++(define openracket-phase-hook
++  (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
++       (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1")
++       (dynamic-require
++        (string->path (or (getenv "OPENRACKET_REPLAY_PHASE_MODULE")
++                         (error 'phase-probe "Missing frozen phase module")))
++        'phase-hook!)))
++;; END OPENRACKET REPLAY-ONLY PHASE HOOK
+ 
+ (provide start)
+ 
+@@ -58,6 +68,13 @@
+            (define monitor-pc (list-ref lst 2))
+            (handler (list file id) monitor-pc (dynamic-require file id)))))
+   
++  ;; Opt-in diagnostic only. Integrated capture never sets this flag.
++  (when (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
++    ((dynamic-require (string->path
++                    (or (getenv "OPENRACKET_REPLAY_SUPPORT")
++                        (error 'openracket-replay "missing support path")))
++                   'worker-ready!) p (current-logger) (preferences:get 'drracket:child-only-memory-limit)))
++
+   (let loop ([current-job #f]
+              ;; the old-registry argument holds on to the namespace-module-registry
+              ;; from a previous run in order to keep entries in the bytecode cache
+@@ -125,6 +142,9 @@
+     (parameterize ([current-custodian cust])
+       (thread
+        (λ ()
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-start))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 00 starting monitors")
+          (for ([handler (in-list handlers)])
+            (define pc (handler-monitor-pc handler))
+@@ -220,11 +240,17 @@
+             (thread (λ () (catch-and-log in the-io)))]
+            [else
+             (thread (λ () (catch-and-check-non-empty in the-io)))])
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-phase-09))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 09 starting expansion")
+          (define expanded 
+            (parameterize ([current-output-port out]
+                           [current-error-port out])
+              (expand transformed-stx)))
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-phase-10))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 10 finished expansion")
+          (define no-io-happened?
+            (begin
+@@ -233,6 +259,9 @@
+          (channel-put old-registry-chan 
+                       (namespace-module-registry (current-namespace)))
+          (place-channel-put pc-status-expanding-place 'finished-expansion)
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-phase-11))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 11 getting handler results")
+          (define handler-results
+            (filter
+@@ -261,6 +290,9 @@
+                                             the-source
+                                             orig-cust)))
+                 (list (handler-key handler) proc-res)))))
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-phase-12))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 12 handlers finished")
+          (define compiled-bytes
+            (cond
+@@ -282,6 +314,9 @@
+                     #t)))
+               (and write-succeeded? (get-output-bytes bp))]
+              [else #f]))
++         ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++         (when openracket-phase-hook (openracket-phase-hook 'worker-phase-13))
++         ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+          (ep-log-info "expanding-place.rkt: 13 compile finished")
+          
+          (parameterize ([current-custodian orig-cust])
+--- stock/syncheck/online-comp.rkt
++++ phase-probe/syncheck/online-comp.rkt
+@@ -10,6 +10,16 @@
+          "../../private/eval-helpers-and-pref-init.rkt"
+          "intf.rkt"
+          "local-member-names.rkt")
++
++;; BEGIN OPENRACKET REPLAY-ONLY PHASE HOOK
++(define openracket-phase-hook
++  (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
++       (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1")
++       (dynamic-require
++        (string->path (or (getenv "OPENRACKET_REPLAY_PHASE_MODULE")
++                         (error 'phase-probe "Missing frozen phase module")))
++        'phase-hook!)))
++;; END OPENRACKET REPLAY-ONLY PHASE HOOK
+ 
+ (provide go monitor)
+ 
+@@ -51,11 +61,17 @@
+                   (λ ()
+                     (current-library-collection-paths clcp)
+                     (use-compiled-file-paths ucfp)))))
++  ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++  (when openracket-phase-hook (openracket-phase-hook 'go-send-expanded))
++  ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+   (define c (make-channel))
+   (unless (exn? expanded)
+     (log-message online-check-syntax-logger 'info  "" (list expanded)))
+   (log-message online-check-syntax-logger 'info  "" (instructions-to-monitor-thread c))
+   ;; wait for everything to actually get sent back to the main place
++  ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++  (when openracket-phase-hook (openracket-phase-hook 'go-wait-for-monitor))
++  ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+   (channel-get c))
+ 
+ (define (build-trace stxes the-source orig-cust path)
+@@ -107,6 +123,9 @@
+                                 'online-check-syntax))
+   (thread
+    (λ ()
++     ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++     (when openracket-phase-hook (openracket-phase-hook 'monitor-start))
++     ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+      (let loop ()
+        (define val (sync lr))
+        (match val
+@@ -119,7 +138,13 @@
+                                 (parameterize ([current-error-port sp])
+                                   ((error-display-handler) (exn-message exn) exn))
+                                 (send-back (get-output-string sp)))])
++               ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++               (when openracket-phase-hook (openracket-phase-hook 'monitor-build-trace-start))
++               ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+                (define trace (build-trace obj the-source orig-cust path))
++               ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++               (when openracket-phase-hook (openracket-phase-hook 'monitor-build-trace-complete/send-back-start))
++               ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+                (send-back trace))]
+             [(instructions-to-monitor-thread? obj)
+              (define val (instructions-to-monitor-thread-val obj))
+@@ -131,6 +156,9 @@
+                [(channel? val)
+                 ;; signal back to the main place that we've gotten everything
+                 ;; and sent it back over
++                ;; BEGIN OPENRACKET REPLAY-ONLY PHASE POINT
++                (when openracket-phase-hook (openracket-phase-hook 'monitor-acknowledge-go))
++                ;; END OPENRACKET REPLAY-ONLY PHASE POINT
+                 (channel-put val (void))])])]
+          [_ (void)])
+        (loop)))))

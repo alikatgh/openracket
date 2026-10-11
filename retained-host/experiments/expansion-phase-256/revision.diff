@@ -1,0 +1,1472 @@
+--- baseline/accept_completed.py
++++ phase-256/accept_completed.py
+@@ -0,0 +1,129 @@
++#!/usr/bin/env python3
++"""Fail closed unless native cap256 capture and both phase replays completed cleanly."""
++import argparse
++import json
++import math
++from pathlib import Path
++
++CAP = 268435456
++XREF_PIN = 'acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7'
++REQUIRED_PHASES = {
++    'worker-start', 'monitor-start', 'worker-phase-09', 'worker-phase-10',
++    'worker-phase-11', 'worker-phase-12', 'worker-phase-13',
++    'monitor-build-trace-start', 'monitor-build-trace-complete/send-back-start',
++    'monitor-acknowledge-go', 'go-send-expanded', 'go-wait-for-monitor',
++}
++
++
++def assess(capture, capture_host, capture_supervisor, replay, supervisor):
++    failures = []
++    def require(ok, reason):
++        if not ok:
++            failures.append(reason)
++    def monitor(row, label):
++        ev = row.get('monitor_evidence', {})
++        require(ev.get('check_syntax_monitor_registry_entries') == 1, label + ': actual CheckSyntax monitor absent/ambiguous')
++        for key in ('messages', 'trace_batches', 'trace_entries', 'rename_capability_rows'):
++            require(type(ev.get(key)) is int and ev[key] > 0, label + ': missing clean monitor ' + key)
++        for key in ('error_messages', 'invalid_payloads'):
++            require(type(ev.get(key)) is int and ev[key] == 0, label + ': monitor errors or unclassified payloads')
++    setup = capture_supervisor.get('memory_profile_setup', {})
++    require(setup.get('verified') is True, 'headless one-key profile setup not verified')
++    require(capture_supervisor.get('expected_memory_limit_bytes') == CAP, 'capture supervisor cap mismatch')
++    require(capture_supervisor.get('gui_started') is True and capture_supervisor.get('exit_code') == 0
++            and capture_supervisor.get('timeout') is False
++            and capture_supervisor.get('cleanup', {}).get('complete') is True, 'capture process/cleanup failed')
++    require(capture_host.get('status') == 'terminal_captured', 'capture host did not observe terminal')
++    require(capture_host.get('preserved_preferences') ==
++            {'child_limit_bytes': CAP, 'online_compilation': True, 'coloring': True}, 'effective GUI preferences mismatch')
++    require(capture.get('status') == 'terminal_observed' and capture.get('actual_child_limit_bytes') == CAP,
++            'capture terminal or actual cap missing')
++    require(capture.get('terminal', {}).get('tag') == 'handler-results', 'capture did not complete with handler-results')
++    monitor(capture, 'capture')
++    require(supervisor.get('status') == 'ok' and supervisor.get('cleanup', {}).get('complete') is True,
++            'replay supervisor/cleanup failed')
++    require(supervisor.get('hard_wall_budget_seconds') == 157.0, 'replay deadline changed')
++    require(replay.get('status') == 'complete' and replay.get('cleanup', {}).get('accepted') is True,
++            'replay protocol/cleanup failed')
++    require(replay.get('actual_worker_child_limit_bytes') == CAP, 'actual ready worker cap mismatch')
++    require(replay.get('actual_worker_memory_accounting_available') is True, 'worker memory accounting unavailable')
++    require(replay.get('phase_probe_enabled') is True, 'phase probe disabled')
++    for key in ('snapshot_sha256', 'registry_sha256'):
++        require(bool(capture.get(key)) and capture.get(key) == replay.get(key), key + ' differs from capture')
++    trials = replay.get('trials', [])
++    require(len(trials) == 2, 'expected exactly two replay trials')
++    for i, row in enumerate(trials, 1):
++        label = 'trial ' + str(i)
++        require(row.get('trial') == i and row.get('outcome') == 'handler-results'
++                and row.get('terminal', {}).get('tag') == 'handler-results', label + ': no completed handler-results')
++        require(row.get('terminal_summary_matches_integrated_capture') is True, label + ': terminal summary differs')
++        monitor(row, label)
++        for key in ('trace_entries', 'rename_capability_rows'):
++            require(row.get('monitor_evidence', {}).get(key) == capture.get('monitor_evidence', {}).get(key),
++                    label + ': monitor scalar count differs from capture: ' + key)
++        require(type(row.get('retained_place_channels')) is int and row['retained_place_channels'] > 0,
++                label + ': actual rename endpoint not retained')
++        phase = row.get('phase_probe', {})
++        if not isinstance(phase, dict):
++            phase = {}
++        require(phase.get('trial') == i and phase.get('job_generation') == i and phase.get('active') is False,
++                label + ': phase trial/generation/end mismatch')
++        for key in ('phase_points_dropped', 'sample_ticks_dropped', 'input_events_dropped', 'stale_events_discarded'):
++            require(type(phase.get(key)) is int and phase[key] == 0, label + ': incomplete phase/sample delivery: ' + key)
++        points = phase.get('phase_points', [])
++        require(REQUIRED_PHASES <= {p.get('phase') for p in points}, label + ': missing completed request phase coverage')
++        require(all(p.get('trial') == i and p.get('job_generation') == i for p in points), label + ': stale phase generation')
++        require(all(type(p.get('source_metrics', {}).get('monotonic_ms')) in (float, int)
++                    and math.isfinite(p['source_metrics']['monotonic_ms'])
++                    and p['source_metrics']['monotonic_ms'] >= 0 for p in points),
++                label + ': invalid producer timestamp')
++        source_times = {p.get('phase'): p.get('source_metrics', {}).get('monotonic_ms') for p in points}
++        for seq in [('worker-phase-09', 'worker-phase-10', 'worker-phase-11', 'worker-phase-12', 'worker-phase-13'),
++                    ('monitor-build-trace-start', 'monitor-build-trace-complete/send-back-start', 'monitor-acknowledge-go')]:
++            times = [source_times.get(p) for p in seq]
++            require(all(type(t) in (float, int) and math.isfinite(t) and t >= 0 for t in times)
++                    and all(a <= b for a, b in zip(times, times[1:])),
++                    label + ': missing/nonmonotonic producer phase times')
++        ev = phase.get('attribution_evidence', {})
++        require(ev.get('status') == 'coarse_thread_context_available', label + ': actual-thread context incomplete')
++        for key in ('working_thread_registered', 'monitor_thread_registered', 'xref_service_thread_registered',
++                    'usable_monitor_frames', 'usable_xref_frames'):
++            require(ev.get(key) is True, label + ': missing ' + key)
++        require(phase.get('xref_service_registration', {}).get('status') == 'registered_existing_service_thread',
++                label + ': existing xref service not proven')
++        require(phase.get('xref_service_registration', {}).get('source_sha256') == XREF_PIN,
++                label + ': existing xref source pin missing/mismatched')
++        require(phase.get('stock_logger_subscription') is False, label + ': stock logger subscription changed')
++        if i == 2:
++            require(type(row.get('prior_place_channels_retained_before_request')) is int and row['prior_place_channels_retained_before_request'] > 0,
++                    'prior rename endpoints not retained through replacement')
++            require(row.get('prior_terminal_retained_before_request') is True, 'prior real terminal not retained through replacement')
++    require(type(replay.get('last_place_channels_retained_until_cleanup')) is int and replay['last_place_channels_retained_until_cleanup'] > 0,
++            'last rename endpoints not retained through cleanup')
++    require(replay.get('last_terminal_retained_until_cleanup') is True, 'last real terminal not retained through cleanup')
++    return {'accepted': not failures, 'classification': 'completed_request_phase_evidence' if not failures else 'diagnostic_incomplete_or_failed',
++            'failures': failures,
++            'scope': 'Two completed cap256 requests with clean monitor schema, terminal summaries, phase coverage and approximate thread context. No full payload equality, allocation ownership, CPU attribution or speedup claim. The shared xref service is observed during each request, not proven to execute that request.'}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--capture', required=True, type=Path)
++    parser.add_argument('--results', required=True, type=Path)
++    args = parser.parse_args()
++    def read(base, name):
++        return json.loads((base / name).read_text())
++    try:
++        report = assess(read(args.capture, 'capture-summary.json'), read(args.capture, 'capture-host.json'),
++                        read(args.capture, 'capture-supervisor.json'), read(args.results, 'replay.json'),
++                        read(args.results, 'supervisor.json'))
++    except (OSError, ValueError, TypeError, AttributeError, KeyError) as error:
++        report = {'accepted': False, 'classification': 'diagnostic_incomplete_or_failed',
++                  'failures': [f'Missing or malformed native evidence: {error}']}
++    args.results.mkdir(parents=True, exist_ok=True)
++    (args.results / 'acceptance.json').write_text(json.dumps(report, indent=2) + '\n')
++    print(json.dumps(report, indent=2))
++    return 0 if report['accepted'] else 1
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+--- baseline/capture-host.rkt
++++ phase-256/capture-host.rkt
+@@ -72,8 +72,8 @@
+      (define coloring? (prefs-get 'framework:coloring-active))
+      (hash-set! report 'preserved_preferences
+                 (hasheq 'child_limit_bytes child-limit 'online_compilation online? 'coloring coloring?))
+-     (unless (and (equal? child-limit 134217728) online? coloring?)
+-       (error 'capture-host "Native defaults differ: require unchanged 128 MiB child limit, online expansion and coloring"))
++     (unless (and (equal? child-limit 268435456) online? coloring?)
++       (error 'capture-host "Native defaults differ: require authorized 256 MiB child limit, online expansion and coloring"))
+      (send frame resize 1200 820)
+      (send canvas focus)
+      (send frame change-to-file fixture)
+--- baseline/capture.py
++++ phase-256/capture.py
+@@ -8,6 +8,8 @@
+ import subprocess
+ import sys
+ import time
++from types import SimpleNamespace
++from profile_setup import prepare_memory_profile
+ from supervise import cleanup_group
+ 
+ BASE_SHA256 = '766af354720de3e235cd60d9eb511f0469c35b36a99b599a071453d22a1b499e'
+@@ -28,7 +30,6 @@
+     output.mkdir(parents=True)
+     profile = output / 'profile'
+     profile.mkdir()
+-    (profile / 'openracket-diagnostic-profile').write_text('openracket-expansion-diagnostic-profile\n')
+     edited = data[:EDIT_POSITION] + b'x' + data[EDIT_POSITION:]
+     config = {'fixture': str(fixture), 'output': str(output), 'edit_position': EDIT_POSITION}
+     env = dict(os.environ)
+@@ -36,7 +37,7 @@
+     for key in list(env):
+         if key.startswith('OPENRACKET_'):
+             env.pop(key)
+-    env.update({'PLTUSERHOME': str(profile), 'XDG_CONFIG_HOME': str(profile / '.config'),
++    env.update({'PLTUSERHOME': str(profile), 'PLTADDONDIR': str(output / 'addon'), 'XDG_CONFIG_HOME': str(profile / '.config'),
+                 'XDG_CACHE_HOME': str(profile / '.cache'),
+                 'OPENRACKET_EXPANSION_CAPTURE': '1',
+                 'OPENRACKET_CAPTURE_CONFIG': json.dumps(config),
+@@ -48,6 +49,24 @@
+               'cleared_inherited_openracket_keys': cleared_flags,
+               'base_fixture_sha256': BASE_SHA256, 'edited_snapshot_sha256': hashlib.sha256(edited).hexdigest(),
+               'edited_snapshot_bytes': len(edited), 'timeout': False}
++    setup_args = SimpleNamespace(racket=racket, memory_limit_mib=256,
++                                 profile_helper=Path(__file__).with_name('memory-profile.rkt'))
++    setup_cleanup = []
++    def terminate_setup(process):
++        result = cleanup_group(process, time.monotonic() + 5)
++        setup_cleanup.append(result)
++    setup = prepare_memory_profile(setup_args, env, output, terminate_setup)
++    setup['cleanup'] = setup_cleanup
++    report['memory_profile_setup'] = setup
++    report['expected_memory_limit_bytes'] = 268435456
++    if not setup['verified']:
++        report.update(status='setup_failed', gui_started=False)
++        (output / 'capture-supervisor.json').write_text(json.dumps(report, indent=2) + '\n')
++        print(json.dumps(report, indent=2))
++        return 1
++    # The helper requires an empty home, so mark it only after one-key verification.
++    (profile / 'openracket-diagnostic-profile').write_text('openracket-expansion-diagnostic-profile\n')
++    report['gui_started'] = True
+     process = None
+     started = time.monotonic()
+     try:
+--- baseline/make-mock-capture.rkt
++++ phase-256/make-mock-capture.rkt
+@@ -20,7 +20,7 @@
+           'snapshot-characters (string-length snapshot)
+           'registry registry 'registry-files '() 'registry-sha256 (digest (serialized-bytes registry))
+           'context context 'preferences-bytes (and (file-exists? pref) (file->bytes pref))
+-          'child-limit 134217728 'worker-path worker 'worker-sha256 (file-hash worker)
++          'child-limit 268435456 'worker-path worker 'worker-sha256 (file-hash worker)
+           'caller-path caller 'caller-sha256 (file-hash caller)
+           'support-path support 'support-sha256 (file-hash support)))
+ (write-datum-atomic (build-path output "capture.rktd") record)
+--- baseline/memory-profile.rkt
++++ phase-256/memory-profile.rkt
+@@ -0,0 +1,269 @@
++#lang racket/base
++;; A separate, headless, pre-timing process. Never require this in the GUI host.
++(require file/sha1 json racket/cmdline racket/file racket/list racket/path
++         racket/port racket/gui/dynamic setup/dirs)
++
++(define preference-key 'drracket:child-only-memory-limit)
++(define disk-key 'plt:framework-pref:drracket:child-only-memory-limit)
++(define default-bytes (* 128 1024 1024))
++(define source-pins
++  (hasheq 'eval_helpers "e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62"
++          'framework_preferences "59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c"))
++(define max-store-bytes (* 1024 1024))
++
++(define (ensure yes? fmt . arguments)
++  (unless yes? (apply error 'memory-profile fmt arguments)))
++
++;; Resolve every existing symlink component, including macOS /var -> /private/var.
++;; simplify-path alone does not resolve arbitrary ancestor symlinks.
++(define (physical-path p [links 0])
++  (ensure (< links 64) "too many symbolic links")
++  (define parts (explode-path (path->complete-path p)))
++  (for/fold ([base (car parts)]) ([part (in-list (cdr parts))])
++    (define candidate
++      (cond [(eq? part 'same) base]
++            [(eq? part 'up) (simplify-path (build-path base 'up) #f)]
++            [else (build-path base part)]))
++    (if (link-exists? candidate)
++        (physical-path (path->complete-path (resolve-path candidate)
++                                            (or (path-only candidate) base))
++                       (add1 links))
++        candidate)))
++
++(define (within? p root)
++  (define pp (explode-path (physical-path p)))
++  (define rp (explode-path (physical-path root)))
++  (and (> (length pp) (length rp))
++       (equal? (take pp (length rp)) rp)))
++
++(define (overlap? a b)
++  (or (equal? (physical-path a) (physical-path b)) (within? a b) (within? b a)))
++
++(define (file-sha256 p)
++  (call-with-input-file p (lambda (in) (bytes->hex-string (sha256-bytes in)))))
++
++(define (checked-source p runtime-root name)
++  (define real (physical-path p))
++  (ensure (within? real runtime-root) "~a source is outside runtime root: ~a" name real)
++  (ensure (and (file-exists? real) (<= (file-size real) max-store-bytes))
++          "~a source is missing or oversized" name)
++  (define actual (file-sha256 real))
++  (define expected (hash-ref source-pins name))
++  (ensure (equal? actual expected) "~a source SHA-256 does not match official 9.3 pin" name)
++  (hasheq 'path (path->string real) 'sha256 actual 'expected_sha256 expected))
++
++(define (read-store path)
++  (cond
++    [(not (file-exists? path)) (hasheq)]
++    [else
++     (ensure (<= (file-size path) max-store-bytes) "preference store is oversized")
++     (call-with-input-file path
++       (lambda (in)
++         (parameterize ([read-accept-reader #f] [read-accept-lang #f]
++                        [read-accept-graph #f] [read-accept-compiled #f])
++           (define entries (read in))
++           (ensure (and (list? entries) (<= (length entries) 4096)
++                        (andmap (lambda (v) (and (list? v) (= (length v) 2)
++                                                (symbol? (car v)))) entries)
++                        (eof-object? (read in)))
++                   "invalid preference store")
++           (define result (make-immutable-hasheq
++                           (map (lambda (v) (cons (car v) (cadr v))) entries)))
++           (ensure (= (hash-count result) (length entries)) "duplicate preference-store key")
++           result)))]))
++
++(define (selected-limit s)
++  (ensure (member s '("128" "256" "512")) "--limit-mib must be exactly 128, 256, or 512")
++  (* (string->number s) 1024 1024))
++
++(define (fresh-directory env-name)
++  (define value (getenv env-name))
++  (ensure (and value (complete-path? value)) "~a must name an explicit absolute path" env-name)
++  (define path (physical-path value))
++  (ensure (directory-exists? path) "~a directory must already exist" env-name)
++  (ensure (null? (directory-list path)) "~a directory must be empty" env-name)
++  path)
++
++(define (only-target-addition? before after selected)
++  (and (not (hash-has-key? before disk-key))
++       (equal? (hash-ref after disk-key #f) selected)
++       (equal? before (hash-remove after disk-key))))
++
++(define (emit-json result out)
++  (define contents (jsexpr->string result))
++  (ensure (<= (string-length contents) 32768) "JSON report exceeds bound")
++  (displayln contents out)
++  (flush-output out))
++
++(define (run)
++  (define limit-argument #f)
++  (define output-argument #f)
++  (define root-argument #f)
++  (define out #f)
++  (define stage "arguments")
++  (define preference-write-attempted? #f)
++  (with-handlers
++      ([exn:fail?
++        (lambda (e)
++          (define message (exn-message e))
++          (define bounded (substring message 0 (min (string-length message) 1600)))
++          (when out
++            (emit-json (hasheq 'schema_version 1 'status "refused" 'stage stage
++                               'error bounded
++                               'preference_write_attempted preference-write-attempted?) out)
++            (close-output-port out))
++          (eprintf "~a\n" bounded)
++          (exit 1))])
++    (command-line
++     #:program "memory-profile.rkt"
++     #:once-each
++     [("--limit-mib") value "128, 256, or 512" (set! limit-argument value)]
++     [("--output") value "New absolute JSON report path" (set! output-argument value)]
++     [("--runtime-root") value "Absolute cloned Racket 9.3 runtime root" (set! root-argument value)]
++     #:args () (void))
++    (ensure (and output-argument (complete-path? output-argument)) "--output must be an absolute path")
++    (ensure (and root-argument (complete-path? root-argument)) "--runtime-root must be an absolute path")
++    (define root (physical-path root-argument))
++    (define output (physical-path output-argument))
++    (ensure (directory-exists? root) "runtime root does not exist")
++    (ensure (and (path-only output) (directory-exists? (path-only output)))
++            "output parent directory must already exist")
++    (ensure (not (within? output root)) "output may not be inside runtime")
++    (for ([name '("PLTUSERHOME" "PLTADDONDIR")])
++      (define value (getenv name))
++      (when (and value (complete-path? value))
++        (ensure (not (overlap? output value)) "output may not overlap ~a" name)))
++    (ensure (not (or (file-exists? output) (directory-exists? output)
++                     (link-exists? output-argument))) "output must not already exist")
++    (set! out (open-output-file output #:exists 'error))
++    (define selected (selected-limit limit-argument))
++    (set! stage "runtime-and-profile")
++    (ensure (equal? (version) "9.3") "requires Racket 9.3; running ~a" (version))
++    (define executable
++      (physical-path (or (find-executable-path (find-system-path 'exec-file))
++                         (find-system-path 'exec-file))))
++    (ensure (within? executable root) "running executable is outside runtime root")
++    (define home (fresh-directory "PLTUSERHOME"))
++    (define addon (fresh-directory "PLTADDONDIR"))
++    (ensure (not (overlap? home addon)) "profile and addon directories must be disjoint")
++    (ensure (and (not (overlap? home root)) (not (overlap? addon root)))
++            "profile and addon directories must be outside runtime")
++    (ensure (equal? home (physical-path (find-system-path 'home-dir))) "PLTUSERHOME not active")
++    (ensure (equal? addon (physical-path (find-system-path 'addon-dir))) "PLTADDONDIR not active")
++    (define pref-file (physical-path (find-system-path 'pref-file)))
++    (ensure (within? pref-file home) "preference file is outside fresh profile")
++    ;; On Unix, expand-user-path consults HOME, not PLTUSERHOME. Check the
++    ;; actual old-file candidate before the standard API can inherit it.
++    (define legacy
++      (case (system-type 'os)
++        [(unix) (expand-user-path "~/.plt-scheme/plt-prefs.ss")]
++        [(macosx) (build-path (find-system-path 'pref-dir) "org.plt-scheme.prefs.ss")]
++        [(windows) (build-path (find-system-path 'pref-dir) 'up "PLT Scheme" "plt-prefs.ss")]
++        [else (error 'memory-profile "unsupported preference-store platform")]))
++    (ensure (not (or (file-exists? legacy) (link-exists? legacy)))
++            "legacy fallback preference store exists; cannot prove fresh one-key profile")
++    ;; A fresh user profile must not inherit a runtime-wide fallback store.
++    (define fallback (build-path (find-config-dir) "racket-prefs.rktd"))
++    (ensure (not (or (file-exists? fallback) (link-exists? fallback)))
++            "runtime has a fallback preference store; cannot prove fresh one-key profile")
++    (define before (read-store pref-file))
++    (ensure (zero? (hash-count before)) "fresh preference store is not empty")
++    (ensure (not (gui-available?)) "GUI was initialized before profile setup")
++    (set! stage "source-pins")
++    (define eval-path (collection-file-path "eval-helpers-and-pref-init.rkt" "drracket" "private"))
++    (define framework-path (collection-file-path "preferences.rkt" "framework"))
++    (define sources
++      (hasheq 'eval_helpers (checked-source eval-path root 'eval_helpers)
++              'framework_preferences (checked-source framework-path root 'framework_preferences)))
++    (set! stage "original-default")
++    ;; Resolve and pin first, then load the originals, never a replacement setter.
++    (dynamic-require eval-path #f)
++    (define get (dynamic-require framework-path 'preferences:get))
++    (define set (dynamic-require framework-path 'preferences:set))
++    (define default-set? (dynamic-require framework-path 'preferences:default-set?))
++    (ensure (default-set? preference-key) "original helper did not register preference")
++    (define original (get preference-key))
++    (ensure (equal? original default-bytes) "original fresh-profile default is not 128 MiB")
++    (ensure (not (gui-available?)) "original default registration initialized GUI")
++    (ensure (equal? before (read-store pref-file)) "loading original modules changed preferences")
++    (set! stage "persist-and-read-back")
++    (set! preference-write-attempted? #t)
++    (set preference-key selected)
++    (define read-back (get preference-key))
++    (ensure (equal? read-back selected) "registered API read-back differs from selected value")
++    ;; #f permits cache reuse. #t forces a fresh read; explicit filename disables
++    ;; old-profile and configuration fallbacks. See Racket 9.3 get-preference docs.
++    (define persisted
++      (get-preference disk-key (lambda () (error 'memory-profile "persisted key missing"))
++                      #t pref-file))
++    (define after (read-store pref-file))
++    (ensure (and (equal? persisted selected) (only-target-addition? before after selected))
++            "disk verification failed: expected only the registered key addition")
++    (ensure (not (gui-available?)) "GUI initialized during profile setup")
++    (emit-json
++     (hasheq 'schema_version 1 'status "verified" 'phase "before-timed-gui"
++             'runtime_version (version) 'runtime_root (path->string root)
++             'runtime_executable (path->string executable)
++             'preference_key (symbol->string preference-key)
++             'persisted_preference_key (symbol->string disk-key)
++             'expected_default_limit_bytes default-bytes 'original_default_limit_bytes original
++             'expected_limit_bytes selected 'selected_limit_bytes selected
++             'readback_limit_bytes read-back 'persisted_limit_bytes persisted
++             'profile_was_empty #t 'addon_was_empty #t 'gui_initialized #f
++             'legacy_preference_store_absent #t 'runtime_fallback_store_absent #t
++             'profile_path (path->string home) 'addon_path (path->string addon)
++             'preference_store_path (path->string pref-file)
++             'preference_store_sha256 (file-sha256 pref-file)
++             'disk_read_method "get-preference/#t/explicit-file + bounded direct read"
++             'only_expected_preference_changed #t
++             'disk_key_count_before (hash-count before) 'disk_key_count_after (hash-count after)
++             'one_key_delta (list (hasheq 'key (symbol->string disk-key)
++                                         'before_present #f 'after_value selected))
++             'sources sources) out)
++    (close-output-port out)))
++
++(module+ main (run))
++
++(module+ test
++  (require rackunit)
++  (for ([mib '(128 256 512)])
++    (check-equal? (selected-limit (number->string mib)) (* mib 1024 1024)))
++  (for ([bad '(#f "0" "127" "129" "1024" "256.0" "0256" "#f" "128MiB")])
++    (check-exn exn:fail? (lambda () (selected-limit bad))))
++  (check-true (only-target-addition? (hasheq 'unrelated '(keep me))
++                                   (hasheq 'unrelated '(keep me) disk-key default-bytes)
++                                   default-bytes))
++  (check-false (only-target-addition? (hasheq 'unrelated 1)
++                                    (hasheq 'unrelated 2 disk-key default-bytes) default-bytes))
++  (check-false (only-target-addition? (hasheq disk-key default-bytes)
++                                    (hasheq disk-key default-bytes) default-bytes))
++  (define fixture (make-temporary-file "memory-profile-tests~a" 'directory))
++  (dynamic-wind
++   void
++   (lambda ()
++     (define original (collection-file-path "eval-helpers-and-pref-init.rkt" "drracket" "private"))
++     (define copied (build-path fixture "eval.rkt"))
++     (copy-file original copied)
++     (check-equal? (hash-ref (checked-source copied fixture 'eval_helpers) 'sha256)
++                   (hash-ref source-pins 'eval_helpers))
++     (check-exn exn:fail? (lambda () (checked-source original fixture 'eval_helpers)))
++     (call-with-output-file copied #:exists 'append (lambda (out) (display "\n; tampered\n" out)))
++     (check-exn exn:fail? (lambda () (checked-source copied fixture 'eval_helpers)))
++     (define framework-original (collection-file-path "preferences.rkt" "framework"))
++     (define framework-copy (build-path fixture "preferences.rkt"))
++     (copy-file framework-original framework-copy)
++     (check-equal? (hash-ref (checked-source framework-copy fixture 'framework_preferences) 'sha256)
++                   (hash-ref source-pins 'framework_preferences))
++     (call-with-output-file framework-copy #:exists 'append (lambda (out) (display "\n; tampered\n" out)))
++     (check-exn exn:fail? (lambda () (checked-source framework-copy fixture 'framework_preferences)))
++     (define escaped (build-path fixture "escaped.rkt"))
++     (make-file-or-directory-link original escaped)
++     (check-exn exn:fail? (lambda () (checked-source escaped fixture 'eval_helpers)))
++     (define store (build-path fixture "store.rktd"))
++     (call-with-output-file store (lambda (out) (write '((unrelated (keep me))) out)))
++     (check-equal? (read-store store) (hasheq 'unrelated '(keep me)))
++     (call-with-output-file store #:exists 'truncate (lambda (out) (write '((duplicate 1) (duplicate 2)) out)))
++     (check-exn exn:fail? (lambda () (read-store store)))
++     (call-with-output-file store #:exists 'truncate (lambda (out) (display "#reader racket/base" out)))
++     (check-exn exn:fail? (lambda () (read-store store))))
++   (lambda () (delete-directory/files fixture))))
+--- baseline/mock-worker.rkt
++++ phase-256/mock-worker.rkt
+@@ -20,9 +20,9 @@
+               [(stop)
+                (if (equal? (getenv "OPENRACKET_REPLAY_MOCK_MODE") "cleanup-wrong")
+                    (place-channel-put local 'wrong-acknowledgement) (sleep 10))]))))
+-       (place-channel-put p (vector 'openracket-expansion-replay-ready remote 134217728))
++       (place-channel-put p (vector 'openracket-expansion-replay-ready remote 268435456 (custodian-memory-accounting-available?)))
+        (unless (eq? (place-channel-get p) 'openracket-expansion-replay-continue) (error 'mock "bad continue"))]
+-      [else (worker-ready! p (current-logger) 134217728)]))
++      [else (worker-ready! p (current-logger) 268435456)]))
+   (let loop ([count 0])
+     (define request (place-channel-get p))
+     (cond
+--- baseline/native_preflight.py
++++ phase-256/native_preflight.py
+@@ -0,0 +1,41 @@
++#!/usr/bin/env python3
++"""Native headless acceptance gate; no skipped Racket tests and no GUI launch."""
++import argparse
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++import unittest
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--racket', required=True, type=Path)
++    parser.add_argument('--pristine-source', required=True, type=Path)
++    parser.add_argument('--profile', required=True, type=Path)
++    args = parser.parse_args()
++    racket = args.racket.resolve()
++    if not racket.is_file():
++        parser.error('Native Racket executable required; skipped gates are not acceptance')
++    args.profile.mkdir(parents=True, exist_ok=True)
++    os.environ.update(REPLAY_TEST_RACKET=str(racket), REPLAY_TEST_PROFILE=str(args.profile.resolve()),
++                      REPLAY_TEST_SOURCE_DIR=str(args.pristine_source.resolve()))
++    for key in list(os.environ):
++        if key.startswith('OPENRACKET_'):
++            del os.environ[key]
++    suite = unittest.defaultTestLoader.loadTestsFromNames(
++        ['test_cap256', 'test_phase_probe', 'test_implementation', 'test_supervise'])
++    result = unittest.TextTestRunner(verbosity=2).run(suite)
++    if result.skipped or not result.wasSuccessful():
++        return 1
++    env = dict(os.environ, PLTUSERHOME=str(args.profile.resolve()))
++    here = Path(__file__).resolve().parent
++    subprocess.run([str(racket), '-l', 'raco', 'test', str(here / 'test_support.rkt')], env=env, check=True, timeout=30)
++    subprocess.run([str(racket), '-l', 'raco', 'test', str(here / 'memory-profile.rkt')], env=env, check=True, timeout=30)
++    print(json.dumps({'native_preflight': 'passed', 'tests': result.testsRun, 'skipped': 0,
++                      'support_and_profile_helper_tests': 'passed'}))
++    return 0
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+--- baseline/phase-probe.rkt
++++ phase-256/phase-probe.rkt
+@@ -1,7 +1,7 @@
+ #lang racket/base
+ ;; Replay-only diagnostic. No stock logger subscriptions or payload retention.
+-(require racket/async-channel racket/match)
+-(provide phase-hook! start-probe!)
++(require racket/async-channel racket/match syntax/modresolve file/sha1)
++(provide phase-hook! start-probe! existing-service-thread-reference)
+ 
+ (define sample-period-ms 250.0)
+ (define sample-cap 256)
+@@ -37,7 +37,7 @@
+         [else #f]))
+ 
+ ;; Bound at module instantiation in each patched stock module, before the worker
+-;; switches namespaces. The two registered objects are the calling threads.
++;; switches namespaces. Job-scoped registered objects are the calling threads.
+ (define (phase-hook! label)
+   (unless controller (error 'phase-probe "Hook called before probe readiness"))
+   (when (eq? label 'worker-start)
+@@ -90,7 +90,38 @@
+          'frames_truncated truncated?)
+         'sample_finished_monotonic_ms (tick)))]))
+ 
+-(define (start-probe!)
++;; Read only the already-instantiated registry dependency. module->namespace does
++;; not instantiate an absent module. Never dynamic-require xref, export its private
++;; binding, send a lookup request, or retain its namespace/continuation marks.
++(define xref-source-pin "acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7")
++(define (existing-service-thread-reference module-path expected-pin)
++  (with-handlers ([exn:fail?
++                   (lambda (e)
++                     (values #f (hasheq 'status "unavailable"
++                                        'error (clip (exn-message e))
++                                        'error_truncated (> (string-length (exn-message e)) text-cap))))])
++    (define source (resolve-module-path module-path #f))
++    (unless (path? source) (error 'phase-probe "xref did not resolve to a source file"))
++    (define sha (call-with-input-file source
++                 (lambda (in) (bytes->hex-string (sha256-bytes in)))))
++    (unless (equal? sha expected-pin) (error 'phase-probe "xref source pin mismatch"))
++    ;; The namespace is a temporary argument only. Only the weak box escapes.
++    (define ref
++      (let ([actual (namespace-variable-value
++                     'thd #t (lambda () (error 'phase-probe "xref private thd unavailable"))
++                     (module->namespace module-path))])
++        (unless (thread? actual) (error 'phase-probe "xref thd is not a thread"))
++        (when (thread-dead? actual) (error 'phase-probe "xref service thread is already dead"))
++        (make-weak-box actual)))
++    (values ref (hasheq 'status "registered_existing_service_thread"
++                       'source (clip (path->string source)) 'source_sha256 sha
++                       'source_truncated (> (string-length (path->string source)) text-cap)
++                       'registration_metrics (metrics)
++                       'lifetime "weak service reference; per-trial registration reset; cleared on stop"
++                       'scope "Shared service observed during the active request; generation is observation interval, not proof of request ownership"))))
++
++(define (start-probe! #:xref-module [xref-module 'drracket/private/syncheck/xref]
++                      #:xref-pin [xref-pin xref-source-pin])
+   (unless (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
+                (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1")
+                (not (equal? (getenv "OPENRACKET_EXPANSION_CAPTURE") "1")))
+@@ -98,6 +129,10 @@
+   (when controller (error 'phase-probe "Probe already initialized"))
+   ;; Readiness runs under the worker's original custodian, before any limited job.
+   ;; Only this surviving controller owns buffers/weak registrations.
++  ;; Called only from post-registry readiness. Test keywords permit a fake
++  ;; already-instantiated module; production has no environment override.
++  (define-values (xref-ref xref-registration)
++    (existing-service-thread-reference xref-module xref-pin))
+   (define active? #f)
+   (define trial 0)
+   (define expected-generation 0)
+@@ -144,7 +179,7 @@
+         [(< samples-used sample-cap)
+          (define before (metrics))
+          (define threads
+-           (for/list ([role (in-list '(working-thread check-syntax-monitor))])
++           (for/list ([role (in-list '(working-thread check-syntax-monitor xref-service))])
+              (thread-sample role (hash-ref refs role #f))))
+          (define after (metrics))
+          (vector-set! samples samples-used
+@@ -157,26 +192,36 @@
+   (define (snapshot)
+     (define worker-registered? (hash-ref registrations 'working-thread #f))
+     (define monitor-registered? (hash-ref registrations 'check-syntax-monitor #f))
++    (define xref-registered? (hash-ref registrations 'xref-service #f))
+     (define usable-monitor-frames?
+       (for/or ([i (in-range samples-used)])
+         (for/or ([row (in-list (hash-ref (vector-ref samples i) 'threads))])
+           (and (equal? (hash-ref row 'role) "check-syntax-monitor")
+                (pair? (hash-ref row 'frames '()))))))
++    (define usable-xref-frames?
++      (for/or ([i (in-range samples-used)])
++        (for/or ([row (in-list (hash-ref (vector-ref samples i) 'threads))])
++          (and (equal? (hash-ref row 'role) "xref-service")
++               (pair? (hash-ref row 'frames '()))))))
+     (hasheq 'enabled #t 'trial trial 'job_generation expected-generation 'active active?
+             'attribution_evidence
+-            (hasheq 'status (if (and worker-registered? monitor-registered? usable-monitor-frames?)
++            (hasheq 'status (if (and worker-registered? monitor-registered? xref-registered?
++                                    usable-monitor-frames? usable-xref-frames?)
+                                "coarse_thread_context_available" "incomplete")
+                     'working_thread_registered worker-registered?
+                     'monitor_thread_registered monitor-registered?
+                     'usable_monitor_frames usable-monitor-frames?
++                    'xref_service_thread_registered xref-registered?
++                    'usable_xref_frames usable-xref-frames?
+                     'acceptance_scope "Registrations and approximate stack evidence only; replay/OOM success alone is not attribution success")
++            'xref_service_registration xref-registration
+             'begin_metrics (or begin-metrics 'null) 'end_metrics (or end-metrics 'null)
+             'phase_points (for/list ([i (in-range points-used)]) (vector-ref points i))
+             'thread_samples (for/list ([i (in-range samples-used)]) (vector-ref samples i))
+             'phase_points_dropped points-dropped 'sample_ticks_dropped samples-dropped
+             'input_events_dropped (- (unbox dropped-input) dropped-before) 'stale_events_discarded stale-events
+             'sample_period_ms sample-period-ms 'sample_cap sample-cap 'phase_point_cap point-cap
+-            'frame_cap frame-cap 'text_cap text-cap 'thread_references "weak, cleared at end/begin"
++            'frame_cap frame-cap 'text_cap text-cap 'thread_references "weak; per-trial refs cleared at end/begin; service weak ref cleared at stop"
+             'stock_logger_subscription #f
+             'scope "Runtime-wide counter observations and approximate wall-clock thread stacks; no CPU/allocation ownership or speedup claim"
+             'overhead "Source hooks, counter reads, buffered records, cross-thread continuation capture/formatting and control queries are included in this separately instrumented diagnostic"
+@@ -200,6 +245,9 @@
+                      (drain!) (set! active? #f) (hash-clear! refs)
+                      (hash-clear! registrations) (set! latest-worker-phase #f) (set! latest-monitor-phase #f)
+                      (set! trial arg) (set! expected-generation (add1 (unbox generation)))
++                     (when (and xref-ref (weak-box-value xref-ref))
++                       (hash-set! refs 'xref-service xref-ref)
++                       (hash-set! registrations 'xref-service #t))
+                      (set! points (make-vector point-cap #f)) (set! samples (make-vector sample-cap #f))
+                      (set! points-used 0) (set! samples-used 0)
+                      (set! points-dropped 0) (set! samples-dropped 0) (set! stale-events 0)
+@@ -211,7 +259,7 @@
+                      (drain!) (sample!) (set! end-metrics (metrics))
+                      (set! active? #f) (hash-clear! refs) 'phase-ended]
+                     [(snapshot) (drain!) (snapshot)]
+-                    [(stop) (set! active? #f) (hash-clear! refs) (set! stop? #t) #t]
++                    [(stop) (set! active? #f) (hash-clear! refs) (set! xref-ref #f) (set! stop? #t) #t]
+                     [else (error 'phase-probe "Unknown control command")]))
+                 (async-channel-put reply result)]
+                [#f (sample!)])
+--- baseline/prepare_phase.py
++++ phase-256/prepare_phase.py
+@@ -10,6 +10,24 @@
+ 
+ PHASE_PIN = '1d78a9aecd0c8c50229083c4c653d58927f43ab1165fef0710e098bbf07240b5'
+ ALL_PINS = dict(PINS, **{'syncheck/online-comp.rkt': PHASE_PIN})
++CONTEXT_PINS = {
++    'xref.rkt': 'acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7',
++    'traversals.rkt': 'bfac72f72b6858d809c840a0aa47bdae2652ae084d86ae961b744d683e06da00',
++}
++
++def verify_context_sources(paths, runtime):
++    if set(paths) != set(CONTEXT_PINS):
++        raise ValueError('Incomplete xref/traversals source resolution')
++    evidence = {}
++    for name, pin in CONTEXT_PINS.items():
++        path = Path(paths[name])
++        if path.is_symlink() or path.stat().st_nlink != 1 or runtime not in path.resolve().parents:
++            raise ValueError('Context source must be independently cloned inside runtime')
++        actual = hashlib.sha256(path.read_bytes()).hexdigest()
++        if actual != pin:
++            raise ValueError('Unexpected official context source: ' + name)
++        evidence[name] = {'path': str(path.resolve()), 'sha256': actual, 'modified': False}
++    return evidence
+ PREFIX = ''';; BEGIN OPENRACKET REPLAY-ONLY PHASE HOOK
+ (define openracket-phase-hook
+   (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
+@@ -85,14 +103,18 @@
+     located = subprocess.run([str(racket), '-e', expression], capture_output=True, text=True, check=True, timeout=30)
+     if Path(json.loads(located.stdout)).resolve() != (directory / 'syncheck/online-comp.rkt').resolve():
+         raise ValueError('Actual CheckSyntax module resolves outside the pinned source root')
++    context_expression = '(begin (require json) (write-json (for/hash ([name (list "xref.rkt" "traversals.rkt")]) (values (string->symbol name) (path->string (collection-file-path name "drracket" "private" "syncheck"))))))'
++    context_run = subprocess.run([str(racket), '-e', context_expression], capture_output=True, text=True, check=True, timeout=30)
++    context_sources = verify_context_sources(json.loads(context_run.stdout), dest)
+     original = verify_sources(directory)
+     edits = {name: transform(original[name]) for name, transform in TRANSFORMS.items()}
+     helpers = [Path(__file__).resolve().with_name(name) for name in
+-               ('phase-probe.rkt', 'support.rkt', 'replay.rkt', 'capture-host.rkt')]
++               ('phase-probe.rkt', 'support.rkt', 'replay.rkt', 'capture-host.rkt', 'memory-profile.rkt')]
+     observer_files = {p.name: {'path': str(p), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
+                       for p in helpers}
+     manifest = {'schema_version': 1, 'instrumented_copy': True, 'phase_probe': True,
+-                'baseline_manifest_sha256': '4ea9857a282b38da5d8c1d8033e405b13b64bf4340966fe50575dcffd95ca661',
++                'baseline_manifest_sha256': 'd7187ac4708dde9ae5de9c09ce5e369aacd1fcfd9257a16c6c827a94a7362ace',
++                'expected_child_limit_bytes': 268435456, 'unmodified_context_sources': context_sources,
+                 'diagnostic_runtime': str(dest), 'racket': str(racket), 'files': {}, 'compiled': False}
+     diffs = []
+     for name, changed in edits.items():
+--- baseline/profile_setup.py
++++ phase-256/profile_setup.py
+@@ -0,0 +1,102 @@
++"""Pre-timing, bounded setup of one authorized preference in a fresh profile."""
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++import time
++
++MIB = 1024 * 1024
++PINS = {'eval_helpers': 'e32ed81fbbc6b85ce8149cbcf486c50321ece7fc3668931a394f36e91c401b62',
++        'framework_preferences': '59269376296892080cdbc7421e10015e99f8165d3a9c1051254ed7b81097af5c'}
++KEY = 'drracket:child-only-memory-limit'
++DISK_KEY = 'plt:framework-pref:' + KEY
++
++
++def validate_setup(report, limit_mib, env, racket):
++    errors = []
++    def check(value, message):
++        if not value:
++            errors.append(message)
++    expected = limit_mib * MIB
++    root = Path(racket).resolve().parents[1]
++    check(type(limit_mib) is int and limit_mib in (128, 256, 512), 'Unsupported requested limit')
++    check(report.get('status') == 'verified' and report.get('phase') == 'before-timed-gui', 'Setup did not verify')
++    check(report.get('runtime_version') == '9.3', 'Wrong runtime version')
++    check(Path(report.get('runtime_root', '')).resolve() == root, 'Wrong runtime root')
++    check(Path(report.get('runtime_executable', '')).resolve() == Path(racket).resolve(), 'Wrong setup executable')
++    for key in ('expected_limit_bytes', 'selected_limit_bytes', 'readback_limit_bytes', 'persisted_limit_bytes'):
++        check(type(report.get(key)) is int and report.get(key) == expected, 'Wrong setup field: ' + key)
++    check(report.get('original_default_limit_bytes') == report.get('expected_default_limit_bytes') == 128 * MIB,
++          'Fresh stock default differs')
++    check(report.get('preference_key') == KEY and report.get('persisted_preference_key') == DISK_KEY, 'Wrong changed key')
++    check(report.get('profile_was_empty') is True and report.get('addon_was_empty') is True and
++          report.get('gui_initialized') is False and report.get('only_expected_preference_changed') is True,
++          'Fresh one-key headless setup not established')
++    check(report.get('legacy_preference_store_absent') is True and
++          report.get('runtime_fallback_store_absent') is True, 'Fallback profile isolation not established')
++    home, addon = (Path(env[k]).resolve() for k in ('PLTUSERHOME', 'PLTADDONDIR'))
++    check(Path(report.get('profile_path', '')).resolve() == home and
++          Path(report.get('addon_path', '')).resolve() == addon, 'Active profiles do not match intended paths')
++    store = Path(report.get('preference_store_path', '')).resolve()
++    check(store.is_relative_to(home), 'Preference store outside fresh home')
++    check(store.is_file() and not store.is_symlink() and store.stat().st_size <= 1024 * 1024 and
++          hashlib.sha256(store.read_bytes()).hexdigest() == report.get('preference_store_sha256'),
++          'Actual persisted store hash differs before GUI launch')
++    check(report.get('disk_key_count_before') == 0 and report.get('disk_key_count_after') == 1 and
++          report.get('one_key_delta') == [{'key': DISK_KEY, 'before_present': False, 'after_value': expected}],
++          'Persisted delta is not exactly the one memory key')
++    sources = report.get('sources', {})
++    check(set(sources) == set(PINS), 'Setup source evidence incomplete')
++    for key, pin in PINS.items():
++        row = sources.get(key, {})
++        check(row.get('sha256') == row.get('expected_sha256') == pin and
++              Path(row.get('path', '')).resolve().is_relative_to(root), 'Wrong original setup source: ' + key)
++    return errors
++
++
++def prepare_memory_profile(args, env, directory, terminate_group, *, timeout_seconds=30):
++    started = time.monotonic()
++    output = directory / 'memory-profile.json'
++    helper = args.profile_helper.resolve()
++    result = {'verified': False, 'gui_started': False, 'timeout': False, 'errors': [], 'configuration': None}
++    try:
++        if args.memory_limit_mib not in (128, 256, 512):
++            raise ValueError('Unsupported requested memory limit')
++        if not helper.is_file() or args.profile_helper.is_symlink():
++            raise ValueError('Missing reviewed regular profile helper')
++        if not env.get('PLTADDONDIR') or not Path(env['PLTADDONDIR']).is_absolute():
++            raise ValueError('Explicit fresh absolute PLTADDONDIR required')
++        addon = Path(env['PLTADDONDIR'])
++        if addon.is_symlink():
++            raise ValueError('PLTADDONDIR may not be a symlink')
++        addon.mkdir(parents=True, exist_ok=True)
++        result['helper_sha256'] = hashlib.sha256(helper.read_bytes()).hexdigest()
++        command = [str(args.racket), str(helper), '--limit-mib', str(args.memory_limit_mib),
++                   '--output', str(output), '--runtime-root', str(Path(args.racket).resolve().parents[1])]
++        result['command'] = command
++        with (directory / 'profile-setup.stdout.log').open('w') as out, (directory / 'profile-setup.stderr.log').open('w') as err:
++            process = subprocess.Popen(command, env=env, stdout=out, stderr=err, start_new_session=True)
++            try:
++                process.wait(timeout=timeout_seconds)
++            except subprocess.TimeoutExpired:
++                result['timeout'] = True
++                terminate_group(process)
++        result['exit_code'] = process.returncode
++        if output.exists():
++            if output.is_symlink() or output.stat().st_size > 32768:
++                raise ValueError('Invalid setup evidence file')
++            result['configuration'] = json.loads(output.read_text())
++        if result['timeout'] or process.returncode != 0:
++            result['errors'].append('Headless profile setup failed or timed out')
++        if isinstance(result['configuration'], dict):
++            result['errors'].extend(validate_setup(result['configuration'], args.memory_limit_mib, env, args.racket))
++        else:
++            result['errors'].append('No structured profile setup evidence')
++        result['verified'] = not result['errors']
++    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
++        result['errors'].append(str(error))
++    result['elapsed_ms_before_timed_process'] = (time.monotonic() - started) * 1000
++    stderr = directory / 'profile-setup.stderr.log'
++    if not result['verified'] and stderr.exists():
++        result['stderr_tail'] = stderr.read_text(errors='replace')[-4000:]
++    return result
+--- baseline/replay.rkt
++++ phase-256/replay.rkt
+@@ -16,6 +16,8 @@
+ (define last-terminal #f)
+ (define previous-capabilities (make-hasheq))
+ (define current-capabilities (make-hasheq))
++(define (place-channel-count table)
++  (for/sum ([key (in-hash-keys table)] #:when (place-channel? key)) 1))
+ (define (persist!)
+   (call-with-output-file (build-path output "replay.json") #:exists 'truncate/replace
+     (lambda (out) (write-json report out) (newline out))))
+@@ -157,13 +159,14 @@
+                   (handle-evt worker values)
+                   (handle-evt (place-dead-evt worker) (lambda (_) 'worker-died))))
+   (match ready
+-    [(vector 'openracket-expansion-replay-ready (? place-channel? channel) 134217728)
++    [(vector 'openracket-expansion-replay-ready (? place-channel? channel) 268435456 #t)
+      (set! control channel)]
+     [#f (error 'replay "Initialization timed out before an actual ready acknowledgement")]
+     ['worker-died (error 'replay "Worker died during initialization")]
+     [_ (error 'replay "Unexpected ready protocol: ~s" ready)])
+   (hash-set! report 'initialization_ms (- (current-inexact-monotonic-milliseconds) initialization-start))
+-  (hash-set! report 'actual_worker_child_limit_bytes 134217728)
++  (hash-set! report 'actual_worker_child_limit_bytes 268435456)
++  (hash-set! report 'actual_worker_memory_accounting_available #t)
+   (define trial-results '())
+   (define completed? #t)
+   (for ([trial (in-range 1 (add1 (hash-ref config 'trials 2)))] #:break (not completed?))
+@@ -179,7 +182,9 @@
+     (set! current-capabilities capabilities)
+     (define prior-terminal-retained? (and last-terminal #t))
+     (define prior-capabilities-retained (hash-count previous-capabilities))
++    (define prior-place-channels-retained (place-channel-count previous-capabilities))
+     (define monitors 0)
++    (define monitor-evidence (make-monitor-evidence (hash-ref record 'registry)))
+     (define statuses '())
+     (define terminal #f)
+     (define outcome #f)
+@@ -228,7 +233,8 @@
+          (release-prior!)
+          (cond
+            [(and (vector? value) (eq? (vector-ref value 0) 'monitor-message))
+-            (set! monitors (add1 monitors)) (hold-capabilities! value) (loop)]
++            (set! monitors (add1 monitors)) (observe-monitor! monitor-evidence value)
++            (hold-capabilities! value) (loop)]
+            [else
+             (unless (and (vector? value) (positive? (vector-length value))
+                          (memq (vector-ref value 0)
+@@ -272,9 +278,14 @@
+               'root_gc (gc-json root-after start end)
+               'worker_gc (if worker-after (gc-json worker-after start end) 'null)
+               'phase_probe (if worker-after (hash-ref worker-after 'phase_probe 'null) 'null)
+-              'monitor_messages monitors 'statuses (map ~a (reverse statuses))
++              'monitor_messages monitors
++              'monitor_evidence (monitor-evidence-json monitor-evidence)
++              'terminal_comparison_scope "Summary fields only; no full handler/trace/capability payload equality claim"
++              'statuses (map ~a (reverse statuses))
+               'prior_terminal_retained_before_request prior-terminal-retained?
+               'prior_capabilities_retained_before_request prior-capabilities-retained
++              'prior_place_channels_retained_before_request prior-place-channels-retained
++              'retained_place_channels (place-channel-count capabilities)
+               'retained_capabilities (hash-count capabilities)))
+     (set! trial-results (cons trial-report trial-results))
+     (hash-set! report 'trials (reverse trial-results))
+@@ -283,6 +294,7 @@
+   ;; Prevent the optimizer from treating retained terminal/capabilities as dead before teardown.
+   (hash-set! report 'last_terminal_retained_until_cleanup (and last-terminal #t))
+   (hash-set! report 'last_capabilities_retained_until_cleanup (hash-count previous-capabilities))
++  (hash-set! report 'last_place_channels_retained_until_cleanup (place-channel-count previous-capabilities))
+   (define cleaned? (cleanup!))
+   ;; Unlike booleans/counts or plain void, this stock helper cannot be optimized
+   ;; away. Actual terminal/channel objects remain live across the entire teardown.
+--- baseline/support.rkt
++++ phase-256/support.rkt
+@@ -6,7 +6,7 @@
+          worker-ready! load-capture validate-capture! summarize-result
+          runtime-context make-gc-observer file-hash digest write-datum-atomic
+          relevant-environment captured-terminal? capture-complete?
+-         restore-disposable-preferences!)
++         restore-disposable-preferences! make-monitor-evidence observe-monitor! monitor-evidence-json)
+ (define-runtime-path support-self "support.rkt")
+ (define-runtime-path phase-probe-self "phase-probe.rkt")
+ 
+@@ -52,7 +52,11 @@
+             (cons scope (installed-pkg-table #:scope scope)))
+           'cwd (current-directory)
+           'preferences-path pref 'preferences-sha256 (file-hash pref)
+-          'environment (environment-snapshot)))
++          'environment (environment-snapshot)
++          'xref-and-traversals-sources
++          (for/list ([name '("xref.rkt" "traversals.rkt")])
++            (define source (collection-file-path name "drracket" "private" "syncheck"))
++            (list source (file-hash source)))))
+ (define (module-file module-path)
+   (define resolved (resolve-module-path module-path #f))
+   (unless (path? resolved) (error 'capture "Handler did not resolve to a source path: ~s" module-path))
+@@ -65,12 +69,70 @@
+        (hasheq 'module mod 'id id 'monitor? monitor? 'path path 'sha256 (file-hash path))]
+       [_ (error 'capture "Unexpected actual registry row: ~s" row)])))
+ 
++;; Count the genuine monitor payload without retaining or serializing capabilities.
++;; This establishes schema/clean completion only, never full trace equality.
++(define (make-monitor-evidence registry)
++  (define online (collection-file-path "online-comp.rkt" "drracket" "private" "syncheck"))
++  (hasheq 'keys
++          (for/list ([row (in-list registry)]
++                     #:when (and (caddr row) (equal? (simplify-path (module-file (car row)))
++                                                    (simplify-path online))))
++            (list (car row) (cadr row)))
++          'counts (make-hasheq '((messages . 0) (trace_batches . 0) (trace_entries . 0)
++                                (rename_capability_rows . 0)
++                                (error_messages . 0) (invalid_payloads . 0)
++                                (other_monitor_messages . 0)))
++          'errors (box '())))
++(define (observe-monitor! evidence result)
++  (define counts (hash-ref evidence 'counts))
++  (define (inc! key [n 1]) (hash-update! counts key (lambda (old) (+ old n))))
++  (unless (and (vector? result) (= (vector-length result) 3)
++               (eq? (vector-ref result 0) 'monitor-message))
++    (error 'monitor-evidence "Malformed monitor envelope"))
++  (cond
++    [(not (member (vector-ref result 1) (hash-ref evidence 'keys)))
++     (inc! 'other_monitor_messages)]
++    [else
++     (inc! 'messages)
++     (define payload (vector-ref result 2))
++     (cond
++       [(string? payload)
++        (inc! 'error_messages)
++        (define errors (hash-ref evidence 'errors))
++        (when (< (length (unbox errors)) 4)
++          (set-box! errors (cons (hasheq 'text (substring payload 0 (min 240 (string-length payload)))
++                                        'truncated (> (string-length payload) 240))
++                                (unbox errors))))]
++       [(and (list? payload)
++             (andmap (lambda (row)
++                       (and (vector? row) (positive? (vector-length row))
++                            (symbol? (vector-ref row 0))
++                            (regexp-match? #rx"^syncheck:" (symbol->string (vector-ref row 0)))))
++                     payload))
++        (inc! 'trace_batches) (inc! 'trace_entries (length payload))
++        (for ([row (in-list payload)])
++          (when (or (and (eq? (vector-ref row 0) 'syncheck:add-arrow/name-dup/pxpy)
++                         (= (vector-length row) 14) (place-channel? (vector-ref row 12)))
++                    (and (eq? (vector-ref row 0) 'syncheck:add-id-set)
++                         (= (vector-length row) 4) (place-channel? (vector-ref row 2))))
++            (inc! 'rename_capability_rows)))]
++       [else (inc! 'invalid_payloads)])]))
++(define (monitor-evidence-json evidence)
++  (define counts (hash-ref evidence 'counts))
++  (hash-set
++   (hash-set
++    (hash-set (make-immutable-hasheq (hash->list counts))
++              'check_syntax_monitor_registry_entries (length (hash-ref evidence 'keys)))
++    'errors (reverse (unbox (hash-ref evidence 'errors))))
++   'scope "Actual CheckSyntax monitor envelope/schema/error counts only; no full trace or capability equivalence"))
++
+ (define registry #f)
+ (define selected-record #f)
+ (define selected-id #f)
+ (define request-number 0)
+ (define observed-statuses '())
+ (define observed-monitors 0)
++(define observed-monitor-evidence #f)
+ (define selected-terminal #f)
+ (define selected-attempts '())
+ (define output-dir #f)
+@@ -112,8 +174,8 @@
+        [else
+         (when (>= (length selected-attempts) 8)
+           (error 'capture "More than eight matching native requests; capture is inconclusive"))
+-        (unless (equal? child-limit 134217728)
+-          (error 'capture "Child limit differs from the unchanged stock 128 MiB requirement"))
++        (unless (equal? child-limit 268435456)
++          (error 'capture "Child limit differs from the authorized 256 MiB requirement"))
+         (define worker (collection-file-path "expanding-place.rkt" "drracket" "private"))
+         (define caller (collection-file-path "module-language.rkt" "drracket" "private"))
+         (define context (runtime-context))
+@@ -126,6 +188,7 @@
+         (set! selected-attempts (cons request-number selected-attempts))
+         (set! observed-statuses '())
+         (set! observed-monitors 0)
++        (set! observed-monitor-evidence (make-monitor-evidence registry))
+         (set! selected-record
+               (hasheq 'schema-version 1 'request-id request-number
+                       'snapshot snapshot 'source (vector-ref actual 1)
+@@ -187,13 +250,15 @@
+              'snapshot_sha256 (hash-ref selected-record 'snapshot-sha256)
+              'snapshot_kind (~a (hash-ref selected-record 'snapshot-kind))
+              'snapshot_bytes (hash-ref selected-record 'snapshot-bytes)
++             'actual_child_limit_bytes (hash-ref selected-record 'child-limit)
+              'snapshot_characters (hash-ref selected-record 'snapshot-characters)
+              'source (safe-description (hash-ref selected-record 'source))
+              'settings (safe-description (hash-ref selected-record 'settings))
+              'registry_sha256 (hash-ref selected-record 'registry-sha256)
+              'registry (map safe-description registry)
+              'statuses (map symbol->string (reverse observed-statuses))
+-             'monitor_messages observed-monitors 'terminal (or selected-terminal 'null)))))
++             'monitor_messages observed-monitors
++             'monitor_evidence (monitor-evidence-json observed-monitor-evidence) 'terminal (or selected-terminal 'null)))))
+ (define (capture-status! id status)
+   (call-with-semaphore state-lock
+     (lambda ()
+@@ -206,7 +271,9 @@
+       (when (equal? id selected-id)
+         (if (captured-terminal? result)
+             (set! selected-terminal (summarize-result result))
+-            (set! observed-monitors (add1 observed-monitors)))
++            (begin
++              (set! observed-monitors (add1 observed-monitors))
++              (observe-monitor! observed-monitor-evidence result)))
+         ;; Avoid a disk write for every monitor batch.
+         (when selected-terminal (persist-capture-summary!))))))
+ (define (capture-complete?) (and selected-terminal #t))
+@@ -219,8 +286,8 @@
+     (error 'replay "Snapshot digest mismatch"))
+   (unless (equal? (digest (datum-bytes (hash-ref record 'registry))) (hash-ref record 'registry-sha256))
+     (error 'replay "Registry digest mismatch"))
+-  (unless (equal? (hash-ref record 'child-limit) 134217728)
+-    (error 'replay "Capture did not preserve the stock child limit"))
++  (unless (equal? (hash-ref record 'child-limit) 268435456)
++    (error 'replay "Capture did not preserve the authorized 256 MiB child limit"))
+   (define settings (hash-ref record 'settings))
+   (unless (and (equal? (prefab-struct-key settings) 'prefab-module-settings)
+                (= (vector-length (struct->vector settings)) 7)
+@@ -308,7 +375,9 @@
+   (unless (and (equal? (getenv "OPENRACKET_EXPANSION_REPLAY") "1")
+                (not (equal? (getenv "OPENRACKET_EXPANSION_CAPTURE") "1")))
+     (error 'replay "Readiness is only permitted in the standalone diagnostic process"))
+-  (unless (equal? child-limit 134217728) (error 'replay "Stock child limit changed"))
++  (unless (equal? child-limit 268435456) (error 'replay "Authorized 256 MiB child limit missing"))
++  (define memory-accounting? (custodian-memory-accounting-available?))
++  (unless memory-accounting? (error 'replay "Memory accounting unavailable; authorized cap cannot be enforced"))
+   (define-values (snapshot stop) (make-gc-observer logger))
+   (define phase-control
+     (and (equal? (getenv "OPENRACKET_EXPANSION_PHASE_PROBE") "1")
+@@ -341,6 +410,6 @@
+              (place-channel-put local (phase-control (if (eq? action 'phase-begin) 'begin 'end) trial))
+              (loop)]
+             [_ (error 'replay "Unsupported diagnostic control message")])]))))
+-  (place-channel-put p (vector 'openracket-expansion-replay-ready remote child-limit))
++  (place-channel-put p (vector 'openracket-expansion-replay-ready remote child-limit memory-accounting?))
+   (unless (eq? (place-channel-get p) 'openracket-expansion-replay-continue)
+     (error 'replay "Missing initialization acknowledgement")))
+--- baseline/test_cap256.py
++++ phase-256/test_cap256.py
+@@ -0,0 +1,176 @@
++"""Portable cap/weak-service/acceptance contracts; no local native GUI runs."""
++import contextlib
++import io
++import sys
++import copy
++import hashlib
++import json
++import os
++from pathlib import Path
++import tempfile
++import unittest
++from unittest import mock
++import accept_completed as accept
++import capture
++import prepare_phase
++
++HERE = Path(__file__).resolve().parent
++HELPER_PIN = '9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0'
++WRAPPER_PIN = '9bb3dc30255a4effca1a91f2f407e0af3ae0fce298f2fc20ed823544176daddb'
++
++
++def evidence():
++    monitor = dict(check_syntax_monitor_registry_entries=1, messages=1, trace_batches=1,
++                   trace_entries=5, rename_capability_rows=1, error_messages=0, invalid_payloads=0)
++    capture_row = dict(status='terminal_observed', actual_child_limit_bytes=accept.CAP,
++                       terminal={'tag': 'handler-results'}, monitor_evidence=monitor,
++                       snapshot_sha256='a' * 64, registry_sha256='b' * 64)
++    host = dict(status='terminal_captured', preserved_preferences=dict(child_limit_bytes=accept.CAP, online_compilation=True, coloring=True))
++    capture_sup = dict(memory_profile_setup={'verified': True}, expected_memory_limit_bytes=accept.CAP,
++                       gui_started=True, exit_code=0, timeout=False, cleanup={'complete': True})
++    replay = dict(status='complete', cleanup={'accepted': True}, actual_worker_child_limit_bytes=accept.CAP,
++                  phase_probe_enabled=True, actual_worker_memory_accounting_available=True, snapshot_sha256='a' * 64, registry_sha256='b' * 64,
++                  last_terminal_retained_until_cleanup=True, last_place_channels_retained_until_cleanup=1, trials=[])
++    for i in (1, 2):
++        probe = dict(trial=i, job_generation=i, active=False, phase_points_dropped=0,
++                     sample_ticks_dropped=0, input_events_dropped=0, stale_events_discarded=0,
++                     phase_points=[dict(phase=label, trial=i, job_generation=i, source_metrics={'monotonic_ms': 10}) for label in accept.REQUIRED_PHASES],
++                     attribution_evidence=dict(status='coarse_thread_context_available', working_thread_registered=True,
++                                               monitor_thread_registered=True, xref_service_thread_registered=True,
++                                               usable_monitor_frames=True, usable_xref_frames=True),
++                     xref_service_registration={'status': 'registered_existing_service_thread', 'source_sha256': accept.XREF_PIN}, stock_logger_subscription=False)
++        replay['trials'].append(dict(trial=i, outcome='handler-results', terminal={'tag': 'handler-results'},
++                                     terminal_summary_matches_integrated_capture=True, monitor_evidence=monitor,
++                                     phase_probe=probe, prior_terminal_retained_before_request=i == 2,
++                                     retained_place_channels=1, prior_place_channels_retained_before_request=1 if i == 2 else 0))
++    return [capture_row, host, capture_sup, replay, dict(status='ok', cleanup={'complete': True}, hard_wall_budget_seconds=157.0)]
++
++
++class Cap256Contracts(unittest.TestCase):
++    def test_reviewed_profile_helpers_are_byte_identical(self):
++        for name, pin in [('memory-profile.rkt', HELPER_PIN), ('profile_setup.py', WRAPPER_PIN)]:
++            self.assertEqual(hashlib.sha256((HERE / name).read_bytes()).hexdigest(), pin)
++
++    def test_profile_setup_precedes_marker_and_gui_and_is_only256(self):
++        source = (HERE / 'capture.py').read_text()
++        self.assertLess(source.index('setup = prepare_memory_profile'), source.index("(profile / 'openracket-diagnostic-profile').write_text"))
++        self.assertLess(source.index("if not setup['verified']"), source.index('subprocess.Popen(command'))
++        self.assertIn('memory_limit_mib=256', source)
++        self.assertIn("'PLTADDONDIR': str(output / 'addon')", source)
++        self.assertIn('process.wait(timeout=190)', source)
++        self.assertIn('90000', (HERE / 'capture-host.rkt').read_text())
++
++    def test_failed_setup_never_creates_marker_or_starts_gui(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory).resolve()
++            fixture = root / 'fixture.rkt'
++            fixture.write_bytes(b'a' * 1048576)
++            output = root / 'capture'
++            def setup(args, env, directory, terminate):
++                self.assertEqual(args.memory_limit_mib, 256)
++                self.assertEqual(list(Path(env['PLTUSERHOME']).iterdir()), [])
++                self.assertEqual(Path(env['PLTADDONDIR']), output / 'addon')
++                return {'verified': False, 'errors': ['controlled setup failure']}
++            with mock.patch.object(capture, 'BASE_SHA256', hashlib.sha256(fixture.read_bytes()).hexdigest()), \
++                 mock.patch.object(capture, 'prepare_memory_profile', side_effect=setup), \
++                 mock.patch.object(capture.subprocess, 'Popen', side_effect=AssertionError('GUI must not start')), \
++                 mock.patch.object(sys, 'argv', ['capture.py', '--racket', str(root / 'racket'), '--fixture', str(fixture), '--output', str(output)]), \
++                 contextlib.redirect_stdout(io.StringIO()):
++                self.assertEqual(capture.main(), 1)
++            self.assertFalse((output / 'profile/openracket-diagnostic-profile').exists())
++            self.assertFalse(json.loads((output / 'capture-supervisor.json').read_text())['gui_started'])
++
++    def test_real_source_is_only_read_and_weakly_referenced(self):
++        source = (HERE / 'phase-probe.rkt').read_text()
++        lookup = source[source.index('(define (existing-service-thread-reference'):source.index('(define (start-probe!')]
++        for expr in ('(module->namespace module-path)', '(namespace-variable-value', "'thd #t", '(make-weak-box actual)', 'xref source pin mismatch'):
++            self.assertIn(expr, lookup)
++        self.assertNotIn('(dynamic-require', lookup)
++        self.assertNotIn('(thread\n', lookup)
++        self.assertIn("(set! xref-ref #f)", source)
++        self.assertIn("(hash-set! refs 'xref-service xref-ref)", source)
++        self.assertIn('Shared service observed during the active request', source)
++
++    def test_exact_native_context_pins(self):
++        self.assertEqual(prepare_phase.CONTEXT_PINS, {
++            'xref.rkt': 'acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7',
++            'traversals.rkt': 'bfac72f72b6858d809c840a0aa47bdae2652ae084d86ae961b744d683e06da00'})
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory).resolve()
++            paths = {name: root/name for name in prepare_phase.CONTEXT_PINS}
++            for path in paths.values():
++                path.write_text('tampered')
++            with self.assertRaisesRegex(ValueError, 'Unexpected official context source'):
++                prepare_phase.verify_context_sources(paths, root)
++
++    @unittest.skipUnless(os.name == 'posix', 'POSIX directory aliases')
++    def test_context_alias_canonicalization_preserves_confinement(self):
++        with tempfile.TemporaryDirectory() as directory:
++            base = Path(directory).resolve()
++            actual = base / 'actual'
++            actual.mkdir()
++            paths = {name: actual/name for name in prepare_phase.CONTEXT_PINS}
++            for path in paths.values():
++                path.write_bytes(b'pinned fixture')
++            pin = hashlib.sha256(b'pinned fixture').hexdigest()
++            with mock.patch.dict(prepare_phase.CONTEXT_PINS, {name: pin for name in paths}, clear=True):
++                alias = base / 'alias'
++                alias.symlink_to(actual, target_is_directory=True)
++                aliased_paths = {name: alias/name for name in paths}
++                with self.assertRaisesRegex(ValueError, 'independently cloned inside runtime'):
++                    prepare_phase.verify_context_sources(aliased_paths, alias)
++                self.assertEqual(set(prepare_phase.verify_context_sources(aliased_paths, alias.resolve())), set(paths))
++                outside = base / 'outside.rkt'
++                outside.write_bytes(b'pinned fixture')
++                escaped = actual / 'xref.rkt'
++                escaped.unlink()
++                escaped.symlink_to(outside)
++                with self.assertRaisesRegex(ValueError, 'independently cloned inside runtime'):
++                    prepare_phase.verify_context_sources(paths, actual)
++
++    def test_producer_times_reject_boolean_negative_nan_and_infinity(self):
++        for bad in (True, False, -1, float('nan'), float('inf'), float('-inf'), None, '10'):
++            rows = evidence()
++            for point in rows[3]['trials'][0]['phase_probe']['phase_points']:
++                if point['phase'] in ('worker-phase-10', 'worker-start'):
++                    point['source_metrics']['monotonic_ms'] = bad
++            with self.subTest(timestamp=bad):
++                self.assertFalse(accept.assess(*rows)['accepted'])
++
++    def test_positive_but_partial_monitor_counts_fail_parity(self):
++        for key in ('trace_entries', 'rename_capability_rows'):
++            rows = evidence()
++            # Fixtures share a monitor dictionary intentionally; replace this row
++            # independently to model one partial replay without changing capture.
++            rows[3]['trials'][0]['monitor_evidence'] = dict(rows[0]['monitor_evidence'])
++            rows[3]['trials'][0]['monitor_evidence'][key] += 1
++            self.assertFalse(accept.assess(*rows)['accepted'])
++
++    def test_complete_request_accepts(self):
++        self.assertTrue(accept.assess(*evidence())['accepted'])
++
++    def test_finished_expansion_oom_missing_service_trace_errors_drops_fail(self):
++        mutations = [
++            lambda e: e[3]['trials'][0].update(outcome='finished-expansion'),
++            lambda e: e[0].update(terminal={'tag': 'abnormal-termination'}),
++            lambda e: e[3]['trials'][0]['phase_probe']['attribution_evidence'].update(xref_service_thread_registered=False),
++            lambda e: e[3]['trials'][0]['phase_probe'].update(input_events_dropped=1),
++            lambda e: e[3]['trials'][1]['monitor_evidence'].update(error_messages=1),
++            lambda e: e[3]['trials'][0]['phase_probe'].update(phase_points=[]),
++            lambda e: e[3].update(actual_worker_child_limit_bytes=134217728),
++            lambda e: e[4].update(hard_wall_budget_seconds=200),
++            lambda e: e[3]['cleanup'].update(accepted=False),
++            lambda e: e[3].update(actual_worker_memory_accounting_available=False),
++            lambda e: e[3]['trials'][0].update(retained_place_channels=0),
++            lambda e: e[3]['trials'][0]['phase_probe']['xref_service_registration'].update(source_sha256='wrong'),
++            lambda e: e[3]['trials'][1].update(prior_place_channels_retained_before_request=0),
++            lambda e: e[3].update(last_place_channels_retained_until_cleanup=0),
++        ]
++        for change in mutations:
++            rows = copy.deepcopy(evidence())
++            change(rows)
++            with self.subTest(change=change):
++                self.assertFalse(accept.assess(*rows)['accepted'])
++
++if __name__ == '__main__':
++    unittest.main()
+--- baseline/test_implementation.py
++++ phase-256/test_implementation.py
+@@ -102,6 +102,7 @@
+         self.assertNotIn('OPENRACKET_EXPANSION_REPLAY', patched)
+         self.assertLess(patched.index("'capture-request!"), patched.index('(place-channel-put expanding-place to-send)'))
+ 
++    @unittest.skipUnless(RACKET.is_file(), 'Native Racket gate required; executable unavailable')
+     def test_generated_modules_are_reader_valid_without_instantiation(self):
+         with tempfile.TemporaryDirectory(dir=HERE) as directory:
+             for name, transform in [('module-language.rkt', transform_language), ('expanding-place.rkt', transform_worker)]:
+@@ -110,6 +111,7 @@
+                 code = f'(parameterize ([read-accept-reader #t]) (call-with-input-file {json.dumps(str(path))} (lambda (in) (void (read-syntax \'test in)))))'
+                 subprocess.run([str(RACKET), '-e', code], env=env(), check=True, timeout=10, capture_output=True)
+ 
++    @unittest.skipUnless(RACKET.is_file(), 'Native Racket gate required; executable unavailable')
+     def test_disabled_worker_boundary_never_loads_support_or_uses_channels(self):
+         program = '''#lang racket/base
+ (define calls 0)
+@@ -126,6 +128,7 @@
+             result = subprocess.run([str(RACKET), str(path)], env=env(), check=True, timeout=10, capture_output=True, text=True)
+             self.assertIn('flag-off boundary passed', result.stdout)
+ 
++    @unittest.skipUnless(RACKET.is_file(), 'Native Racket gate required; executable unavailable')
+     def test_disabled_capture_returns_actual_registry_without_observer_or_preferences_calls(self):
+         patched = transform_language(self.core['drracket/private/module-language.rkt'])
+         start = patched.index('               (define openracket-capture-request-id')
+@@ -154,6 +157,7 @@
+             run = subprocess.run([str(RACKET), str(path)], env=env(), check=True, timeout=10, capture_output=True, text=True)
+             self.assertIn('flag-off capture boundary passed', run.stdout)
+ 
++@unittest.skipUnless(RACKET.is_file(), 'Native real-place gates required; executable unavailable')
+ class RealPlaceProtocol(unittest.TestCase):
+     def run_mode(self, mode, trials=1):
+         directory = tempfile.TemporaryDirectory(dir=HERE)
+@@ -190,11 +194,15 @@
+             self.assertGreaterEqual(row['elapsed_ms'], 25)
+             self.assertEqual(row['monitor_messages'], 1)
+             self.assertEqual(row['retained_capabilities'], 1)
++            self.assertEqual(row['retained_place_channels'], 1)
+             self.assertTrue(row['terminal_summary_matches_integrated_capture'])
+             self.assertTrue(row['worker_gc']['worker_clock_within_root_query'])
+         self.assertFalse(report['trials'][0]['prior_terminal_retained_before_request'])
+         self.assertTrue(report['trials'][1]['prior_terminal_retained_before_request'])
+         self.assertEqual(report['trials'][1]['prior_capabilities_retained_before_request'], 1)
++        self.assertEqual(report['trials'][1]['prior_place_channels_retained_before_request'], 1)
++        self.assertEqual(report['last_place_channels_retained_until_cleanup'], 1)
++        self.assertTrue(report['actual_worker_memory_accounting_available'])
+         self.assertTrue(report['cleanup']['place_dead'])
+ 
+     def test_explicit_abnormal_terminal_is_observed_not_hidden(self):
+@@ -233,6 +241,8 @@
+                 self.assertEqual(second['prior_capabilities_retained_before_request'], 1)
+                 self.assertTrue(report['last_terminal_retained_until_cleanup'])
+                 self.assertEqual(report['last_capabilities_retained_until_cleanup'], 1)
++                self.assertEqual(second['prior_place_channels_retained_before_request'], 1)
++                self.assertEqual(report['last_place_channels_retained_until_cleanup'], 1)
+                 self.assertTrue(report['cleanup']['place_dead'])
+ 
+     def test_malformed_cleanup_acknowledgement_fails_acceptance_but_other_cleanup_runs(self):
+--- baseline/test_phase_probe.py
++++ phase-256/test_phase_probe.py
+@@ -131,7 +131,8 @@
+ 
+     def test_attribution_acceptance_and_explicit_dynamic_helper_compilation(self):
+         helper = (HERE / 'phase-probe.rkt').read_text()
+-        self.assertIn('(and worker-registered? monitor-registered? usable-monitor-frames?)', helper)
++        self.assertIn('(and worker-registered? monitor-registered? xref-registered?', helper)
++        self.assertIn('usable-monitor-frames? usable-xref-frames?', helper)
+         self.assertIn('"coarse_thread_context_available" "incomplete"', helper)
+         for field in ['name_truncated', 'source_truncated', 'error_truncated', 'frames_truncated']:
+             self.assertIn(field, helper)
+@@ -170,7 +171,8 @@
+         if os.environ.get('REPLAY_TEST_PROFILE'):
+             env['PLTUSERHOME'] = os.environ['REPLAY_TEST_PROFILE']
+         env.update(OPENRACKET_EXPANSION_REPLAY='1', OPENRACKET_EXPANSION_PHASE_PROBE='1')
+-        return subprocess.run([RACKET, str(path)], env=env, check=True, capture_output=True, text=True, timeout=20)
++        command = [RACKET] + (['-l', 'raco', 'test'] if path.name == 'test_phase_probe.rkt' else []) + [str(path)]
++        return subprocess.run(command, env=env, check=True, capture_output=True, text=True, timeout=20)
+ 
+     def test_bounded_probe_actual_threads_and_warm_generation(self):
+         self.run_racket(HERE / 'test_phase_probe.rkt')
+--- baseline/test_phase_probe.rkt
++++ phase-256/test_phase_probe.rkt
+@@ -1,7 +1,36 @@
+ #lang racket/base
+ ;; Real thread objects, fake work only. No DrRacket worker or GUI is run here.
+-(require rackunit racket/list "phase-probe.rkt")
+-(define control (start-probe!))
++(require rackunit racket/list racket/file file/sha1 "phase-probe.rkt")
++(define temp (make-temporary-file "phase-service-test~a" 'directory))
++(define service (build-path temp "fake-xref.rkt"))
++(define absent (build-path temp "uninstantiated-xref.rkt"))
++(define wrong (build-path temp "wrong-xref.rkt"))
++(define marker (build-path temp "must-not-instantiate"))
++(define (write-source path contents)
++  (call-with-output-file path (lambda (out) (display contents out))))
++(write-source service "#lang racket/base\n(define thd (thread (lambda () (sync never-evt))))\n")
++(write-source absent
++              (format "#lang racket/base\n(call-with-output-file ~s void)\n(define thd (current-thread))\n" (path->string marker)))
++(write-source wrong "#lang racket/base\n(define thd 42)\n")
++(define (pin path)
++  (call-with-input-file path (lambda (in) (bytes->hex-string (sha256-bytes in)))))
++;; An absent instance must remain absent, including its side effect.
++(define-values (missing-ref missing-info) (existing-service-thread-reference absent (pin absent)))
++(check-false missing-ref)
++(check-equal? (hash-ref missing-info 'status) "unavailable")
++(check-false (file-exists? marker))
++(dynamic-require wrong #f)
++(define-values (wrong-ref wrong-info) (existing-service-thread-reference wrong (pin wrong)))
++(check-false wrong-ref)
++(check-equal? (hash-ref wrong-info 'status) "unavailable")
++(define service-cust (make-custodian))
++(parameterize ([current-custodian service-cust]) (dynamic-require service #f))
++(define-values (service-ref service-info) (existing-service-thread-reference service (pin service)))
++(check-true (weak-box? service-ref))
++(check-equal? (hash-ref service-info 'status) "registered_existing_service_thread")
++(define-values (bad-pin-ref bad-pin-info) (existing-service-thread-reference service "wrong"))
++(check-false bad-pin-ref)
++(define control (start-probe! #:xref-module service #:xref-pin (pin service)))
+ (define (make-job)
+   (define cust (make-custodian))
+   (define ready (make-channel))
+@@ -29,7 +58,9 @@
+ (check-true (hash-ref (hash-ref first 'attribution_evidence) 'working_thread_registered))
+ (check-true (hash-ref (hash-ref first 'attribution_evidence) 'monitor_thread_registered))
+ ;; Optimized contexts may be empty. Report incomplete rather than inventing stacks.
+-(define useful? (hash-ref (hash-ref first 'attribution_evidence) 'usable_monitor_frames))
++(check-true (hash-ref (hash-ref first 'attribution_evidence) 'xref_service_thread_registered))
++(define useful? (and (hash-ref (hash-ref first 'attribution_evidence) 'usable_monitor_frames)
++                     (hash-ref (hash-ref first 'attribution_evidence) 'usable_xref_frames)))
+ (check-equal? (hash-ref (hash-ref first 'attribution_evidence) 'status)
+               (if useful? "coarse_thread_context_available" "incomplete"))
+ (check-true (positive? (length (hash-ref first 'thread_samples))))
+@@ -49,10 +80,16 @@
+ (check-eq? (control 'end 2) 'phase-ended)
+ (define second (control 'snapshot))
+ (check-equal? (hash-ref second 'job_generation) 2)
++(check-true (hash-ref (hash-ref second 'attribution_evidence) 'xref_service_thread_registered))
++(check-equal? (hash-ref first 'xref_service_registration) (hash-ref second 'xref_service_registration))
++(check-false (thread-dead? (weak-box-value service-ref)))
+ (for ([point (in-list (hash-ref second 'phase_points))])
+   (check-equal? (hash-ref point 'job_generation) 2))
+ (check-true (<= (length (hash-ref second 'thread_samples)) 256))
+ (check-true (<= (length (hash-ref second 'phase_points)) 128))
+ (check-false (hash-ref second 'stock_logger_subscription))
+ (check-true (control 'stop))
++(custodian-shutdown-all service-cust)
++(check-true (thread-dead? (weak-box-value service-ref)))
++(delete-directory/files temp)
+ (displayln "Phase probe headless thread/generation tests passed; no native expansion executed.")
+--- baseline/test_support.rkt
++++ phase-256/test_support.rkt
+@@ -26,15 +26,15 @@
+   (capture-registry! actual-registry)
+   (define mismatch (vector-copy actual))
+   (vector-set! mismatch 0 "not the selected edited snapshot")
+-  (check-false (capture-request! mismatch 134217728))
+-  (define first-id (capture-request! actual 134217728))
++  (check-false (capture-request! mismatch 268435456))
++  (define first-id (capture-request! actual 268435456))
+   (check-equal? first-id 2)
+   (check-eq? (vector-ref actual 0) expected-snapshot)
+   (check-eq? (vector-ref actual 2) response-in)
+   (check-eq? (vector-ref actual 4) status-in)
+   ;; A same-snapshot replacement must not leave capture waiting on a killed old
+   ;; pending thread. Keep each attempt immutable and pair only the newest id.
+-  (define id (capture-request! actual 134217728))
++  (define id (capture-request! actual 268435456))
+   (check-equal? id 3)
+   (capture-result! first-id (vector 'handler-results '() '() #f))
+   (check-false (capture-complete?))
+@@ -46,7 +46,7 @@
+   (check-equal? (validate-capture! captured) captured)
+   (check-exn exn:fail? (lambda () (validate-capture! (hash-set captured 'snapshot "corrupted") #:runtime? #f)))
+   (check-exn exn:fail? (lambda () (validate-capture! (hash-set captured 'registry (reverse actual-registry)) #:runtime? #f)))
+-  (check-exn exn:fail? (lambda () (validate-capture! (hash-set captured 'child-limit 268435456) #:runtime? #f)))
++  (check-exn exn:fail? (lambda () (validate-capture! (hash-set captured 'child-limit 134217728) #:runtime? #f)))
+   (check-exn exn:fail? (lambda () (validate-capture! (hash-set captured 'settings
+       (make-prefab-struct 'prefab-module-settings #() '(default) #t #t 'debug #t)) #:runtime? #f)))
+   (capture-status! id 'finished-expansion)
+@@ -62,12 +62,36 @@
+   (check-equal? (hash-ref summary 'statuses) '("finished-expansion"))
+   (check-exn exn:fail? (lambda () (capture-registry! actual-registry)))
+   (putenv "OPENRACKET_EXPANSION_REPLAY" "1")
+-  (check-exn exn:fail? (lambda () (capture-request! actual 134217728))))
++  (check-exn exn:fail? (lambda () (capture-request! actual 268435456))))
+ 
+ (check-false (captured-terminal? (vector 'monitor-message 'key response-out)))
+ (check-true (captured-terminal? (vector 'handler-results '() '() #f)))
+ (check-equal? (hash-ref (summarize-result (vector 'handler-results '() '() #f)) 'tag) "handler-results")
+ (check-true (hash-ref (summarize-result (vector 'exn (make-string 9000 #\x) '())) 'exception_details_truncated))
++;; Trace-schema evidence counts actual data without retaining rename endpoints.
++(define online-key '(drracket/private/syncheck/online-comp monitor))
++(define monitor-evidence (make-monitor-evidence (list (append online-key (list #t)))))
++(observe-monitor! monitor-evidence
++                  (vector 'monitor-message online-key
++                          (list (vector 'syncheck:add-id-set '() response-out 1))))
++(define clean (monitor-evidence-json monitor-evidence))
++(check-equal? (hash-ref clean 'check_syntax_monitor_registry_entries) 1)
++(check-equal? (hash-ref clean 'trace_batches) 1)
++(check-equal? (hash-ref clean 'trace_entries) 1)
++(check-equal? (hash-ref clean 'rename_capability_rows) 1)
++(check-equal? (hash-ref clean 'error_messages) 0)
++(check-equal? (hash-ref clean 'invalid_payloads) 0)
++(for ([i (in-range 6)])
++  (observe-monitor! monitor-evidence (vector 'monitor-message online-key (make-string 300 #\x))))
++(observe-monitor! monitor-evidence (vector 'monitor-message online-key '(not-a-vector)))
++(define errors (monitor-evidence-json monitor-evidence))
++(check-equal? (hash-ref errors 'error_messages) 6)
++(check-equal? (length (hash-ref errors 'errors)) 4)
++(check-equal? (hash-ref errors 'invalid_payloads) 1)
++(for ([row (in-list (hash-ref errors 'errors))])
++  (check-equal? (string-length (hash-ref row 'text)) 240)
++  (check-true (hash-ref row 'truncated)))
++
+ (define-values (gc-snapshot gc-stop) (make-gc-observer (current-logger)))
+ (check-true (hash-has-key? (gc-snapshot) 'monotonic_ms))
+ (check-not-false (gc-stop))
