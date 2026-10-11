@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "package": "openracket-binding-eager-telemetry",
+  "revision": "2026-10-11-eager-binding-private-read-cache",
+  "purpose": "Distinct default-off eager same-owner binding-table experiment; immediate original public writes, post-readiness public getters, three interleaved fresh Mac pairs",
+  "production_source_pins": {
+    "module": "drracket/private/syncheck/gui",
+    "stock_sha256": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e",
+    "candidate_sha256": "80a32b3ebebbe741fe35a6c47f834cf35c0ea708c505961d0d98ce36ea37d6e3"
+  },
+  "base_provenance": {
+    "package": "openracket-binding-telemetry-freeze-20261011-0959",
+    "sha256sums_sha256": "feea9575931d78f2abfa487b65efa8c453ec9b974f65c1346d13a26a2cef9b71",
+    "package_manifest_sha256": "ad6ee29e4b32a73e48dfbbeac4f6a9f9899d894905dac482a5c3645b68344075",
+    "native_run_id": 38131918285,
+    "scope": "Baseline provenance only; not eager correctness or performance evidence"
+  },
+  "preregistered_candidate_first_getter": {
+    "maximum_ms": 1.0,
+    "all_trials_required": true,
+    "approved_before_eager_timing": true,
+    "no_rounding_tolerance_or_gc_exemption": true,
+    "failed_measurements_retained": true,
+    "scope": "Benchmark acceptance bound; not universal real-time guarantee"
+  },
+  "portable_validation": {
+    "tests": 97,
+    "passed": 97,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "native_executed": false,
+    "command": "python3 -m unittest test_gui_source test_capture test_accept_gui test_telemetry test_accept_binding test_prepared_runtime -v",
+    "log": "portable-validation.log"
+  },
+  "native_gate_status": "Required and not run locally. Eager production differential/fault/continuation/host/tool correctness and zero-skip helper preflight must pass before timing.",
+  "required_per_arm": [
+    "capture-host.json",
+    "capture-supervisor.json",
+    "gui-observation.json",
+    "worker-init.json",
+    "worker-phase-1.json",
+    "memory-profile.json",
+    "activation.json",
+    "heartbeat.json",
+    "binding-export.json"
+  ],
+  "byte_identical_common_files": {
+    "accept_gui.py": "f7e65e19386dca0c0779e6401088911af636b4e9cd8cdda33c225a5590f41f64",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "gui-observer.rkt": "c74f75d8e1727956a948d7e4ac94c700bd25539ba609d06af44f52bd7ea05e5e",
+    "gui-phase.rkt": "ee05b328cfe494dce75b16b4a4151f73f9939f2d9f6a84e47cc7fa55b0bc9e3a",
+    "heartbeat.rkt": "134b98c1e2d43495db12994267e5d3147b54a8ede12342c8d87d2f639e6297d7",
+    "memory-profile.rkt": "9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0",
+    "prepare_gui.py": "0ee89c0e4c70f21ef4c74eb609e8d5c9bfd83c594ad78938c26ac442be8af4e5",
+    "profile_setup.py": "9bb3dc30255a4effca1a91f2f407e0af3ae0fce298f2fc20ed823544176daddb",
+    "supervise.py": "0505de6044b8e9c389088bf3714cd95a9c0bef501dadddf08d3617fbb5437b58",
+    "test_accept_gui.py": "c1d11954d0e8ca48fef4ca162bf1ed1f7fd344e3914ef86e20e5dbb31c4d9e4f",
+    "test_gui_observer.rkt": "b6d5a245d919f45065d815a02c827ab3707d8e0f14b75a53935640c6c775ea02",
+    "test_gui_phase.rkt": "0fc1cf1547e29a2603d3537c8db20ff5d5958e7d2d29f6cc3db4299e8dd1c459",
+    "test_heartbeat.rkt": "cb55904fac366d1d95a75be0ec7f859183c08986c435d7abc1282967edbf3f03",
+    "test_prepared_runtime.py": "00d5989568d70883549cdd574f4cfe8a4f3a7644466f5dd5f708f8300610438a"
+  },
+  "files": {
+    "OUTPUT-SCHEMA.json": "8c9a97647a0b4d69e91bafcc5fefe98553019c6b4e3436d40a006238c064073a",
+    "README.md": "3d4ff04300a7920e2d16796ec314a1fb8c94ea1826d2676b5594167deceb4d9f",
+    "accept_binding.py": "1cdf4663a5988e16689d063861b4ceda0e831960ef22db3280e0685b4ee6e746",
+    "accept_gui.py": "f7e65e19386dca0c0779e6401088911af636b4e9cd8cdda33c225a5590f41f64",
+    "activation.rkt": "074fd98c656a9595d7ab2e747705b950231106e1b57d53401f8d6fde6845e08c",
+    "binding-export.rkt": "1fbc81f609c6d017436592e274eda3ce555311fe1af68794e5f38658f153e096",
+    "candidate-source-pins.json": "046dbf779de89f16fa68a6c1027a71641f2df3ecffc72135a41940d08188a829",
+    "capture-host.rkt": "e1d64ec27d33c5916118e97eda5ce7a103b0e5eaf73c5a3655e756eae22e65ef",
+    "capture.py": "beed599239a3701de24e18dee4e81b632fb8c098c424b9434fec0a0707881e09",
+    "fixtures.py": "9fdd094f82ef9f292e7c618d26075d822e0597d7df333f8ed5bab7449b776b6d",
+    "gui-observer.rkt": "c74f75d8e1727956a948d7e4ac94c700bd25539ba609d06af44f52bd7ea05e5e",
+    "gui-phase.rkt": "ee05b328cfe494dce75b16b4a4151f73f9939f2d9f6a84e47cc7fa55b0bc9e3a",
+    "heartbeat.rkt": "134b98c1e2d43495db12994267e5d3147b54a8ede12342c8d87d2f639e6297d7",
+    "memory-profile.rkt": "9b761799e61b45388ae21461d358a819274ae1923e88959351a9f9b46337abc0",
+    "native_preflight.py": "d0723b006f1aced066506cc88cd3f0401595e6261e738e6f02a5d6989da1948b",
+    "portable-validation.log": "7ea8fa574c6b5579b063eba3a7c207d77d21b6f6727493da843a43f7bae85b23",
+    "prepare_gui.py": "0ee89c0e4c70f21ef4c74eb609e8d5c9bfd83c594ad78938c26ac442be8af4e5",
+    "profile_setup.py": "9bb3dc30255a4effca1a91f2f407e0af3ae0fce298f2fc20ed823544176daddb",
+    "supervise.py": "0505de6044b8e9c389088bf3714cd95a9c0bef501dadddf08d3617fbb5437b58",
+    "test_accept_binding.py": "8bd3f49fe8d5bb03af6cf2aa2f55cd776b320ac2455b03eee3b8180dd6634cb9",
+    "test_accept_gui.py": "c1d11954d0e8ca48fef4ca162bf1ed1f7fd344e3914ef86e20e5dbb31c4d9e4f",
+    "test_activation.rkt": "6d7bfc3327be7c9b2b29a18b2b8dade8da14362883b8101052f24da158da8f9e",
+    "test_binding_export.rkt": "22eb0aa83059127976163ad6133da27c93120c594514e8be287b085575d55257",
+    "test_capture.py": "1cd2ec5ffe55fb4fd63f8adbc15e42aefd49d797b5923ef649bc4769ae75a100",
+    "test_gui_native.py": "8360968f0e71e05f20b41c7b3516bc1d73bdef6dce91491011dbdc030dbc73a3",
+    "test_gui_observer.rkt": "b6d5a245d919f45065d815a02c827ab3707d8e0f14b75a53935640c6c775ea02",
+    "test_gui_phase.rkt": "0fc1cf1547e29a2603d3537c8db20ff5d5958e7d2d29f6cc3db4299e8dd1c459",
+    "test_gui_source.py": "5bed090f0b2dd71b99c79acc706b935010426a5b368727c656d12b6793a6b93d",
+    "test_heartbeat.rkt": "cb55904fac366d1d95a75be0ec7f859183c08986c435d7abc1282967edbf3f03",
+    "test_prepared_runtime.py": "00d5989568d70883549cdd574f4cfe8a4f3a7644466f5dd5f708f8300610438a",
+    "test_telemetry.py": "e0331c037887744ec1a385070a8b16feaa3d8aebd0ce79afecf8187bce911009"
+  },
+  "excluded": [
+    "__pycache__"
+  ]
+}

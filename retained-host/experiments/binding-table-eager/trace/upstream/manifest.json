@@ -1,0 +1,13 @@
+{
+  "experiment": "xref-one-shot-reply-cell",
+  "racket_version": "9.3",
+  "flag": "OPENRACKET_XREF_REPLY_CELL",
+  "enabled_value": "1",
+  "default_enabled": false,
+  "relative_target": "drracket/private/syncheck/xref.rkt",
+  "package": "drracket-tool-text-lib",
+  "original_sha256": "acd0ea9b93bcbb4d7df18f022f803f7ce6bd572b0aca0ac170ff0164917873f7",
+  "patched_sha256": "d2db0c6860040909c31c8fa9f7945ad5b94da3a03e751791447faeee7c27105f",
+  "upstream_git_blob": "3ca132d8afc9b1353e898c164ea92cf1c0fd144d",
+  "source_url": "https://github.com/racket/drracket/blob/v9.3/drracket-tool-text-lib/drracket/private/syncheck/xref.rkt"
+}

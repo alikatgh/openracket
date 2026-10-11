@@ -1,0 +1,16 @@
+COMMAND: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python openracket-binding-eager-native/tests/test_compare_bindings.py
+.........................
+----------------------------------------------------------------------
+Ran 25 tests in 0.014s
+
+OK
+
+COMMAND: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python openracket-binding-eager-native/tests/test_native_source.py
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.005s
+
+OK
+
+COMMAND: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python openracket-binding-eager-native/scripts/prepare-host.py --check
+Exact native binding host derivation verified

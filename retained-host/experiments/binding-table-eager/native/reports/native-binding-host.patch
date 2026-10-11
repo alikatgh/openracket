@@ -1,0 +1,21 @@
+--- stock/independent-native-host.rkt
++++ bindings/independent-native-host.rkt
+@@ -9,6 +9,7 @@
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+ (define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+ (define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")
++(define-runtime-path binding-postflight-module "binding-postflight.rkt")
+ (define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
+ (define native-appearance-result #f)
+ (define follow-on-case (getenv "OPENRACKET_NATIVE_CASE"))
+@@ -307,6 +308,10 @@
+                  ((dynamic-require follow-on-module 'run-follow-on-check!)
+                   frame (string->symbol follow-on-case)))))))
+ 
++  ;; Read-only graph export and real arrow navigation after genuine Check Syntax.
++  (on-gui (lambda ()
++            ((dynamic-require binding-postflight-module 'run-binding-postflight!) frame)))
++
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+   (on-gui (lambda ()
+             ;; Capture dimensions only: fit the actual runner display (the macOS

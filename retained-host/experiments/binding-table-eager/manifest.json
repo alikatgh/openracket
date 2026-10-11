@@ -1,0 +1,26 @@
+{
+  "experiment": "same-owner-eager-binding-read-cache",
+  "racket_version": "9.3",
+  "package": "drracket-core-lib",
+  "package_version": "1.17",
+  "upstream_commit": "1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6",
+  "source_url": "https://github.com/racket/drracket/blob/1b8a16c916eb36a43d1eb54c905e4ecfc02e99e6/drracket-core-lib/drracket/private/syncheck/gui.rkt",
+  "relative_target": "drracket/private/syncheck/gui.rkt",
+  "flag": "OPENRACKET_BINDING_TABLE_EAGER",
+  "enabled_value": "1",
+  "default_enabled": false,
+  "activation_export": "openracket-binding-table-eager-enabled?",
+  "witness_method": "openracket:get-binding-table-eager-state",
+  "scope": "stock built-in retained editor, same owning object, exact integer positions; custom equality/hash callback parity excluded",
+  "original_sha256": "5aadb13833ad2e4a658c8b5d6a54d08831488a7f05ab84120252f9184667d13e",
+  "patched_sha256": "80a32b3ebebbe741fe35a6c47f834cf35c0ea708c505961d0d98ce36ea37d6e3",
+  "unchanged_support_sha256_relative_to_syncheck": {
+    "intf.rkt": "2d1d0b56a3d44a2c394c1e44758acaa5b4dc73d258c33d0d21c2cea9b2fc4327",
+    "local-member-names.rkt": "fd427c14c51f371508d9d2653a55db32b96f0f88de885687ebeddfbf5c04a95e"
+  },
+  "reference_runtime_commit": "bbf7dea831df95922db23aaa51e13eed17dcf881",
+  "reference_source_sha256": {
+    "class-internal.rkt": "1dbb533328bb46add290422c1e2fc6c1040d1f8e6d75b06f546734a294bb342f",
+    "set-types.rkt": "f7638723e316f34badc5ddc1c6689533aabc8a927395d51167046f317de0d62c"
+  }
+}

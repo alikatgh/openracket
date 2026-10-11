@@ -1,0 +1,240 @@
+{
+  "run_id": 38133153111,
+  "run_url": "https://github.com/alikatgh/openracket/actions/runs/38133153111",
+  "commit": "873abb9696ba95193c07782120165c4426060173",
+  "conclusion": "failure",
+  "source_manifest": "445e1d57732741ebb0331a88234d42540b2f2ea37897a1c5b4be5676a5edbc87",
+  "log_sha256": "63649e6cc0f88bdde26d5370a27daea7f76c23d242a521503828dab8e05d5b16",
+  "result_rows": [
+    {
+      "name": "pristine entire original runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable exact host reproduction",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Portable stock-tool source preservation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Standalone driver source preservation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Dispatch bridge and exact caller source preservation",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Fresh official addon registration contract checks",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Stock-tool adapter isolation tests",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Complete native candidate assembled from exact0520 plus nine reviewed test files",
+      "passed": true,
+      "detail": "163 source files; production scripts unchanged"
+    },
+    {
+      "name": "Independent modern-only tool runtime",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-modern entire original runtime baseline",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "Actual unchanged setup for modern tool registration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock explicit native tool callers and runtime-path modules compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "stock standalone coordinator positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone coordinator injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone dispatch positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone dispatch injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone failure-diagnostics positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "stock standalone failure-diagnostics injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "compile-modern fresh addon copies exact prepared GUI package",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "compile-modern fresh addon links exact proof appearance tool",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "compile-modern private tool info-domain registration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "compile-modern actual collection and DrRacket discovery proof",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "modern explicit native tool callers and runtime-path modules compile",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "modern standalone coordinator positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone coordinator injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone dispatch positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone dispatch injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone failure-diagnostics positive",
+      "passed": true,
+      "detail": "exit=0; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "modern standalone failure-diagnostics injected-negative",
+      "passed": true,
+      "detail": "exit=1; strict marker and outer-failure behavior checked"
+    },
+    {
+      "name": "tools-pristine-stock-debugger native real-tool gate",
+      "passed": false,
+      "detail": "exit=1 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=failed case=None"
+    },
+    {
+      "name": "tools-pristine-stock-debugger native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 62a9b6f254b19e29c360c6390ceb17892e096e699ba8aead0be7ed1fdfff63ff"
+    },
+    {
+      "name": "tools-modern-dark-debugger comparison not run",
+      "passed": false,
+      "detail": "Corresponding actual stock gate failed; other independent cases continue"
+    },
+    {
+      "name": "tools-pristine-stock-macro-stepper native real-tool gate",
+      "passed": true,
+      "detail": "exit=0 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=passed case=macro-stepper"
+    },
+    {
+      "name": "tools-pristine-stock-macro-stepper native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 26b43ee62d662ca1306e9ee275ffb4ca135dfa94356d905f7ed5cddacb097055"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper fresh addon copies exact prepared GUI package",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper fresh addon links exact proof appearance tool",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper private tool info-domain registration",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper actual collection and DrRacket discovery proof",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper native real-tool gate",
+      "passed": true,
+      "detail": "exit=0 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=passed case=macro-stepper"
+    },
+    {
+      "name": "tools-modern-dark-macro-stepper native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 788f13272ce95caa8c32b5559c942fc62b90adab92aa4e92150ebdbeaebd7764"
+    },
+    {
+      "name": "tools-pristine-stock-teaching-tests native real-tool gate",
+      "passed": false,
+      "detail": "exit=1 acceptance_deadline_seconds=60 timeout_diagnostic_grace_max_seconds=15 status=failed case=None"
+    },
+    {
+      "name": "tools-pristine-stock-teaching-tests native OS capture",
+      "passed": true,
+      "detail": "(1024, 768) 1770f48d7c60954321b532a3f415df5055b3856833d9d67fec0e704dd31581cc"
+    },
+    {
+      "name": "tools-modern-dark-teaching-tests comparison not run",
+      "passed": false,
+      "detail": "Corresponding actual stock gate failed; other independent cases continue"
+    },
+    {
+      "name": "pristine entire original runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    },
+    {
+      "name": "selected-modern entire original runtime compare",
+      "passed": true,
+      "detail": "exit=0"
+    }
+  ],
+  "passed_rows": 41,
+  "total_rows": 45,
+  "artifacts": [],
+  "images_visually_inspected": true,
+  "scope": "Actual stock and modern-dark Macro Stepper passed; Debugger and teaching stock assertions failed, so matching modern cases were not run. Full stock parity is unproven. Both whole-runtime witnesses passed. No product source change or performance trial in this run."
+}
