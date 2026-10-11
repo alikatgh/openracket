@@ -1,5 +1,43 @@
 # Named-style index: small native editor correctness gate
 
+## Search-scope repair after run38153992371
+
+This is a separately prepared editor-test derivative of the frozen 14:02
+composition. The historical native run failed in all four arms at the same
+fixture assertion, `Unicode string exists at actual editor position`, after
+initial token readback and before any edit or rich/WXME operations. The original
+capture did not record the returned target or selection; a `#f` result follows
+from the documented API contract and failed integer predicate, but is not a
+raw logged value. No candidate defect or successful editor/WXME gate follows.
+
+The pinned public `text%` documentation says that `find-string` defaults to a
+forward search from the current selection and that insertion moves the selection
+to the end of the inserted text. This derivative explicitly searches from
+character position 0 to EOF. It requires the returned position to equal the
+source-derived offset 31 and requires the actual three-character range to equal
+`"λ"`. It captures bounded query, selection, length, target and range evidence
+before assertions. Actual native negative controls require both the original
+cursor-relative search and an explicit EOF search to miss the earlier string,
+and require a whole-document absent query to return exactly `#f`.
+
+The new `fixture_search` evidence is strictly typed and compared across all four
+arms. Every earlier downstream lexer/style/parenthesis/WXME ordered comparison,
+deadline, callback policy, production candidate byte and telemetry byte is
+unchanged. The only other native change records the already-completed initial
+snapshot before the search, so a later search failure retains it. The original
+diagnostic sampling locations are preserved. No other non-vendored `find-string`
+call exists in the frozen experiment. The single default-scoped call in this
+derivative is intentional negative-control coverage.
+
+This derivative passed 36 portable test methods (including delimiter lint,
+synthetic typed mutation checks and mocked process checks). It has not been
+compiled or executed natively. Historical evidence and exact source/doc hashes
+are recorded in `SEARCH-REPAIR.json`; `reports/portable-tests.log` remains the
+inherited 31-method preparation log, and `reports/search-repair-portable-tests.log`
+is the derivative's 36-method log. A fresh official Mac CI run remains mandatory.
+
+## Original fixture contract, retained below
+
 **Prepared, source-reviewed, not natively executed.** This package is separate
 from the default-off named-style candidate. No Racket installation, Racket
 execution, package/archive download, remote publication, preview change, or

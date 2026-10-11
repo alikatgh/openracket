@@ -1,11 +1,18 @@
 {
   "schema": "openracket-named-style-editor-package-v1",
-  "created_utc": "2026-10-11T13:37:00Z",
+  "created_utc": "2026-10-11T16:19:00Z",
   "source_only": true,
   "native_executed": false,
   "racket_compiled": false,
   "published": false,
-  "portable_tests": 31,
+  "portable_tests": 36,
+  "derivative": "Explicit whole-editor Unicode search repair after four-arm run38153992371 fixture failure",
+  "base_composition_sha256": "15ff0feeb23952ebe826da0472d35bc6a2e150b4256dcb6271c7be5ce5d7cbe1",
+  "reviewed_patch_sha256": "fcfc6b88b7b8a25213ca7c12f521139640dac8dabaa4945e8304483aa7aa7f06",
+  "independent_reviews": [
+    "modernize_retained_drracket_host: source review and 36 portable tests passed",
+    "profile_retained_editor_performance: source/API/scope review and 36 portable tests passed"
+  ],
   "files": [
     {
       "path": "PROVENANCE.json",
@@ -14,13 +21,18 @@
     },
     {
       "path": "README.md",
-      "bytes": 8767,
-      "sha256": "6f1b813c4f6a718a6057c74859e21ed39ba9bf19f0de1a10f965758293a7ad06"
+      "bytes": 11169,
+      "sha256": "012008496205749cf8bf1f1f7fdc5271fffa22060eb6f27b7e552ccfcd3823b5"
+    },
+    {
+      "path": "SEARCH-REPAIR.json",
+      "bytes": 4018,
+      "sha256": "8fe00b75fa94b2e5ebfdb47f21c75915d9e9ff62ccc26165addfad6ecc3f02bc"
     },
     {
       "path": "SOURCE-REVIEW.md",
-      "bytes": 5952,
-      "sha256": "50d3a414114edfe536832639ccc7c43c40c3ac12a2c061f9e715b0a528fa65f7"
+      "bytes": 6720,
+      "sha256": "9d567df8963bc1170b7bb8e691813463e79b0e4a371edc2e94cb60eedfac6f51"
     },
     {
       "path": "native/bootstrap.rkt",
@@ -29,8 +41,8 @@
     },
     {
       "path": "native/editor-gate.rkt",
-      "bytes": 13361,
-      "sha256": "82eacf45cd61f615935bd8eb4670773665e088a98786333ccb2c5f205eb4a5a7"
+      "bytes": 15488,
+      "sha256": "1b0d4462e9342f202fa29724474de1b24e53a187c8088580c20665ec9162b4b3"
     },
     {
       "path": "native/snapshot.rkt",
@@ -39,8 +51,8 @@
     },
     {
       "path": "reports/STATUS.json",
-      "bytes": 560,
-      "sha256": "110db04ec6771ab1811124dbcc0ed0437494c79f6927e41550572c344b00eb4d"
+      "bytes": 761,
+      "sha256": "b96177d95a4bb39766d30bb54e4ed52c47e654eacebfead9cf0ffbc0cca4078e"
     },
     {
       "path": "reports/portable-tests.log",
@@ -48,9 +60,14 @@
       "sha256": "36c7969a8e258e03d0e94918be938e31b5b17ec9d60452226975c48f2ffd13dc"
     },
     {
+      "path": "reports/search-repair-portable-tests.log",
+      "bytes": 4374,
+      "sha256": "e0d379849c90d18d945b1c9ab7dc97227745d12328d466b39b8dd2ebf07f76c4"
+    },
+    {
       "path": "scripts/compare.py",
-      "bytes": 20524,
-      "sha256": "ed7ea572225c094b987797d1650faf7879a087c80c3b1b4c5ba5602e38928616"
+      "bytes": 21832,
+      "sha256": "e7309f8bfeca1e6c308cf507da5486364e94d87acefb30c8a97015d430bb3e32"
     },
     {
       "path": "scripts/run_native.py",
@@ -59,8 +76,8 @@
     },
     {
       "path": "tests/test_compare.py",
-      "bytes": 11082,
-      "sha256": "232604fff8d95d2eed5752244343233f47e06ee69f944decdf937f19b243413a"
+      "bytes": 12941,
+      "sha256": "e107bd1e0f7c7cf781dd0f47f6b85e388859f24b8b3c904df50c1da96b56a595"
     },
     {
       "path": "tests/test_runner.py",
@@ -69,8 +86,8 @@
     },
     {
       "path": "tests/test_source.py",
-      "bytes": 7637,
-      "sha256": "1e298fd53851a5388cab1e88d2af659b644832da41b907558254d446e5652a8a"
+      "bytes": 9662,
+      "sha256": "df8736d1b6b50a26a85733e87b406b8081f4f9dcf777d4702d41720f8e15b920"
     },
     {
       "path": "vendor/color.rkt",

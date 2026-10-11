@@ -29,7 +29,7 @@ DELTA_BOOLS = {"get-underlined-on", "get-underlined-off", "get-size-in-pixels-on
 DELTA_COLORS = {"foreground-mult", "foreground-add", "background-mult", "background-add"}
 APPEAR_SYMBOLS = {"get-family", "get-weight", "get-style", "get-smoothing", "get-alignment"}
 APPEAR_BOOLS = {"get-underlined", "get-size-in-pixels", "get-transparent-text-backing"}
-SEMANTIC_KEYS = ("initial", "edited", "edited_final", "lexer_transitions", "identity", "rich_before",
+SEMANTIC_KEYS = ("fixture_search", "initial", "edited", "edited_final", "lexer_transitions", "identity", "rich_before",
                  "rich_after_save", "rich_restored", "rich_final", "wxme")
 
 class GateError(ValueError):
@@ -222,6 +222,23 @@ def equal_typed(a, b, path):
     else:
         require(type(a) is type(b) and a == b, path, f"typed value differs: {a!r} != {b!r}")
 
+def fixture_search(v, path):
+    keys(v, {"query", "absent_query", "text_length", "selection_start", "selection_end",
+             "target", "default_target", "eof_target", "absent_target", "found_text"}, path)
+    query = '"λ"'
+    absent_query = '"OPENRACKET_ABSENT_λ"'
+    for key in ("text_length", "selection_start", "selection_end", "target"):
+        integer(v[key], path + "." + key)
+    for key, expected in (("query", query), ("absent_query", absent_query), ("found_text", query)):
+        text(v[key], path + "." + key)
+        require(v[key] == expected, path + "." + key, "exact search query/range required")
+    for key in ("text_length", "selection_start", "selection_end"):
+        require(v[key] == len(ORIGINAL), path + "." + key, "post-insertion caret must be at actual source EOF")
+    require(v["target"] == ORIGINAL.index(query), path + ".target", "exact source-derived Unicode character offset required")
+    require(ORIGINAL[v["target"]:v["target"] + len(query)] == v["found_text"], path, "found source range differs")
+    for key in ("default_target", "eof_target", "absent_target"):
+        require(v[key] is False, path + "." + key, "native negative search must return false, never integer zero")
+
 def diagnostics(v, mode, path):
     if mode.startswith("stock"):
         require(v is None, path, "stock must not fabricate diagnostic exports")
@@ -264,6 +281,7 @@ def validate(v, mode):
     require(act["module_already_loaded"] is True, p, "module was not already loaded")
     require(act["export_status"] == ("missing" if mode.startswith("stock") else "present"), p, "export availability mismatch")
     require(act["enabled"] is (None if mode.startswith("stock") else mode == "on"), p, "export activation mismatch")
+    fixture_search(v["fixture_search"], p + ".fixture_search")
     for name, expected in (("initial", ORIGINAL), ("edited", EDITED), ("edited_final", EDITED)):
         lexed(v[name], expected, p + "." + name)
     equal_typed(v["edited"], v["edited_final"], p + ".final_lexer_stability")

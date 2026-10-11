@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "local-only reviewed composition; no native execution or publication",
+  "status": "reviewed editor-only search repair after run38153992371; native retry pending",
   "packages": {
     "production": {
       "source_freeze": "openracket-named-style-index-freeze-20261011-1322",
@@ -10,10 +10,10 @@
       "all_source_bytes_preserved": true
     },
     "editor": {
-      "source_freeze": "openracket-named-style-editor-tests-freeze-20261011-1337",
+      "source_freeze": "openracket-named-style-editor-search-freeze-20261011-1619",
       "manifest_path": "editor/SHA256SUMS",
-      "manifest_sha256": "0fb40a9d0a1a330166d0c200efd4d7ff3205c86a58abe08291a6512794ac9c39",
-      "file_count": 32,
+      "manifest_sha256": "4ed63e17e92e093c1eaa9996516bdc1fef30d6fbf86830777ccb9eaae558e72f",
+      "file_count": 34,
       "all_source_bytes_preserved": true
     },
     "controls": {
@@ -30,5 +30,6 @@
       "file_count": 36,
       "all_source_bytes_preserved": true
     }
-  }
+  },
+  "base_composition_sha256": "15ff0feeb23952ebe826da0472d35bc6a2e150b4256dcb6271c7be5ce5d7cbe1"
 }

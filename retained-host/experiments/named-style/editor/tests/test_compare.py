@@ -70,6 +70,11 @@ def rich():
 def capture(mode):
     v = {"schema": c.SCHEMA, "mode": mode, "passed": True, "stages": c.STAGES[:],
          "gui_callback_errors": [],
+         "fixture_search": {"query": '"λ"', "absent_query": '"OPENRACKET_ABSENT_λ"',
+                            "text_length": len(c.ORIGINAL), "selection_start": len(c.ORIGINAL),
+                            "selection_end": len(c.ORIGINAL), "target": c.ORIGINAL.index('"λ"'),
+                            "default_target": False, "eof_target": False, "absent_target": False,
+                            "found_text": '"λ"'},
          "runtime": {"racket_version": "9.3", "source": "/parser-only/fixture/style.rkt",
                      "source_sha256": c.STOCK_SHA if mode.startswith("stock") else c.CANDIDATE_SHA,
                      "flag": {"on": "1", "off": "0"}.get(mode), "source_first_load": True},
@@ -104,6 +109,28 @@ class TypedComparison(unittest.TestCase):
     def test_missing_arm_rejected(self):
         with self.assertRaises(c.GateError):
             c.compare({"stock":capture("stock")})
+    def test_search_rejects_cursor_relative_miss_and_bad_types(self):
+        target=c.ORIGINAL.index('"λ"')
+        for value in (False, True, 0, float(target), -1, target-1, target+1, str(target), None):
+            v=capture("stock"); v["fixture_search"]["target"]=value
+            with self.subTest(value=value), self.assertRaises(c.GateError):
+                c.validate(v,"stock")
+    def test_search_negative_controls_require_actual_false(self):
+        for key in ("default_target", "eof_target", "absent_target"):
+            for value in (0, 0.0, True, 30, None, "false"):
+                v=capture("stock"); v["fixture_search"][key]=value
+                with self.subTest(key=key,value=value), self.assertRaises(c.GateError):
+                    c.validate(v,"stock")
+    def test_search_requires_exact_selection_queries_and_range(self):
+        for key,value in (("selection_start",0),("selection_end",0),("text_length",0),
+                          ("query",'λ'),("absent_query",'"λ"'),("found_text",'λ')):
+            v=capture("stock"); v["fixture_search"][key]=value
+            with self.subTest(key=key), self.assertRaises(c.GateError):
+                c.validate(v,"stock")
+        for key in capture("stock")["fixture_search"]:
+            v=capture("stock"); del v["fixture_search"][key]
+            with self.subTest(missing=key), self.assertRaises(c.GateError):
+                c.validate(v,"stock")
     def test_bool_is_not_integer_identity(self):
         for value in (False, True, 1.0, -1):
             d=document(); d["position_styles"][0]=value

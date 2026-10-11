@@ -1,10 +1,19 @@
-# Named-style lookup experiment: local source handoff
+# Named-style lookup experiment: editor search repair
 
-This package composes four independently reviewed immutable source packages,
-without changing any member bytes. `SOURCE-COMPOSITION.json` records the exact
-owner freezes and hashes. No Racket execution, native compilation, measurement,
-publication or CI trigger has occurred for this candidate. Remote publication is
-on an explicit authorization hold. An operational CLI switch is not permission.
+This composition preserves the production, host/trace controls and performance
+packages byte-for-byte from the independently reviewed1402 freeze. Only the
+editor test package is replaced by its reviewed1619 search-scope repair.
+`SOURCE-COMPOSITION.json` records all four exact owner packages.
+
+Native run38153992371 passed preparation, mandatory telemetry helpers, production
+lookup/publication correctness and genuine Check Syntax/full annotation/rename
+controls. Its four editor arms all failed the same cursor-relative fixture search
+before incremental edit/WXME coverage. Timing was correctly skipped. The repaired
+editor explicitly searches the complete document and validates exact Unicode
+position/range, with typed evidence and native negative controls. See
+`editor/SEARCH-REPAIR.json` for pinned source and historical raw evidence.
+This repaired composition has not yet run natively; no speed gain or adoption is
+claimed. The failed run and original freeze are preserved.
 
 The candidate remains default-off. It changes only the private named-style
 lookup implementation; creation, notifications, mutation order and all public
@@ -49,23 +58,24 @@ failure evidence must still be collected. Clear inherited experiment/resolver
 variables before calling runners that own their profiles. Preserve all complete
 stdout/stderr, process status, JSON, PNG and native compile logs. The normal Quit
 and light-mode product acceptance packages are separate functional work and must
-not be folded into this performance experiment. Quit is the next functional
-priority once permission to run the native gate resumes.
+not be folded into this performance experiment. The separate repaired Quit/light functional batch may proceed independently.
 
-All new native behavior is unknown until those real gates pass. The source plan's
+The complete repaired editor gate and performance measurements remain pending. The source plan's
 broader adoption requirements, including platform and arbitrary-workload
 coverage, are not satisfied by these Mac fixtures. No speed improvement or
 product-adoption decision is implied by this handoff.
 
 ## Portable checks and relocation
 
-The checked-in source packages are unchanged. For the inherited GUI transform
+The three unchanged packages retain all original bytes; the editor derivative is separately pinned. For the inherited GUI transform
 source tests, set `GUI_TEST_SOURCE_DIR` explicitly to the verified official
 DrRacket private source directory when this composition is relocated. Do not
 substitute a missing fixture with generated or unverified source.
 
 Portable totals: 46 production source/applier checks and 15,000 model identity
-comparisons; 31 editor checks; 31 controls checks plus 70 accepted/derived trace
+comparisons; 36 editor checks; 31 controls checks plus 70 accepted/derived trace
 and 37 original trace mutation invocations; 103 telemetry checks. These totals
 include inherited test invocations, not unique native behaviors or acceptance
-rows. Native tests and measurements remain unrun.
+rows. The inherited PORTABLE-VALIDATION.log documents the original1402 preparation.
+REPAIR-VALIDATION.json records this composition’s editor checks and exact-byte
+verification. Original native results above do not substitute for the new gate.

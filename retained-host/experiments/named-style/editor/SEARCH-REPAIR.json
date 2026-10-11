@@ -1,0 +1,86 @@
+{
+  "schema": "openracket-named-style-editor-search-repair-v1",
+  "prepared_utc": "2026-10-11T16:17:00Z",
+  "base_editor_path": "openracket-named-style-experiment-freeze-20261011-1402/editor",
+  "base_composition_sha256": "15ff0feeb23952ebe826da0472d35bc6a2e150b4256dcb6271c7be5ce5d7cbe1",
+  "historical_run": "38153992371",
+  "historical_macos_log_sha256": "d18c1ff90660331da063e4bfada6845a7d5fe8156751924ea6d070ad61ecfaa4",
+  "evidence": {
+    "stock": {
+      "path": "openracket-recovery/results/run-38153992371/decoded/stock-capture.json",
+      "sha256": "5e9b581a4ebfcacc3ce3438e59340bfcf3168af7363006e2db4a666b9d68ef11",
+      "message": "editor-gate: Unicode string exists at actual editor position",
+      "stages": [
+        "source-pin-verified",
+        "gui-imported-same-runtime-module",
+        "actual-editor-created"
+      ],
+      "raw_target_recorded": false,
+      "raw_selection_recorded": false
+    },
+    "stock-again": {
+      "path": "openracket-recovery/results/run-38153992371/decoded/stock-again-capture.json",
+      "sha256": "8f60388796f6cec1901e9d0ffb561ead6ba9e5181286362421efc143b0ecdc3a",
+      "message": "editor-gate: Unicode string exists at actual editor position",
+      "stages": [
+        "source-pin-verified",
+        "gui-imported-same-runtime-module",
+        "actual-editor-created"
+      ],
+      "raw_target_recorded": false,
+      "raw_selection_recorded": false
+    },
+    "off": {
+      "path": "openracket-recovery/results/run-38153992371/decoded/off-capture.json",
+      "sha256": "7400f1c155a1cacf093bfdc99db47e6d6022752852b25594470180cb6ffec5f0",
+      "message": "editor-gate: Unicode string exists at actual editor position",
+      "stages": [
+        "source-pin-verified",
+        "gui-imported-same-runtime-module",
+        "actual-editor-created"
+      ],
+      "raw_target_recorded": false,
+      "raw_selection_recorded": false
+    },
+    "on": {
+      "path": "openracket-recovery/results/run-38153992371/decoded/on-capture.json",
+      "sha256": "14ee0ab496620a08bc1f03ffb840593a377d7e5ede9ac397139d7477d67e9a58",
+      "message": "editor-gate: Unicode string exists at actual editor position",
+      "stages": [
+        "source-pin-verified",
+        "gui-imported-same-runtime-module",
+        "actual-editor-created"
+      ],
+      "raw_target_recorded": false,
+      "raw_selection_recorded": false
+    }
+  },
+  "diagnosis": "The positive find-string call omitted its start and therefore searched forward from the post-insertion selection at EOF. The failed exact-nonnegative-integer? predicate plus documented result contract implies #f; that target value was not present in raw historical capture.",
+  "official_contract": {
+    "path": "vendor/text-class.scrbl",
+    "sha256": "5f7733143e241f6bdc6a1529fc0d515b7c506fc0f820d4d3b01ac7cefcb9690f",
+    "find_string_lines": [
+      644,
+      667
+    ],
+    "insert_selection_lines": [
+      1203,
+      1216
+    ],
+    "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/text-class.scrbl"
+  },
+  "repair": "Explicit forward search from character 0 to EOF, exact expected position 31 and actual range validation; bounded raw search evidence before assertions; native default-caret, explicit-EOF and absent-query negative controls.",
+  "scope_audit": "The original non-vendored editor/controls/production/performance experiment contains one find-string call, the repaired positive lookup. The derivative has four calls, of which only the intentional default-caret negative control omits bounds.",
+  "unchanged": [
+    "All downstream ordered lexer/style/paren/WXME checks",
+    "Production candidate and telemetry bytes",
+    "Original diagnostic sampling locations",
+    "Normal dispatcher, callback policy, deadlines and process isolation"
+  ],
+  "portable_test_methods": 36,
+  "native_executed": false,
+  "racket_compiled": false,
+  "published": false,
+  "candidate_correctness_proven": false,
+  "editor_wxme_success_proven": false
+}

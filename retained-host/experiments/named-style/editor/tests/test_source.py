@@ -94,6 +94,32 @@ class SourceTests(unittest.TestCase):
             self.assertIn(anchor,s)
         self.assertNotIn("(sort",s)
         self.assertNotIn("remove-duplicates",s)
+    def test_fixture_search_has_explicit_scope_and_native_negative_controls(self):
+        s=(ROOT/"native/editor-gate.rkt").read_text()
+        for anchor in ("(send t find-string query 'forward 0 'eof)",
+                       "(send t find-string query 'forward length 'eof)",
+                       "(send t find-string absent-query 'forward 0 'eof)",
+                       "(define default-target (send t find-string query))",
+                       "(send t get-start-position)", "(send t get-end-position)",
+                       "(same! selection-start length", "(same! selection-end length",
+                       "(same! default-target #f", "(same! eof-target #f", "(same! absent-target #f",
+                       "(same! found-text query", "(define target (fixture-target! t record!))"):
+            self.assertIn(anchor,s)
+        # The only cursor-dependent lookup is an intentional negative control.
+        calls=[line.strip() for line in s.splitlines() if "(send t find-string " in line]
+        self.assertEqual(len(calls),4)
+        self.assertEqual([line for line in calls if "'forward" not in line],
+                         ["(define default-target (send t find-string query))"])
+        self.assertLess(s.index("(record! 'fixture_search"),s.index("(same! selection-start length"))
+        self.assertLess(s.index("(record! 'initial initial)"),s.index("(define target (fixture-target! t record!))"))
+        self.assertIn('(string-length "#lang racket/base\\n(define café ")',s)
+        self.assertEqual(len("#lang racket/base\n(define café "),compare.ORIGINAL.index('"λ"'))
+    def test_pinned_search_and_insert_contract_explains_caret_scope(self):
+        s=(ROOT/"vendor/text-class.scrbl").read_text()
+        for anchor in ("[start (or/c exact-nonnegative-integer? 'start) 'start]",
+                       "starts at the start of the selection", "selection is left at the end",
+                       "If the string is not found, @racket[#f] is returned"):
+            self.assertIn(anchor,s)
     def test_dependencies_match_vendored_official_bytes(self):
         mapping={"framework/private/color":"color.rkt","framework/private/racket":"racket.rkt",
                  "mred/private/wxme/editor":"editor.rkt","mred/private/wxme/editor-snip":"editor-snip.rkt",

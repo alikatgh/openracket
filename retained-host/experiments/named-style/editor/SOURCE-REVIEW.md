@@ -27,8 +27,16 @@ Official GUI commit 6f0213fa0535d87dd4e35f56c8266d948c8c089e:
 - The full [public color API contract](https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/framework/color.scrbl)
   establishes observer, validity, classification, range and navigation methods.
 
-The initial string begins at the actual find-string result; get-text must
-match the complete source. Replacing it with [1 2] must produce a matching
+The initial string begins at an explicit whole-editor forward `find-string`
+result, checked against source-derived character position 31 and the exact
+three-character actual range `"λ"`; get-text must match the complete source.
+The pinned [find-string contract, lines 644–667](https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/text-class.scrbl#L644-L667)
+defines the omitted start as the selection, while
+[insert, lines 1203–1216](https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-doc/scribblings/gui/text-class.scrbl#L1203-L1216)
+places that selection at inserted-text end. Native cursor-at-EOF and absent-query
+negative controls preserve this distinction. `SEARCH-REPAIR.json` binds the
+historical four-arm failure evidence without inventing an unlogged target value.
+Replacing the actual range with [1 2] must produce a matching
 five-character bracket form, with forward end start + 5 and backward start
 start. Every other position and navigation endpoint is still captured.
 

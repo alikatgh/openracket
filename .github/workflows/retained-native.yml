@@ -1,4 +1,4 @@
-name: Mac native light tools and normal Quit retry (public free runner)
+name: Mac named-style correctness and completed GUI responsiveness (public free runner)
 
 'on':
   push:
@@ -24,7 +24,7 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 200
+    timeout-minutes: 130
     env:
       PYTHONOPTIMIZE: ''
     defaults:
@@ -32,7 +32,6 @@ jobs:
         shell: bash
     steps:
       - name: Recheck repository is public
-        timeout-minutes: 2
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # official v9.0.0
         with:
           debug: false
@@ -53,7 +52,6 @@ jobs:
               core.setFailed('Public repository metadata check failed; native validation was not started.');
             }
       - name: Check out exact tested commit
-        timeout-minutes: 5
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # official v6.1.0
         with:
           ref: ${{ github.sha }}
@@ -61,71 +59,45 @@ jobs:
           fetch-depth: 1
           lfs: false
           submodules: false
-      - name: Check pure functional orchestration contracts
-        timeout-minutes: 3
-        run: python3 -B retained-host/scripts/ci/test-functional-phase.py
-      - name: Install checksum-pinned full official Racket 9.3 once
+      - name: Install checksum-pinned full official Racket 9.3
         id: runtime
-        timeout-minutes: 20
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      # Baseline before either group's bundle or private registration operations.
-      - name: Prepare exact native Quit sources and independent runtime
-        id: quit_prepare
-        if: >-
-          always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 15
-        run: python3 retained-host/scripts/ci/run-functional-phase.py quit prepare -- python3 retained-host/scripts/ci/run-native-quit.py prepare
-      - name: Prepare frozen stock and modern-light callers
-        id: light_prepare
+      - name: Prepare exact named-style-only runtime clones and compile dependencies
+        id: style_prepare
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 20
-        run: python3 retained-host/scripts/ci/run-functional-phase.py light prepare -- python3 retained-host/scripts/ci/run-light-tools.py prepare
-      - name: Six actual stock and modern-light tool cases
-        id: light_cases
-        # Per-runtime preparation still controls each independent stock/light pair.
-        if: always() && steps.runtime.outcome == 'success'
+        run: python3 retained-host/scripts/ci/run-named-style.py prepare
+      - name: Mandatory native telemetry helpers without skips
+        id: style_helpers
+        if: always() && steps.style_prepare.outcome == 'success'
+        timeout-minutes: 12
+        run: python3 retained-host/scripts/ci/run-named-style.py helpers
+      - name: Actual complete style lookup and publication correctness
+        id: style_production
+        if: always() && steps.style_prepare.outcome == 'success'
+        timeout-minutes: 13
+        run: python3 retained-host/scripts/ci/run-named-style.py production
+      - name: Actual incremental lexer style and rich WXME equivalence
+        id: style_editor
+        if: always() && steps.style_prepare.outcome == 'success'
+        timeout-minutes: 14
+        run: python3 retained-host/scripts/ci/run-named-style.py editor
+      - name: Actual Check Syntax and full annotation rename controls
+        id: style_controls
+        if: always() && steps.style_prepare.outcome == 'success'
+        timeout-minutes: 19
+        run: python3 retained-host/scripts/ci/run-named-style.py controls
+      - name: Six interleaved full completion and heartbeat trials
+        id: style_telemetry
+        if: always() && steps.style_prepare.outcome == 'success' && steps.style_helpers.outcome == 'success' && steps.style_production.outcome == 'success' && steps.style_editor.outcome == 'success' && steps.style_controls.outcome == 'success'
         timeout-minutes: 40
-        run: python3 retained-host/scripts/ci/run-functional-phase.py light cases -- python3 retained-host/scripts/ci/run-light-tools.py cases
-      - name: Six genuine clean save and discard Quit cases
-        id: quit_cases
-        # A cleaned light assertion failure is independent; durable unsafe cleanup
-        # or an interrupted case phase blocks the wrapper before any next GUI spawn.
-        if: >-
-          always() && steps.runtime.outcome == 'success' && steps.quit_prepare.outcome == 'success'
-        timeout-minutes: 70
-        run: python3 retained-host/scripts/ci/run-functional-phase.py quit cases -- python3 retained-host/scripts/ci/run-native-quit.py cases
-      - name: Verify original and selected light runtimes unconditionally
-        id: light_verify
+        run: python3 retained-host/scripts/ci/run-named-style.py telemetry
+      - name: Verify the complete original runtime
         if: always() && steps.runtime.outcome == 'success'
         timeout-minutes: 4
-        run: python3 retained-host/scripts/ci/run-light-tools.py verify
-      - name: Verify Quit runtimes original preferences and final file handler
-        id: quit_verify
-        # Read-only witnesses run even when a preparation or either GUI group failed.
-        # This final handler comparison brackets every group's bundle operations.
-        if: >-
-          always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-native-quit.py verify
-      - name: Report both native functional outcomes
+        run: python3 retained-host/scripts/ci/run-named-style.py verify
+      - name: Report complete native named-style findings
         if: always()
-        timeout-minutes: 2
-        env:
-          LIGHT_PREPARE: ${{ steps.light_prepare.outcome }}
-          LIGHT_CASES: ${{ steps.light_cases.outcome }}
-          LIGHT_VERIFY: ${{ steps.light_verify.outcome }}
-          QUIT_PREPARE: ${{ steps.quit_prepare.outcome }}
-          QUIT_CASES: ${{ steps.quit_cases.outcome }}
-          QUIT_VERIFY: ${{ steps.quit_verify.outcome }}
         run: |
-          printf 'Light: prepare=%s cases=%s verify=%s\n\nQuit: prepare=%s cases=%s verify=%s\n\n' "$LIGHT_PREPARE" "$LIGHT_CASES" "$LIGHT_VERIFY" "$QUIT_PREPARE" "$QUIT_CASES" "$QUIT_VERIFY" >> "$GITHUB_STEP_SUMMARY"
-          for report in light-tools-ci native-quit-ci; do
-            if test -f "retained-host/reports/$report/summary.md"; then cat "retained-host/reports/$report/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
-          done
-          for state in retained-host/reports/functional-ci/*.json; do
-            if test -f "$state"; then cat "$state"; fi
-          done
-          echo 'Light: all15 reader/compile checks, nine direct headless controls per runtime, six actual stock/light cases, fresh official addon registration, unchanged60s native deadline.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Quit: six stock-first clean/save/discard cases, eight native contracts and12 actual source pins, natural exit0, unchanged150s acceptance and270s outer supervisor bounds.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Both groups retain separate independent runtime clones and profiles, red outcomes and unconditional original/selected witnesses. Quit preference/default-handler baseline precedes both groups; its final read-only witness follows all bundle operations. No performance or app-build-variant claim.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Original phase outer ceilings remain15/70/5minutes for Quit and20/40/4 for light. Setup, contract checks and reporting bring bounded step ceilings to186minutes; the aggregate job safety ceiling is200minutes. Native acceptance clocks are unchanged. No artifacts, caches, paid runners or deployment.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/named-style-ci/summary.md; then cat retained-host/reports/named-style-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'One default-off named-style source delta; three interleaved stock/candidate pairs. Same256MiB,20ms scheduling,all tools and original inner deadlines. No artifacts,paid services or result substitution.' >> "$GITHUB_STEP_SUMMARY"

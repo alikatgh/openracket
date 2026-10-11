@@ -1,12 +1,14 @@
 {
-  "status": "prepared-source-only",
+  "status": "search-scope-repair-prepared-native-retry-required",
   "native_executed": false,
   "racket_compiled": false,
   "gui_wxme_verified": false,
   "performance_measured": false,
   "published": false,
-  "portable_test_methods": 31,
+  "portable_test_methods": 36,
   "portable_scope": "Typed comparator synthetic records, mocked process/failure capture, source pins/anchors and delimiter lint",
   "required_next_gate": "Freshly authorized native official 9.3 stock, stock-again, patched-off and patched-on actual GUI/editor captures",
-  "claim": "Prepared correctness gate only; no native success or speed claim"
+  "claim": "Source-backed test repair only; no native success or speed claim",
+  "historical_run": "38153992371",
+  "historical_outcome": "All four editor arms failed the same cursor-relative fixture lookup before incremental edit or WXME coverage"
 }

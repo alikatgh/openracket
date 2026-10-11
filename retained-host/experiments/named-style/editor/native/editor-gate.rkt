@@ -6,6 +6,41 @@
 (define original
   "#lang racket/base\n(define café \"λ\")\n(define (bump x) (+ x 41))\n; comment ☃\n(bump 1)\n")
 (define edited (string-replace original "\"λ\"" "[1 2]"))
+(define (fixture-target! t record!)
+  (define query "\"λ\"")
+  (define absent-query "\"OPENRACKET_ABSENT_λ\"")
+  (define length (send t last-position))
+  (define selection-start (send t get-start-position))
+  (define selection-end (send t get-end-position))
+  ;; find-string defaults to the selection, which insertion leaves at EOF.
+  ;; The positive lookup must explicitly cover the complete actual editor.
+  (define target (send t find-string query 'forward 0 'eof))
+  ;; Exercise the old cursor-relative mistake and an absent whole-document
+  ;; query as actual native negative controls, without moving the selection.
+  (define default-target (send t find-string query))
+  (define eof-target (send t find-string query 'forward length 'eof))
+  (define absent-target (send t find-string absent-query 'forward 0 'eof))
+  (define found-text
+    (and (exact-nonnegative-integer? target)
+         (<= (+ target (string-length query)) length)
+         (send t get-text target (+ target (string-length query)))))
+  ;; Persist bounded raw values before any assertion so failures retain the
+  ;; actual target (#f versus integer), selection and queried source range.
+  (record! 'fixture_search
+           (hasheq 'query query 'absent_query absent-query 'text_length length
+                   'selection_start selection-start 'selection_end selection-end
+                   'target target 'default_target default-target 'eof_target eof-target
+                   'absent_target absent-target 'found_text found-text))
+  (same! selection-start length "post-insertion selection starts at EOF")
+  (same! selection-end length "post-insertion selection ends at EOF")
+  (same! default-target #f "cursor-relative search at EOF finds no earlier string")
+  (same! eof-target #f "explicit forward search at EOF finds no earlier string")
+  (same! absent-target #f "absent whole-document query stays absent")
+  (check! (exact-nonnegative-integer? target) "Unicode string exists at actual editor position")
+  (same! target (string-length "#lang racket/base\n(define café ")
+         "found Unicode string has exact source-derived character position")
+  (same! found-text query "found actual editor range contains the exact Unicode string")
+  target)
 (define (await! description predicate deadline)
   (let loop ()
     (cond [(predicate) (void)]
@@ -118,11 +153,10 @@
       (check! (not (send t is-lexer-valid?)) "insertion invalidates actual lexer before yielding")
       (await! "initial lexer completion" (lambda () (send t is-lexer-valid?)) deadline)
       (define initial (token-view t original))
-      (define target (send t find-string "\"λ\""))
-      (check! (exact-nonnegative-integer? target) "Unicode string exists at actual editor position")
+      (record! 'initial initial)
+      (define target (fixture-target! t record!))
       (same! (hash-ref (token-at initial target) 'type) "string" "stock lexer string classification")
       (same! (style-name-at initial target) "framework:syntax-color:scheme:string" "actual Racket string style name")
-      (record! 'initial initial)
       (record! 'diagnostics_initial (if state (state sl) 'null))
       (stage! "initial-lexer-readback")
       (define before-edit-transitions (length transitions))
