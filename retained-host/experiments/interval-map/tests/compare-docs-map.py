@@ -170,7 +170,7 @@ def validate(capture, mode):
         datum(value, where)
         require(len(value) == 6 and value[0] == "list", f"{where}: full five-field docs-range value required")
         stored_start, stored_end = number_datum(value[1], where), number_datum(value[2], where)
-        require(0 <= stored_start <= start and end <= stored_end <= 55 and stored_start < stored_end - 1,
+        require(0 <= stored_start <= start and end <= stored_end <= 55 and stored_start <= stored_end - 1,
                 f"{where}: stored start/end+1 geometry differs")
         require(value[3][0] == "list" and len(value[3]) >= 2
                 and value[3][1][0] == "symbol" and value[3][1][1] in ("def", "form"),

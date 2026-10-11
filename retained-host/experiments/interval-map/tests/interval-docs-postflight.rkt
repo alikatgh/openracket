@@ -3,7 +3,7 @@
 ;; genuine Check Syntax workflow. This does not replay or synthesize annotations.
 (require data/interval-map json racket/class racket/file racket/gui/base
          racket/list racket/path racket/port racket/runtime-path rackunit
-         syntax/modresolve "rackunit-failure-propagation.rkt")
+         syntax/modresolve "rackunit-failure-propagation.rkt" "docs-entry-diagnostic.rkt")
 (provide run-interval-docs-postflight!)
 
 (define-runtime-path host-path "independent-native-host.rkt")
@@ -157,20 +157,27 @@
       (cond
         [(not iter) (reverse result)]
         [else
-         (require! (< count 256) "actual docs interval bound exceeded")
          (define bounds (interval-map-iterate-key docs iter))
          (define stored (interval-map-iterate-value docs iter))
-         (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))
-                        (<= 0 (car bounds)) (< (car bounds) (cdr bounds))
-                        (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")
-         (require! (and (list? stored) (= (length stored) 5)
-                        (exact-integer? (car stored)) (exact-integer? (cadr stored))
-                        (<= 0 (car stored) (car bounds))
-                        (<= (cdr bounds) (cadr stored) 55)
-                        (< (car stored) (sub1 (cadr stored)))
-                        (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")
+         (define entry
+           (with-handlers
+               ([exn? (lambda (e)
+                        (with-handlers ([exn? void])
+                          (write-docs-entry-diagnostic! count previous-end bounds stored))
+                        (raise e))])
+             (require! (< count 256) "actual docs interval bound exceeded")
+             (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))
+                            (<= 0 (car bounds)) (< (car bounds) (cdr bounds))
+                            (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")
+             (require! (and (list? stored) (= (length stored) 5)
+                            (exact-integer? (car stored)) (exact-integer? (cadr stored))
+                            (<= 0 (car stored) (car bounds))
+                            (<= (cdr bounds) (cadr stored) 55)
+                            (<= (car stored) (sub1 (cadr stored)))
+                            (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")
+             (hash 'start (car bounds) 'end (cdr bounds) 'stored (encode stored))))
          (loop (interval-map-iterate-next docs iter) (cdr bounds) (add1 count)
-               (cons (hash 'start (car bounds) 'end (cdr bounds) 'stored (encode stored)) result))])))
+               (cons entry result))])))
   (define intervals (snapshot))
   (require! (pair? intervals) "real docs map must be nonempty")
   (define plus (interval-map-ref docs 36 (lambda () (error 'interval-docs-postflight "actual + documentation missing"))))

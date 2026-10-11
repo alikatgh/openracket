@@ -71,6 +71,68 @@ class DocsMapTests(unittest.TestCase):
         with self.assertRaises(gate.GateError):
             gate.compare(self.stock, self.on)
 
+    def add_zero_span(self, capture, position=35):
+        # Synthetic GUI-map input with source/actual-trace-supported zero-span
+        # #%app tag/path/anchor; no native GUI capture is claimed by this test.
+        value = ["list", ["integer", str(position)], ["integer", str(position + 1)],
+                 ["list", ["symbol", "form"],
+                  ["list", ["list", ["symbol", "lib"], ["string", "racket/private/base.rkt"]],
+                   ["symbol", "#%app"]]],
+                 path("doc/reference/application.html"),
+                 ["string", "(form._((lib._racket/private/base..rkt)._~23~25app))"]]
+        entry = {"start": position, "end": position + 1, "stored": value}
+        index = next((i for i, row in enumerate(capture["intervals"]) if row["start"] > position),
+                     len(capture["intervals"]))
+        capture["intervals"].insert(index, entry)
+        capture["interval_count"] += 1
+        if index <= capture["plus"]["interval_index"]:
+            capture["plus"]["interval_index"] += 1
+        return entry
+
+    def test_valid_zero_span_one_character_interval(self):
+        self.add_zero_span(self.stock)
+        self.add_zero_span(self.on)
+        self.assertTrue(gate.compare(self.stock, self.on)["equal"])
+
+    def test_valid_zero_span_at_source_end(self):
+        self.add_zero_span(self.stock, 54)
+        self.add_zero_span(self.on, 54)
+        self.assertTrue(gate.compare(self.stock, self.on)["equal"])
+
+    def test_zero_span_missing_end_plus_one(self):
+        self.add_zero_span(self.stock)
+        entry = self.add_zero_span(self.on)
+        entry["stored"][2] = ["integer", "35"]
+        with self.assertRaises(gate.GateError):
+            gate.compare(self.stock, self.on)
+
+    def test_zero_span_extra_end_plus_one(self):
+        self.add_zero_span(self.stock)
+        entry = self.add_zero_span(self.on)
+        entry["stored"][2] = ["integer", "37"]
+        with self.assertRaises(gate.GateError):
+            gate.compare(self.stock, self.on)
+
+    def test_zero_span_empty_actual_map_interval(self):
+        self.add_zero_span(self.stock)
+        entry = self.add_zero_span(self.on)
+        entry["end"] = entry["start"]
+        with self.assertRaises(gate.GateError):
+            gate.compare(self.stock, self.on)
+
+    def test_zero_span_reversed_stored_range(self):
+        self.add_zero_span(self.stock)
+        entry = self.add_zero_span(self.on)
+        entry["stored"][1] = ["integer", "37"]
+        with self.assertRaises(gate.GateError):
+            gate.compare(self.stock, self.on)
+
+    def test_zero_span_outside_source_range(self):
+        self.add_zero_span(self.stock, 55)
+        self.add_zero_span(self.on, 55)
+        with self.assertRaises(gate.GateError):
+            gate.compare(self.stock, self.on)
+
     def test_equal_full_synthetic_capture(self):
         self.assertTrue(gate.compare(self.stock, self.on)["equal"])
 
@@ -283,6 +345,19 @@ class DocsMapTests(unittest.TestCase):
             gate.compare(self.stock, self.on)
 
 
+# Exact reviewed source edits; reversal must recover the immutable 0714 bytes.
+OLD_SNAPSHOT = '  (define (snapshot)\n    (let loop ([iter (interval-map-iterate-first docs)] [previous-end -1] [count 0] [result \'()])\n      (cond\n        [(not iter) (reverse result)]\n        [else\n         (require! (< count 256) "actual docs interval bound exceeded")\n         (define bounds (interval-map-iterate-key docs iter))\n         (define stored (interval-map-iterate-value docs iter))\n         (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))\n                        (<= 0 (car bounds)) (< (car bounds) (cdr bounds))\n                        (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")\n         (require! (and (list? stored) (= (length stored) 5)\n                        (exact-integer? (car stored)) (exact-integer? (cadr stored))\n                        (<= 0 (car stored) (car bounds))\n                        (<= (cdr bounds) (cadr stored) 55)\n                        (< (car stored) (sub1 (cadr stored)))\n                        (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")\n         (loop (interval-map-iterate-next docs iter) (cdr bounds) (add1 count)\n               (cons (hash \'start (car bounds) \'end (cdr bounds) \'stored (encode stored)) result))])))\n'
+NEW_SNAPSHOT = '  (define (snapshot)\n    (let loop ([iter (interval-map-iterate-first docs)] [previous-end -1] [count 0] [result \'()])\n      (cond\n        [(not iter) (reverse result)]\n        [else\n         (define bounds (interval-map-iterate-key docs iter))\n         (define stored (interval-map-iterate-value docs iter))\n         (define entry\n           (with-handlers\n               ([exn? (lambda (e)\n                        (with-handlers ([exn? void])\n                          (write-docs-entry-diagnostic! count previous-end bounds stored))\n                        (raise e))])\n             (require! (< count 256) "actual docs interval bound exceeded")\n             (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))\n                            (<= 0 (car bounds)) (< (car bounds) (cdr bounds))\n                            (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")\n             (require! (and (list? stored) (= (length stored) 5)\n                            (exact-integer? (car stored)) (exact-integer? (cadr stored))\n                            (<= 0 (car stored) (car bounds))\n                            (<= (cdr bounds) (cadr stored) 55)\n                            (<= (car stored) (sub1 (cadr stored)))\n                            (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")\n             (hash \'start (car bounds) \'end (cdr bounds) \'stored (encode stored))))\n         (loop (interval-map-iterate-next docs iter) (cdr bounds) (add1 count)\n               (cons entry result))])))\n'
+
+
+def restore_zero_span_diagnostic_repair(source):
+    current_require = b'syntax/modresolve "rackunit-failure-propagation.rkt" "docs-entry-diagnostic.rkt")'
+    if source.count(current_require) != 1 or source.count(NEW_SNAPSHOT.encode()) != 1:
+        raise ValueError("unreviewed zero-span/diagnostic repair scope")
+    return source.replace(current_require, b'syntax/modresolve "rackunit-failure-propagation.rkt")').replace(
+        NEW_SNAPSHOT.encode(), OLD_SNAPSHOT.encode())
+
+
 class HostSourceTests(unittest.TestCase):
     def test_exact_two_insertion_derivative(self):
         derived = (HERE / "independent-native-host.rkt").read_bytes()
@@ -295,7 +370,7 @@ class HostSourceTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(derived).hexdigest(), gate.HOST)
 
     def test_exact_behavioral_guard_repair_scope(self):
-        source = (HERE / "interval-docs-postflight.rkt").read_bytes()
+        source = restore_zero_span_diagnostic_repair((HERE / "interval-docs-postflight.rkt").read_bytes())
         new_require = b'syntax/modresolve "rackunit-failure-propagation.rkt")'
         new_guard = b'  (assert-rackunit-failure-propagation!)'
         self.assertEqual(source.count(new_require), 1)
@@ -319,6 +394,31 @@ class HostSourceTests(unittest.TestCase):
         self.assertIn('(not reached-after-failure?)', regression)
         self.assertIn('(sync/timeout 10 result-channel)', regression)
         self.assertIn('(custodian-shutdown-all custodian)', regression)
+
+    def test_exact_zero_span_diagnostic_scope(self):
+        source = (HERE / "interval-docs-postflight.rkt").read_bytes()
+        self.assertEqual(hashlib.sha256(restore_zero_span_diagnostic_repair(source)).hexdigest(),
+                         "aacbabcec23a77b2e832d58277d606f91d87f02e64afbe51f119cabb70dc2fd6")
+        comparator = (HERE / "compare-docs-map.py").read_bytes()
+        self.assertEqual(comparator.count(b"stored_start <= stored_end - 1"), 1)
+        restored = comparator.replace(b"stored_start <= stored_end - 1", b"stored_start < stored_end - 1")
+        self.assertEqual(hashlib.sha256(restored).hexdigest(),
+                         "83bcc1c9fd5d4560ca285cea0220d73cf237e036a011b031ff515ff15cfdd2ee")
+
+    def test_failure_diagnostic_is_separate_and_bounded(self):
+        source = (HERE / "docs-entry-diagnostic.rkt").read_text()
+        for line in ["(define max-items 256)", "(define max-depth 24)",
+                     "(define max-data-bytes 4096)", "(define max-json-bytes 32768)"]:
+            self.assertIn(line, source)
+        self.assertIn("'failure #t", source)
+        self.assertIn('(list "unsupported"', source)
+        self.assertIn('"OPENRACKET_INTERVAL_DOCS_ENTRY_FAILURE "', source)
+        self.assertIn('(write-docs-entry-diagnostic! count previous-end bounds stored)', NEW_SNAPSHOT)
+        self.assertIn('(with-handlers ([exn? void])', NEW_SNAPSHOT)
+        self.assertIn('(raise e)', NEW_SNAPSHOT)
+        self.assertLess(NEW_SNAPSHOT.index('(define entry'), NEW_SNAPSHOT.index('(with-handlers'))
+        self.assertLess(NEW_SNAPSHOT.index('(with-handlers'), NEW_SNAPSHOT.index('(require!'))
+        self.assertLess(NEW_SNAPSHOT.index("'stored (encode stored)"), NEW_SNAPSHOT.index('(loop '))
 
     def test_tampered_base_refused(self):
         with self.assertRaises(ValueError):

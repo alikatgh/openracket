@@ -1,0 +1,203 @@
+--- immutable-0714/tests/interval-docs-postflight.rkt
++++ working/tests/interval-docs-postflight.rkt
+@@ -3,7 +3,7 @@
+ ;; genuine Check Syntax workflow. This does not replay or synthesize annotations.
+ (require data/interval-map json racket/class racket/file racket/gui/base
+          racket/list racket/path racket/port racket/runtime-path rackunit
+-         syntax/modresolve "rackunit-failure-propagation.rkt")
++         syntax/modresolve "rackunit-failure-propagation.rkt" "docs-entry-diagnostic.rkt")
+ (provide run-interval-docs-postflight!)
+ 
+ (define-runtime-path host-path "independent-native-host.rkt")
+@@ -157,20 +157,27 @@
+       (cond
+         [(not iter) (reverse result)]
+         [else
+-         (require! (< count 256) "actual docs interval bound exceeded")
+          (define bounds (interval-map-iterate-key docs iter))
+          (define stored (interval-map-iterate-value docs iter))
+-         (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))
+-                        (<= 0 (car bounds)) (< (car bounds) (cdr bounds))
+-                        (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")
+-         (require! (and (list? stored) (= (length stored) 5)
+-                        (exact-integer? (car stored)) (exact-integer? (cadr stored))
+-                        (<= 0 (car stored) (car bounds))
+-                        (<= (cdr bounds) (cadr stored) 55)
+-                        (< (car stored) (sub1 (cadr stored)))
+-                        (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")
++         (define entry
++           (with-handlers
++               ([exn? (lambda (e)
++                        (with-handlers ([exn? void])
++                          (write-docs-entry-diagnostic! count previous-end bounds stored))
++                        (raise e))])
++             (require! (< count 256) "actual docs interval bound exceeded")
++             (require! (and (pair? bounds) (exact-integer? (car bounds)) (exact-integer? (cdr bounds))
++                            (<= 0 (car bounds)) (< (car bounds) (cdr bounds))
++                            (<= previous-end (car bounds)) (<= (cdr bounds) 55)) "invalid ordered interval geometry")
++             (require! (and (list? stored) (= (length stored) 5)
++                            (exact-integer? (car stored)) (exact-integer? (cadr stored))
++                            (<= 0 (car stored) (car bounds))
++                            (<= (cdr bounds) (cadr stored) 55)
++                            (<= (car stored) (sub1 (cadr stored)))
++                            (path? (list-ref stored 3))) "unsupported full stored docs-range geometry/value")
++             (hash 'start (car bounds) 'end (cdr bounds) 'stored (encode stored))))
+          (loop (interval-map-iterate-next docs iter) (cdr bounds) (add1 count)
+-               (cons (hash 'start (car bounds) 'end (cdr bounds) 'stored (encode stored)) result))])))
++               (cons entry result))])))
+   (define intervals (snapshot))
+   (require! (pair? intervals) "real docs map must be nonempty")
+   (define plus (interval-map-ref docs 36 (lambda () (error 'interval-docs-postflight "actual + documentation missing"))))
+--- immutable-0714/tests/compare-docs-map.py
++++ working/tests/compare-docs-map.py
+@@ -170,7 +170,7 @@
+         datum(value, where)
+         require(len(value) == 6 and value[0] == "list", f"{where}: full five-field docs-range value required")
+         stored_start, stored_end = number_datum(value[1], where), number_datum(value[2], where)
+-        require(0 <= stored_start <= start and end <= stored_end <= 55 and stored_start < stored_end - 1,
++        require(0 <= stored_start <= start and end <= stored_end <= 55 and stored_start <= stored_end - 1,
+                 f"{where}: stored start/end+1 geometry differs")
+         require(value[3][0] == "list" and len(value[3]) >= 2
+                 and value[3][1][0] == "symbol" and value[3][1][1] in ("def", "form"),
+--- /dev/null
++++ working/tests/docs-entry-diagnostic.rkt
+@@ -0,0 +1,90 @@
++#lang racket/base
++;; Failure-only diagnostics. Never used to encode a successful docs snapshot.
++(require json racket/list racket/path)
++(provide docs-entry-diagnostic write-docs-entry-diagnostic!)
++
++(define max-items 256)
++(define max-depth 24)
++(define max-data-bytes 4096)
++(define max-json-bytes 32768)
++(define marker "OPENRACKET_INTERVAL_DOCS_ENTRY_FAILURE ")
++
++(define (docs-entry-diagnostic index previous-end bounds stored)
++  (define items-left max-items)
++  (define bytes-left max-data-bytes)
++  (define complete? #t)
++  (define (incomplete!) (set! complete? #f))
++  (define (clip-bytes raw)
++    (define size (bytes-length raw))
++    (define kept (min size bytes-left))
++    (set! bytes-left (- bytes-left kept))
++    (unless (= size kept) (incomplete!))
++    (list (bytes->list (subbytes raw 0 kept)) size (= size kept)))
++  (define (clip-string text)
++    ;; Do not first encode an arbitrarily large string. At most one raw-byte
++    ;; budget's worth of characters is converted; truncation is always explicit.
++    (define length (string-length text))
++    (define kept (min length bytes-left))
++    (unless (= kept length) (incomplete!))
++    (define part (clip-bytes (string->bytes/utf-8 (substring text 0 kept))))
++    (list (car part) length (and (= kept length) (caddr part))))
++  (define (unsupported value)
++    (incomplete!)
++    (list "unsupported"
++          (cond [(number? value) "number"] [(hash? value) "hash"]
++                [(box? value) "box"] [(procedure? value) "procedure"]
++                [(struct? value) "structure"] [else "other"])))
++  (define (encode value depth)
++    (cond
++      [(zero? items-left)
++       (incomplete!) (list "truncated" "items")]
++      [else
++       (set! items-left (sub1 items-left))
++       (define (recur v) (encode v (add1 depth)))
++       (cond
++         [(>= depth max-depth) (incomplete!) (list "truncated" "depth")]
++         [(boolean? value) (list "boolean" value)]
++         [(null? value) (list "null")]
++         [(exact-integer? value)
++          (if (<= (integer-length value) 256)
++              (list "integer" (number->string value))
++              (begin (incomplete!) (list "truncated-integer" (integer-length value) (negative? value))))]
++         [(char? value) (list "character" (char->integer value))]
++         [(string? value) (cons "string" (clip-string value))]
++         [(symbol? value) (append (list "symbol" (symbol-interned? value))
++                                  (clip-string (symbol->string value)))]
++         [(bytes? value) (cons "bytes" (clip-bytes value))]
++         [(path? value) (append (list "path" (symbol->string (path-convention-type value)))
++                                (clip-bytes (path->bytes value)))]
++         [(pair? value) (list "pair" (recur (car value)) (recur (cdr value)))]
++         [(vector? value)
++          (define size (vector-length value))
++          (define entries
++            (for/list ([index (in-range size)] #:break (zero? items-left))
++              (recur (vector-ref value index))))
++          (define kept (length entries))
++          (unless (= kept size) (incomplete!))
++          (list "vector" size entries (= kept size))]
++         [else (unsupported value)])]))
++  ;; The complete flag is read only after both actual values were encoded.
++  (define encoded-bounds (encode bounds 0))
++  (define encoded-stored (encode stored 0))
++  (hash 'schema "openracket-docs-entry-failure/v1" 'failure #t
++        'index index 'previous_end previous-end 'complete complete?
++        'limits (hash 'items max-items 'depth max-depth 'data_bytes max-data-bytes 'json_bytes max-json-bytes)
++        'bounds encoded-bounds 'stored encoded-stored))
++
++(define (write-docs-entry-diagnostic! index previous-end bounds stored [out (current-error-port)])
++  (define report (docs-entry-diagnostic index previous-end bounds stored))
++  (define text (jsexpr->string report))
++  (define encoded (string->bytes/utf-8 text))
++  (define bounded
++    (if (<= (bytes-length encoded) max-json-bytes)
++        text
++        ;; A bounded failure marker is not a replacement/success datum. The
++        ;; original guard exception is still raised by the caller.
++        (jsexpr->string
++         (hash 'schema "openracket-docs-entry-failure/v1" 'failure #t 'complete #f
++               'diagnostic_error "serialized diagnostic exceeds hard byte limit"
++               'max_json_bytes max-json-bytes))))
++  (display marker out) (display bounded out) (newline out) (flush-output out))
+--- /dev/null
++++ working/tests/docs-entry-diagnostic-test.rkt
+@@ -0,0 +1,46 @@
++#lang racket/base
++;; GUI-free native test of the exact failure-only diagnostic encoder.
++(require json racket/list racket/match racket/port "docs-entry-diagnostic.rkt")
++(define (require! condition message)
++  (unless condition (error 'docs-entry-diagnostic-test "~a" message)))
++(define bounds (cons 35 36))
++(define stored (list 35 36 '(form ((quote #%kernel) #%datum))
++                     (string->path "/runtime/doc/reference/quote.html")
++                     "(form._((quote._~23~25kernel)._~23~25datum))"))
++(define diagnostic (docs-entry-diagnostic 2 25 bounds stored))
++(define (decode value)
++  (match value
++    [(list "null") '()]
++    [(list "integer" number) (string->number number)]
++    [(list "boolean" value) value]
++    [(list "pair" a d) (cons (decode a) (decode d))]
++    [(list "string" bytes size #t)
++     (define text (bytes->string/utf-8 (list->bytes bytes)))
++     (require! (= (string-length text) size) "complete string length") text]
++    [(list "symbol" #t bytes size #t)
++     (define text (bytes->string/utf-8 (list->bytes bytes)))
++     (require! (= (string-length text) size) "complete symbol length") (string->symbol text)]
++    [(list "path" convention bytes size #t)
++     (require! (= (length bytes) size) "complete raw path byte length")
++     (bytes->path (list->bytes bytes) (string->symbol convention))]
++    [_ (error 'docs-entry-diagnostic-test "unexpected or incomplete diagnostic datum")]))
++(require! (hash-ref diagnostic 'failure) "diagnostic is always a failure record")
++(require! (hash-ref diagnostic 'complete) "small actual-style entry must be captured completely")
++(require! (equal? (decode (hash-ref diagnostic 'bounds)) bounds) "exact typed bounds round trip")
++(require! (equal? (decode (hash-ref diagnostic 'stored)) stored) "exact complete stored value round trip")
++(for ([value (in-list (list (make-string 20000 #\λ)
++                            (make-vector 10000 stored)
++                            (for/fold ([value #f]) ([index (in-range 100)]) (cons value '()))
++                            (make-hash)))])
++  (define report (docs-entry-diagnostic 0 -1 bounds value))
++  (require! (not (hash-ref report 'complete)) "truncation and unsupported types must be explicit")
++  (define out (open-output-string))
++  (write-docs-entry-diagnostic! 0 -1 bounds value out)
++  (define output (get-output-string out))
++  (define prefix "OPENRACKET_INTERVAL_DOCS_ENTRY_FAILURE ")
++  (require! (<= (bytes-length (string->bytes/utf-8 output)) (+ 32768 (string-length prefix) 1))
++            "diagnostic has a hard serialized byte bound")
++  (define parsed (call-with-input-string (substring output (string-length prefix)) read-json))
++  (require! (and (hash-ref parsed 'failure) (not (hash-ref parsed 'complete)))
++            "bounded log remains explicit failed/incomplete JSON"))
++(displayln "OPENRACKET_DOCS_ENTRY_DIAGNOSTIC_OK exact-roundtrip bounded-failure-only")
