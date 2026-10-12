@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "base_tree": "openracket-relative-launcher-case-fixture-freeze-20261011-1830",
+  "base_manifest_sha256": "25af97fe2273422c77135e999d6887c59c35a1b0c51308b6ea435b09ccb057a1",
+  "base_supervisor_sha256": "366783356095b8badd9ac1deb49c532e4cf1a2125b01b29307896f0f37ea94d0",
+  "base_files_verified": 29,
+  "failed_run": "38164494081",
+  "decoded_files_hash_verified": 55,
+  "raw_gui_images": 967,
+  "raw_child_images": 305,
+  "native_cache_membership_for_prior_run": "unobserved; not retroactively inferred",
+  "webkit_raw_name": "/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit",
+  "validator_missing_target": "/System/Volumes/Preboot/Cryptexes/OS/System/Library/Frameworks/WebKit.framework/Versions/A/WebKit",
+  "portable_tests": {
+    "normal": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "passed": 107,
+      "exit_code": 0,
+      "log": "evidence/SHARED-CACHE-NORMAL-TESTS.LOG",
+      "sha256": "60b5c6c824e420d83c123f78b8bc9c499227bb347cda73e6ee3b0d3e08ad1480",
+      "tmpdir_witness": null
+    },
+    "alias": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "passed": 107,
+      "exit_code": 0,
+      "log": "evidence/SHARED-CACHE-ALIAS-TESTS.LOG",
+      "sha256": "42f8be58540ae69fc9715ef59278651120d78c040ccc0bbfe9ce87d9b9f7a08d",
+      "tmpdir_witness": {
+        "tempdir": "/tmp/cache-witness-iz5rspzu/Aliased TMP",
+        "realpath": "/tmp/cache-witness-iz5rspzu/Real TMP \u03bb",
+        "aliased": true
+      }
+    }
+  },
+  "bash_syntax": "passed",
+  "native_reader_compile": "not run",
+  "native_observer": "not run",
+  "relocation": "not run",
+  "physical_case_insensitive_filesystem_tested": false,
+  "case_collision_model": "Inherited explicit conflicting-name inventory and mkdir-collision tests pass",
+  "unchanged_output_bound": 1048576,
+  "unchanged_timeout_seconds": 120,
+  "remote_mutation": false
+}

@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from test_source import fake_macho, s
+from test_source import fake_macho, image_snapshot, s
 
 
 class LauncherIsolation(unittest.TestCase):
@@ -259,6 +259,8 @@ class LauncherIsolation(unittest.TestCase):
                        ("config_file", "links_file", "package_database")},
                       "loaded_images": [str(app / "Contents/MacOS/ProbeNative")],
                       "child": {"loaded_images": [str(app / "Contents/Resources/runtime/bin/racket")]}}
+            for observed in [report, report["child"]]:
+                observed["loaded_image_snapshot"] = image_snapshot(observed["loaded_images"])
             (profile / "result.json").write_text(json.dumps(report))
             return {"pid": 123, "stdout": "", "stderr": ""}
 

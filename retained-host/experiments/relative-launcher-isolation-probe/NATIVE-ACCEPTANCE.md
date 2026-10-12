@@ -7,8 +7,11 @@ archive, release or upload is supplied. All detailed output remains local.
 ## Preconditions
 
 This derivative preserves the existing run CLI and identity/relocation contract.
-Only the reviewed top-level `DrRacket.app` exclusion is new; see
-`ISOLATION-DESIGN.md`. Historical run 38159705157 remains an assembly-only result.
+The reviewed top-level `DrRacket.app` exclusion remains unchanged; see
+`ISOLATION-DESIGN.md`. This derivative adds only paired public-dyld cache/header
+witnesses and their validation. Run 38164494081 remains a failed first-location
+probe, with relocation withheld and no retroactive acceptance. See
+`SHARED-CACHE-DIAGNOSIS.md`.
 
 
 1. An explicitly authorized native Apple Silicon macOS test environment with a
@@ -111,10 +114,21 @@ supervisor applies stricter live-filesystem checks in addition to the schema:
   must exist for this full-runtime target. An absent default config.rktd is recorded
   as absent, never assigned a fictitious hash. Actual effective config remains
   inside the bundle and all resolved setup paths must stay confined.
-- Separate dyld snapshots for GUI and console child. Every non-system image is in
-  the bundle. Static dependency/rpath records resolve the sampled image sets;
-  ambiguous inherited loader-chain rpaths fail closed. The two Apple system roots
-  are canonicalized, so traversal or external symlink tricks do not qualify.
+- Separate dyld snapshots for GUI and console child preserve raw image strings.
+  Every image is paired by exact native index and raw name with its non-null
+  header address, magic, CPU type, file type, flags and exact Boolean public
+  `_dyld_shared_cache_contains_path` result. Counts/names/header pointers must
+  remain equal in checks before and after collection. An unavailable API or any
+  mismatch fails the observation. Public enumeration is not an atomic lock;
+  this bounded probe performs no intentional concurrent load/unload operations.
+- A cache exception requires BOTH the same loaded header's `MH_DYLIB_IN_CACHE`
+  bit and affirmative cache-path query, a 64-bit arm64 dylib header, and a raw
+  normalized `/System/Library/` or `/usr/lib/` name without traversal. Such a
+  virtual cache name is preserved, not resolved to a nonexistent disk file.
+  No Cryptex prefix is allowlisted. All other images need real files canonically
+  inside the bundle or existing system roots; missing runtime files still fail.
+  Static dependency/rpath gates are unchanged. Active closure uses the same
+  classifications; ambiguous inherited loader-chain rpaths still fail closed.
 - Before/after full bundle bytes/modes/mtime/link inventory equals; original
   source/runtime witnesses equal; .rkt-handler baseline equals across generation
   and both launches. A failed native operation also preserves available witnesses.

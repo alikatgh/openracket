@@ -1,0 +1,60 @@
+[
+  {
+    "repository": "apple-oss-distributions/dyld",
+    "path": "include/mach-o/dyld.h",
+    "commit": "fd8d0c4d52320ebf64db34f3cb280310d905c5ae",
+    "blob_sha": "7bf19c034af3c3bd61f09e42fdfabb6979563d88",
+    "url": "https://github.com/apple-oss-distributions/dyld/blob/fd8d0c4d52320ebf64db34f3cb280310d905c5ae/include/mach-o/dyld.h",
+    "text_bytes": 19158,
+    "text_sha256": "7aff76984e97a5313c44ad818920aea7d42b3a40f72bb7091b2e9ea82d0ac7e3"
+  },
+  {
+    "repository": "apple-oss-distributions/dyld",
+    "path": "dyld/DyldAPIs.cpp",
+    "commit": "fd8d0c4d52320ebf64db34f3cb280310d905c5ae",
+    "blob_sha": "2a462a772508edb15f2f9cee4968b3e61b846a5a",
+    "url": "https://github.com/apple-oss-distributions/dyld/blob/fd8d0c4d52320ebf64db34f3cb280310d905c5ae/dyld/DyldAPIs.cpp",
+    "text_bytes": 174612,
+    "text_sha256": "22ad6c141e357f06312b659f0103670c6e32a4763984f00303bb061df59d9239"
+  },
+  {
+    "repository": "apple-oss-distributions/xnu",
+    "path": "EXTERNAL_HEADERS/mach-o/loader.h",
+    "commit": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+    "blob_sha": "4d1b930c3dcee476538d4cb022e3cffb2d3a50e2",
+    "url": "https://github.com/apple-oss-distributions/xnu/blob/f6217f891ac0bb64f3d375211650a4c1ff8ca1ea/EXTERNAL_HEADERS/mach-o/loader.h",
+    "text_bytes": 71322,
+    "text_sha256": "8780a1e622375833b563f488bc820422c2fb5b8727bb8df8ceaa73ab6f0f88e3"
+  },
+  {
+    "repository": "racket/racket",
+    "path": "racket/collects/ffi/unsafe.rkt",
+    "ref": "v9.3",
+    "blob_sha": "e3d1c3739909b2a4ca3e921a69f13282e62bcaaa",
+    "url": "https://github.com/racket/racket/blob/v9.3/racket/collects/ffi/unsafe.rkt",
+    "text_bytes": 96192,
+    "text_sha256": "78e85abbc30a1e31fa036f96565b27144d7b9a4e1cc42f890c67a04238c5bed1"
+  },
+  {
+    "repository": "apple-oss-distributions/dyld",
+    "path": "dyld/DyldProcessConfig.cpp",
+    "commit": "fd8d0c4d52320ebf64db34f3cb280310d905c5ae",
+    "blob_sha": "fd2897555ae887e92433aa113bb3a27fc712d8eb",
+    "url": "https://github.com/apple-oss-distributions/dyld/blob/fd8d0c4d52320ebf64db34f3cb280310d905c5ae/dyld/DyldProcessConfig.cpp",
+    "start_line": 2798,
+    "end_line": 2811,
+    "text_bytes": 470,
+    "text_sha256": "757e8d1e433884a0650c5b0d9ada36a1bfdbae4f327d94ef53050a3231739b09"
+  },
+  {
+    "repository": "racket/racket",
+    "path": "pkgs/racket-doc/scribblings/foreign/types.scrbl",
+    "ref": "v9.3",
+    "blob_sha": "1e4ecfadfad01136c87b5adcbf0d6ef2d5fc40a7",
+    "url": "https://github.com/racket/racket/blob/v9.3/pkgs/racket-doc/scribblings/foreign/types.scrbl",
+    "start_line": 265,
+    "end_line": 280,
+    "text_bytes": 580,
+    "text_sha256": "8d72903fadbd01963885da9f45a51775d00c1b1d613fd65885e72a34ea116157"
+  }
+]

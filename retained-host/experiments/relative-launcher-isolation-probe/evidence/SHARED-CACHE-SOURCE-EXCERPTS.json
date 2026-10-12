@@ -1,0 +1,22 @@
+[
+  {
+    "repository": "apple-oss-distributions/dyld",
+    "path": "dyld/DyldProcessConfig.cpp",
+    "commit": "fd8d0c4d52320ebf64db34f3cb280310d905c5ae",
+    "blob_sha": "fd2897555ae887e92433aa113bb3a27fc712d8eb",
+    "url": "https://github.com/apple-oss-distributions/dyld/blob/fd8d0c4d52320ebf64db34f3cb280310d905c5ae/dyld/DyldProcessConfig.cpp",
+    "start_line": 2798,
+    "end_line": 2811,
+    "text": "const char* ProcessConfig::canonicalDylibPathInCache(const char* dylibPath) const\n{\n    if ( const char* result = this->dyldCache.getCanonicalPath(dylibPath) )\n        return result;\n\n#if TARGET_OS_OSX && !TARGET_OS_EXCLAVEKIT\n    // on macOS support \"Foo.framework/Foo\" symlink\n    char resolvedPath[PATH_MAX];\n    if ( this->syscall.realpath(dylibPath, resolvedPath) ) {\n        return this->dyldCache.getCanonicalPath(resolvedPath);\n    }\n#endif\n    return nullptr;\n}"
+  },
+  {
+    "repository": "racket/racket",
+    "path": "pkgs/racket-doc/scribblings/foreign/types.scrbl",
+    "ref": "v9.3",
+    "blob_sha": "1e4ecfadfad01136c87b5adcbf0d6ef2d5fc40a7",
+    "url": "https://github.com/racket/racket/blob/v9.3/pkgs/racket-doc/scribblings/foreign/types.scrbl",
+    "start_line": 265,
+    "end_line": 280,
+    "text": "@defthing[_stdbool ctype?]{\n\nThe @racket[_stdbool] type represents the C99 @cpp{bool} type from\n@cpp{<stdbool.h>}. Going from Racket to C, @racket[_stdbool] translates\n@racket[#f] to a @racket[0] @cpp{bool} and any other value to a\n@racket[1] @cpp{bool}. Going from C to Racket, @racket[_stdbool] translates\n@racket[0] to a @racket[#f] and any other value to @racket[#t].\n\n@history[#:added \"6.0.0.6\"]}\n\n@defthing[_bool ctype?]{\n\nLike @racket[_stdbool], but with an @cpp{int} representation on the C\nside, reflecting one of many traditional (i.e., pre-C99) encodings of\nbooleans.}\n"
+  }
+]

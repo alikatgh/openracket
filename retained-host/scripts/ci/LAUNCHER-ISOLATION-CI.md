@@ -7,11 +7,38 @@ and acceptance documents describe that source snapshot's preparation state; this
 adapter is the separately reviewed execution mechanism. Native results must come
 from the exact subsequently executed commit, never from portable tests.
 
+## Shared-cache witness retry boundary
+
+This retry uses the separately reviewed shared-cache-witness source derivative.
+Historical run 38164494081 remains failed: its first observation reached raw
+startup/identity reports, but validation stopped at an absent standalone WebKit
+Cryptex target and correctly withheld relocation. That old evidence has no new
+cache witness and cannot be upgraded into a pass.
+
+The new frozen source requires matching raw dyld names and same-index in-memory
+Mach-O header evidence for GUI and console-child images. Only a normalized raw
+path under the existing two system roots, an affirmative public dyld cache-path
+query, and the expected arm64 dylib header with its cache flag can classify an
+image as OS shared-cache backed. It does not fabricate an existing file/hash or
+add a filesystem-root exemption. All other images retain actual-file, canonical
+confinement and dependency checks. The public enumeration checks visible drift;
+it is not an atomic snapshot or hostile-process attestation.
+
+The adapter runner, workflow, every existing gate and all deadlines remain
+unchanged. Only its source pin/member counts, the matching exact-inventory test,
+and these technical labels change. The portable release suite contains 107
+source tests, 53 adapter tests and 22 transport tests (182 total). It runs through
+a genuinely symlinked TMPDIR, with alias selection proved in a fresh subprocess.
+Case-collision rejection is exercised through explicit inventory records, not by
+assuming a disk can create both capitalization variants. Physical case-insensitive
+filesystem coverage is not inferred from those synthetic checks. Native execution
+of this derivative remains pending until a separately authorized exact-commit run.
+
 ## Exact input and execution contract
 
 The source at `retained-host/experiments/relative-launcher-isolation-probe` has
-exactly 29 files (28 manifest members plus the manifest). Its MANIFEST SHA-256 is
-`25af97fe2273422c77135e999d6887c59c35a1b0c51308b6ea435b09ccb057a1`.
+exactly 37 files (36 manifest members plus the manifest). Its MANIFEST SHA-256 is
+`2bbdcfe499a35de6d2a12b1c3b62a0f57c4b69eeee5394300782d1297ba5fb48`.
 The adapter rejects different content, extra files and source symlinks.
 
 1. Before allocating the standard `macos-15` runner, require a public push to

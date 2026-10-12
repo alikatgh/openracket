@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import plistlib
 import platform
+import re
 import shutil
 import signal
 import stat
@@ -68,10 +69,77 @@ def is_system_path(path):
     p = Path(path)
     if not p.is_absolute():
         return False
-    # Shared-cache-only Apple images may lack a disk file. Existing aliases are
-    # still resolved and '..' never escapes an allowlisted root by prefix trick.
+    # Static OS dependency gate only; loaded images separately require a file
+    # or affirmative native cache evidence. Resolve aliases and parent traversal.
     canonical = p.resolve(strict=False)
     return any(inside(canonical, Path(root).resolve(strict=False)) for root in SYSTEM_ROOTS)
+
+
+def normalized_system_image_name(path):
+    """Lexical cache-name gate only, never a filesystem trust decision."""
+    return (isinstance(path, str) and path.startswith("/") and "\0" not in path
+            and str(Path(path)) == path and ".." not in Path(path).parts
+            and any(path.startswith(root) and path != root for root in SYSTEM_ROOTS))
+
+
+def classify_loaded_images(images, snapshot, bundle):
+    """Validate same-process public-dyld witnesses; no path-only cache waiver.
+
+    Reports come from this bounded probe, not an attestation of hostile code.
+    The sampled names/headers are rechecked by the native observer before/after.
+    A missing or malformed witness fails closed, including historical reports.
+    """
+    require(isinstance(images, list) and 1 <= len(images) <= 8192,
+            "invalid dyld image list")
+    require(isinstance(snapshot, dict)
+            and set(snapshot) == {"schema", "method", "count", "stable", "records"},
+            "dyld snapshot missing or malformed")
+    require(type(snapshot["schema"]) is int and snapshot["schema"] == 1
+            and snapshot["method"] == "public-dyld-name-header-cache-v1"
+            and type(snapshot["count"]) is int and snapshot["count"] == len(images)
+            and snapshot["stable"] is True, "invalid or unstable dyld snapshot")
+    records = snapshot["records"]
+    require(isinstance(records, list) and len(records) == len(images), "dyld witness count mismatch")
+    require(all(isinstance(p, str) and p.startswith("/") and "\0" not in p for p in images),
+            "invalid loaded image")
+    require(len(set(images)) == len(images), "duplicate dyld image name")
+    result = []
+    addresses = set()
+    for index, (raw, record) in enumerate(zip(images, records)):
+        require(isinstance(record, dict) and set(record) == {
+            "index", "raw", "header_address", "magic", "cpu_type", "file_type", "flags",
+            "shared_cache_contains_path"}, "malformed dyld image witness")
+        require(type(record["index"]) is int and record["index"] == index
+                and record["raw"] == raw, "dyld witness index/name mismatch")
+        address = record["header_address"]
+        require(isinstance(address, str) and re.fullmatch(r"[1-9a-f][0-9a-f]{0,15}", address),
+                "invalid dyld header address")
+        require(address not in addresses, "duplicate dyld header address")
+        addresses.add(address)
+        for field in ("magic", "cpu_type", "file_type", "flags"):
+            require(type(record[field]) is int and 0 <= record[field] <= 0xffffffff,
+                    "dyld header fields must be exact uint32 integers")
+        require(record["magic"] == 0xFEEDFACF and record["cpu_type"] == 0x0100000C,
+                "unexpected loaded Mach-O architecture")
+        require(type(record["shared_cache_contains_path"]) is bool,
+                "cache membership must be an exact boolean")
+        in_cache = bool(record["flags"] & 0x80000000)
+        if in_cache:
+            require(record["file_type"] == 6 and record["shared_cache_contains_path"] is True
+                    and normalized_system_image_name(raw), "unproved OS shared-cache image")
+            # Deliberately do not resolve this virtual cache name as a disk file.
+            # A Cryptex alias may have no standalone file at its resolved target.
+            result.append({"raw": raw, "kind": "os-shared-cache", "witness_index": index})
+        else:
+            try:
+                path = existing(raw)
+            except OSError as error:
+                raise Refusal(f"loaded image has no file or cache proof: {raw}") from error
+            require(path.is_file(), f"loaded image is not a file: {raw}")
+            require(is_system_path(path) or inside(path, bundle), f"external loaded image: {raw}")
+            result.append({"raw": raw, "kind": "os-file" if is_system_path(path) else "bundle-file",
+                           "resolved": str(path), "witness_index": index})
+    return result
 
 
 def existing(path):
@@ -553,10 +621,10 @@ def validate_report(report, bundle, profile, expected_pid=None):
     # it is the actual process image or forcing NSRunningApplication to match it.
     for field in ("main_bundle_executable_path", "running_executable_path"):
         require(identity.get(field) and inside(existing(identity[field]), bundle / "Contents/MacOS"), f"escaped {field}")
-    require(report["loaded_images"], "dyld image list missing")
-    for image in report["loaded_images"] + report["child"]["loaded_images"]:
-        require(isinstance(image, str) and image.startswith("/"), "invalid loaded image")
-        require(is_system_path(image) or inside(existing(image), bundle), f"external loaded image: {image}")
+    classifications = {}
+    for label, observed in (("gui", report), ("child", report["child"])):
+        classifications[label] = classify_loaded_images(
+            observed["loaded_images"], observed.get("loaded_image_snapshot"), bundle)
     require(set(report["modules"]) == {"racket_base", "setup_dirs", "pkg_lib", "gui_base", "drracket_main"}, "incomplete module witnesses")
     for module in report["modules"].values():
         p = existing(module["path"]["resolved"])
@@ -573,10 +641,11 @@ def validate_report(report, bundle, profile, expected_pid=None):
                 require(file_digest(p) == record["sha256"], f"{name} hash mismatch")
             else:
                 require(record["sha256"] is False, f"invented hash for missing {name}")
-    return {"status": "path-and-identity-observation-validated", "bundle": str(bundle), "profile": str(profile)}
+    return {"status": "path-and-identity-observation-validated", "bundle": str(bundle), "profile": str(profile),
+            "loaded_image_classifications": classifications}
 
 
-def loaded_closure(bundle, images, executable, rows):
+def loaded_closure(bundle, images, executable, rows, snapshot):
     """Resolve active arm64 Mach-O dependencies against measured dyld images.
 
     This proves the sampled image set's closure only. Unloaded optional runtime
@@ -585,7 +654,9 @@ def loaded_closure(bundle, images, executable, rows):
     bundle = existing(bundle)
     executable = existing(executable)
     indexed = {str(existing(bundle / row["path"])): row for row in rows}
-    measured = {str(existing(p)) for p in images if not is_system_path(p)}
+    classified = classify_loaded_images(images, snapshot, bundle)
+    measured = {p["resolved"] for p in classified if p["kind"] == "bundle-file"}
+    cache_names = {p["raw"] for p in classified if p["kind"] == "os-shared-cache"}
     require(str(executable) in measured, "actual executable missing from dyld snapshot")
 
     def expand(path, image):
@@ -609,7 +680,7 @@ def loaded_closure(bundle, images, executable, rows):
         image = Path(path)
         part = arm_slice(indexed[path])
         for dep in part["dependencies"]:
-            if is_system_path(dep):
+            if dep in cache_names or is_system_path(dep):
                 witness.append({"image": path, "dependency": dep, "system": True})
                 continue
             if dep.startswith("@rpath/"):
@@ -622,7 +693,7 @@ def loaded_closure(bundle, images, executable, rows):
                 candidates = [expand(dep, image)]
             resolved = []
             for candidate in candidates:
-                if is_system_path(candidate):
+                if str(candidate) in cache_names or is_system_path(candidate):
                     resolved.append(str(candidate))
                 elif candidate.exists():
                     real = str(existing(candidate))
@@ -682,8 +753,8 @@ def _run_probe(build_record, renamed):
             verdict = validate_report(report, current, profile, process["pid"])
             machos = macho_inventory(current)
             closure = {
-                "gui": loaded_closure(current, report["loaded_images"], current / "Contents/MacOS/ProbeNative", machos),
-                "child": loaded_closure(current, report["child"]["loaded_images"], runtime / "bin/racket", machos)}
+                "gui": loaded_closure(current, report["loaded_images"], current / "Contents/MacOS/ProbeNative", machos, report["loaded_image_snapshot"]),
+                "child": loaded_closure(current, report["child"]["loaded_images"], runtime / "bin/racket", machos, report["child"]["loaded_image_snapshot"])}
         except NativeCleanupUncertain:
             cleanup_certain = False
             raise

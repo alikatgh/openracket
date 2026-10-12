@@ -30,6 +30,18 @@ def fake_macho(deps=(), rpaths=()):
     return struct.pack("<8I", 0xFEEDFACF, 0x0100000C, 0, 2, len(commands), len(payload), 0, 0) + payload
 
 
+def image_snapshot(images, cache_names=()):
+    """Synthetic native witness; never evidence of actual cache membership."""
+    return {"schema": 1, "method": "public-dyld-name-header-cache-v1", "stable": True,
+            "count": len(images), "records": [
+                {"index": i, "raw": raw, "header_address": format(0x100000 + i * 0x1000, "x"),
+                 "magic": 0xFEEDFACF, "cpu_type": 0x0100000C,
+                 "file_type": 6 if raw in cache_names else 2,
+                 "flags": 0x80000000 if raw in cache_names else 0,
+                 "shared_cache_contains_path": raw in cache_names}
+                for i, raw in enumerate(images)]}
+
+
 class Portable(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -190,13 +202,13 @@ class Portable(unittest.TestCase):
         main = self.base / "main"; lib = self.base / "lib"
         main.write_bytes(fake_macho(["@executable_path/lib"])); lib.write_bytes(fake_macho())
         rows = s.macho_inventory(self.base)
-        with self.assertRaises(s.Refusal): s.loaded_closure(self.base, [str(main)], main, rows)
-        self.assertEqual(len(s.loaded_closure(self.base, [str(main), str(lib)], main, rows)), 1)
+        with self.assertRaises(s.Refusal): s.loaded_closure(self.base, [str(main)], main, rows, image_snapshot([str(main)]))
+        self.assertEqual(len(s.loaded_closure(self.base, [str(main), str(lib)], main, rows, image_snapshot([str(main), str(lib)]))), 1)
 
     def test_active_rpath_resolution(self):
         main = self.base / "main"; lib = self.base / "lib"
         main.write_bytes(fake_macho(["@rpath/lib"], ["@executable_path/."])); lib.write_bytes(fake_macho())
-        self.assertEqual(len(s.loaded_closure(self.base, [str(main), str(lib)], main, s.macho_inventory(self.base))), 1)
+        self.assertEqual(len(s.loaded_closure(self.base, [str(main), str(lib)], main, s.macho_inventory(self.base), image_snapshot([str(main), str(lib)]))), 1)
 
     def test_generator_options_and_no_automatic_payload(self):
         source = (ROOT / "make-launcher.rkt").read_text()
@@ -281,10 +293,34 @@ class ReportValidation(unittest.TestCase):
                        "identity": identity, "loaded_images": [str(self.app / "Contents/MacOS/ProbeNative"), "/usr/lib/libSystem.B.dylib"],
                        "child": {"schema": 1, "status": "observed", "pid": 101, "version": "9.3", "gc": "cs", "paths": copy.deepcopy(paths), "loaded_images": [str(self.runtime / "bin/racket")]}}
 
+        for observed in [self.report, self.report["child"]]:
+            observed["loaded_image_snapshot"] = image_snapshot(
+                observed["loaded_images"], ["/usr/lib/libSystem.B.dylib"])
+
     def tearDown(self): self.temp.cleanup()
     def validate(self): return s.validate_report(self.report, self.app, self.profile, 100)
 
     def test_complete_synthetic_report(self): self.assertEqual(self.validate()["status"], "path-and-identity-observation-validated")
+    def test_missing_gui_cache_snapshot_refused(self):
+        del self.report["loaded_image_snapshot"]
+        with self.assertRaisesRegex(s.Refusal, "snapshot missing"): self.validate()
+
+    def test_missing_child_cache_snapshot_refused(self):
+        del self.report["child"]["loaded_image_snapshot"]
+        with self.assertRaisesRegex(s.Refusal, "snapshot missing"): self.validate()
+
+    def test_child_cache_record_cannot_borrow_gui_name(self):
+        self.report["child"]["loaded_image_snapshot"]["records"][0]["raw"] = self.report["loaded_images"][0]
+        with self.assertRaisesRegex(s.Refusal, "index/name mismatch"): self.validate()
+
+    def test_classifications_preserve_gui_and_child_identity(self):
+        before = copy.deepcopy(self.report)
+        result = self.validate()
+        self.assertEqual(self.report, before)
+        self.assertEqual(result["loaded_image_classifications"]["gui"][1]["kind"], "os-shared-cache")
+        self.assertEqual(result["loaded_image_classifications"]["child"][0]["resolved"],
+                         str(self.runtime / "bin/racket"))
+
     def test_disabled_collection_links_refused(self):
         self.report["startup"]["use_collection_link_paths"] = False
         with self.assertRaises(s.Refusal): self.validate()
@@ -314,7 +350,8 @@ class ReportValidation(unittest.TestCase):
     def test_external_dylib_refused(self):
         p = self.base / "external.dylib"; p.write_bytes(fake_macho())
         self.report["loaded_images"].append(str(p))
-        with self.assertRaises(s.Refusal): self.validate()
+        self.report["loaded_image_snapshot"] = image_snapshot(self.report["loaded_images"], ["/usr/lib/libSystem.B.dylib"])
+        with self.assertRaisesRegex(s.Refusal, "external loaded image"): self.validate()
     def test_child_external_path_refused(self):
         self.report["child"]["paths"]["system"]["exec-file"] = self.rec(self.base)
         with self.assertRaises(s.Refusal): self.validate()

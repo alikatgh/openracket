@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "OpenRacket bounded native path observation (not distribution acceptance)",
-  "description": "Schema validates shape only. The supervisor additionally resolves filesystem paths, hashes files, checks native process identity, static/dynamic dependency closure and independent before/after witnesses. No native report has been produced yet.",
+  "description": "Schema validates shape only. The supervisor additionally checks filesystem paths, hashes, identity, paired dyld image/header/cache witnesses, closure and independent before/after reports. No native report exists for this derivative.",
   "type": "object",
   "required": [
     "schema",
@@ -15,7 +15,8 @@
     "identity",
     "loaded_images",
     "child",
-    "child_stderr"
+    "child_stderr",
+    "loaded_image_snapshot"
   ],
   "properties": {
     "schema": {
@@ -70,6 +71,9 @@
     "child_stderr": {
       "type": "string",
       "maxLength": 1048576
+    },
+    "loaded_image_snapshot": {
+      "$ref": "#/$defs/dyld_snapshot"
     }
   },
   "$defs": {
@@ -275,7 +279,8 @@
         "version",
         "gc",
         "paths",
-        "loaded_images"
+        "loaded_images",
+        "loaded_image_snapshot"
       ],
       "properties": {
         "schema": {
@@ -305,8 +310,94 @@
             "type": "string",
             "pattern": "^/"
           }
+        },
+        "loaded_image_snapshot": {
+          "$ref": "#/$defs/dyld_snapshot"
         }
       }
+    },
+    "dyld_image": {
+      "type": "object",
+      "required": [
+        "index",
+        "raw",
+        "header_address",
+        "magic",
+        "cpu_type",
+        "file_type",
+        "flags",
+        "shared_cache_contains_path"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8191
+        },
+        "raw": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "header_address": {
+          "type": "string",
+          "pattern": "^[1-9a-f][0-9a-f]{0,15}$"
+        },
+        "magic": {
+          "const": 4277009103
+        },
+        "cpu_type": {
+          "const": 16777228
+        },
+        "file_type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "flags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "shared_cache_contains_path": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dyld_snapshot": {
+      "type": "object",
+      "required": [
+        "schema",
+        "method",
+        "count",
+        "stable",
+        "records"
+      ],
+      "properties": {
+        "schema": {
+          "const": 1
+        },
+        "method": {
+          "const": "public-dyld-name-header-cache-v1"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8192
+        },
+        "stable": {
+          "const": true
+        },
+        "records": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8192,
+          "items": {
+            "$ref": "#/$defs/dyld_image"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

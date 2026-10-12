@@ -1,4 +1,4 @@
-name: Physical editor object-hash eligibility diagnostic (public free runner)
+name: Mac launcher isolation and relocation probe (public free runner)
 
 'on':
   push:
@@ -24,9 +24,11 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    timeout-minutes: 200
+    # Step ceilings total69min (2+3+3+15+35+10+1); job adds1min scheduling margin.
+    timeout-minutes: 70
     env:
       PYTHONOPTIMIZE: ''
+      PYTHONDONTWRITEBYTECODE: '1'
     defaults:
       run:
         shell: bash
@@ -61,22 +63,29 @@ jobs:
           fetch-depth: 1
           lfs: false
           submodules: false
+      - name: Complete source adapter and transport checks with aliased TMPDIR
+        timeout-minutes: 3
+        run: python3 retained-host/scripts/ci/check-launcher-isolation-release.py
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
-        timeout-minutes: 20
+        timeout-minutes: 15
         run: bash retained-host/scripts/ci/install-full-racket.sh
-      - name: Independently rebuild and check the exact object-hash diagnostic
-        id: object_hash
+      - name: Original witnesses and fixed-exclusion two-location native probe
+        id: launcher_isolation
+        if: success() && steps.runtime.outcome == 'success'
+        # 11 sequential native commands * (120s + 5s cleanup) = 1375s;
+        # 35min leaves 725s for full read-only inventories, copy and audits.
+        timeout-minutes: 35
+        run: python3 retained-host/scripts/ci/run-launcher-isolation.py run
+      - name: Independent final witnesses and complete diagnostic transport
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 165
-        run: python3 retained-host/scripts/ci/run-object-hash.py run
-      - name: Always verify the complete original runtime
-        if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 5
-        run: python3 retained-host/scripts/ci/run-object-hash.py verify
-      - name: Report source and native gates
+        # One final native handler query <=125s, only from safe state;
+        # remaining475s are independent filesystem/evidence margin.
+        timeout-minutes: 10
+        run: python3 retained-host/scripts/ci/run-launcher-isolation.py verify
+      - name: Report bounded observations and remaining acceptance
         if: always()
         timeout-minutes: 1
         run: |
-          if test -f retained-host/reports/object-hash-ci/summary.md; then cat retained-host/reports/object-hash-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
-          echo 'Diagnostic only: one disposable class-source overlay, independently rebuilt stock/diagnostic clones,16 synthetic cases,three genuine small Check Syntax hosts. No optimization,timing experiment,artifacts,caches,paid services or adoption.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/launcher-isolation-ci/summary.md; then cat retained-host/reports/launcher-isolation-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'Fixed top-level DrRacket.app exclusion in disposable copy only. App launches require zero remaining declaration claims and zero unresolved loader contexts. Native120s plus5s cleanup bounds unchanged; unknown cleanup blocks further native work. No artifacts, caches, paid services, deployment or security bypass. Two-location path/identity acceptance is not distribution acceptance. Original preference file not separately observed.' >> "$GITHUB_STEP_SUMMARY"

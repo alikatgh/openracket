@@ -50,13 +50,15 @@
        (define child (read-json child-input))
        (unless (regexp-match? #px"^\\s*$" (port->string child-input))
          (error 'probe "unexpected child stdout after JSON"))
+       (define paths (collect-paths))
+       (define-values (images snapshot) (loaded-image-snapshot))
        (write-result
         profile "result.json"
         (hash 'schema 1 'status "observed" 'version (version)
               'os (symbol->string (system-type 'os))
               'gc (symbol->string (system-type 'gc))
-              'startup startup 'paths (collect-paths) 'modules modules
-              'identity identity 'loaded_images (loaded-images)
+              'startup startup 'paths paths 'modules modules
+              'identity identity 'loaded_images images 'loaded_image_snapshot snapshot
               'child child 'child_stderr (file->string child-err)))
        (exit 0)))
   (if (eq? (current-thread) (eventspace-handler-thread (current-eventspace)))

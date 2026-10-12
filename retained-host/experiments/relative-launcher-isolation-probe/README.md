@@ -1,11 +1,14 @@
 # OpenRacket bundle-relative native path probe
 
-Source-only launcher-isolation derivative, prepared 2026-10-11. This is a separate test tree. The
+Source-only shared-cache-witness derivative, prepared 2026-10-11. This is a separate test tree. The
 accepted tethered app, builder, retained DrRacket source and user profiles are
 unchanged. This derivative has not executed a Racket reader/compiler, runtime, launcher,
 application, installer, package manager, archive, CI job or upload. Historical
 base audit run 38159705157 assembled but did not launch the app; its results are
-not results for this derivative. See `ISOLATION-DESIGN.md`.
+not results for this derivative. Run 38164494081 later reached a first native
+observation but failed validation on a missing WebKit Cryptex target; relocation
+was withheld. Its raw report lacks the new cache witnesses and remains failed.
+See `SHARED-CACHE-DIAGNOSIS.md` and `ISOLATION-DESIGN.md`.
 
 The product-facing implementation is a 31-line Racket native-skeleton generator,
 a process-preserving shell entry, and small Racket witnesses. `supervise.py` is a
@@ -69,9 +72,10 @@ and outer-plist edits are not notarization or a downloaded-app security result.
   read-only observers, with source hashes in `evidence/SOURCE-PINS.json`
 - `native-read-compile.rkt`: separate future Racket reader/compile gate
 - `supervise.py`: test-only copy/relocation/refusal/validation supervisor
-- `tests/test_source.py`, `tests/test_isolation.py`: portable synthetic and source-contract tests
+- `tests/test_source.py`, `tests/test_isolation.py`, `tests/test_shared_cache.py`: portable synthetic and source-contract tests
 - `ISOLATION-DESIGN.md`: fixed exclusion design and historical-evidence boundary
 - `NATIVE-ACCEPTANCE.md`, `NATIVE-OUTPUT.schema.json`: future native contract
+- `SHARED-CACHE-DIAGNOSIS.md`: narrow failure, official source proof and new contract
 - `evidence/`: exact input pins and current portable-only validation
 
 ## Safe portable command
