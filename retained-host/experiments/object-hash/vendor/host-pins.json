@@ -1,0 +1,12 @@
+{
+  "tests/independent-native-appearance-workflows.rkt": "c536f3f3b85aa9a5660ef7842d921c9708c9ee6c7cb82c463423e70ec265fda2",
+  "tests/independent-native-stop-returning.rkt": "7b2fd5bece5ab3f86d7dcaa0931e62d67366a667806c146eadffc7c4998bcb57",
+  "tests/independent-native-workflows.rkt": "b175a92754e8f0e8a0f524ae5947f5eae8da605b0f3274bbc098e20ce1de53bf",
+  "tests/reference-host-0520.rkt": "5d3fec70cb1ccae6ac91ea7ef2dc382011e7c173a2a8d34a51e6e01dad5fd448",
+  "tool/native-appearance-cocoa-policy.rkt": "5d9492443f015b9e9f47270f1cd05baa5d0b7e95e931e04811368742f40bfdf2",
+  "tool/native-appearance-cocoa.rkt": "7b5c9068efd32da6adefae2b6f57c640ba5d0a553b148679af37bd74128876b4",
+  "tool/native-appearance-gtk-pair.rkt": "c852c4dcb56b76844fd8b0a85553363a4afd382928aadf317e878f17873ea43a",
+  "tool/native-appearance-gtk.rkt": "4eeecb46a48fb3de03da06820d46426ea537c3b0b14199d67c0a3c88931fd6a4",
+  "tool/native-appearance-platform.rkt": "0a2af8a0d8195feb76b18a5884bdb47ba813c37c12c31fb0986be1c0ada4ce2d",
+  "tool/native-appearance.rkt": "f7a0bfc2cc4bc8b6356f7d79c3393b7b23a2dc3ef0cc1924b9a1e88a0c4c2c86"
+}

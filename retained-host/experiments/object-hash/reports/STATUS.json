@@ -1,0 +1,30 @@
+{
+  "schema": "openracket-object-hash-source-status/v1",
+  "status": "source-only-ready-for-review",
+  "date": "2026-10-11",
+  "portable_tests": 65,
+  "portable_runs": {
+    "discovery_normal": "passed",
+    "direct_normal": "passed",
+    "discovery_symlinked_TMPDIR": "passed",
+    "direct_symlinked_TMPDIR": "passed"
+  },
+  "generator_reversal_and_manifest_checks": "passed",
+  "native_semantics_scenarios": 16,
+  "native_scenarios_run": 0,
+  "native_compile": "unrun",
+  "actual_editor_observations": "unrun",
+  "actual_editor_eligibility": "unresolved",
+  "full_core_and_GUI_DrRacket_recompile_required": true,
+  "original_body_verbatim": true,
+  "optimization_implemented": false,
+  "build_id": "ea6770571325e4b76184868019632fc21cfdf2385bab6021a0a8c993bd2ded33",
+  "class_original_sha256": "1dbb533328bb46add290422c1e2fc6c1040d1f8e6d75b06f546734a294bb342f",
+  "class_diagnostic_sha256": "808a728997c4f085a98fe5c30793c821d9a1097373431addd411370ba2d161d6",
+  "source_pins_sha256": "f577882615bc3bef17a521ebbfa3f23f85d67763c886676cd4f03859b26561db",
+  "measurement": "original-struct-vector-counts-and-slots-only",
+  "future_native_requires_review_and_authorization": true,
+  "no_native_install_remote_paid_security_or_preview_change": true,
+  "native_fault_setter": "actual-module-lexical-set!-with-module-mutability-and-private/state-readbacks",
+  "official_namespace_doc_blob": "3c7ab446849f1a411c32f95f17c1e4fab165b879"
+}

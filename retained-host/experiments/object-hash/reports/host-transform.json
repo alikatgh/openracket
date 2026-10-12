@@ -1,0 +1,8 @@
+{
+  "derivatives": [
+    "tests/reference-host-0520.rkt",
+    "tests/independent-native-workflows.rkt"
+  ],
+  "unchanged_dependencies": 8,
+  "native_run": false
+}

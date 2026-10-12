@@ -1,0 +1,10 @@
+(let ([inspectable-struct->vector (lambda (v)
+  (define vec (struct->vector v not-all-visible))
+  (and (for/and ([elem (in-vector vec)])
+         (not (eq? elem not-all-visible)))
+       vec))])
+  (lambda (obj recur)
+  (let ([vec (inspectable-struct->vector obj)])
+    (if vec
+        (recur (vector (object-ref obj) vec))
+        (eq-hash-code obj)))))

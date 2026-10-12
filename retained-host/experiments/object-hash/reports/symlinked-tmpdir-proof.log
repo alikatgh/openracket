@@ -1,0 +1,9 @@
+Publication note: The local temporary root and generated child basename below are replaced with descriptive placeholders. Alias/physical relationships and the original verification result are preserved; no test was rerun or reclassified by this redaction. The original record is retained separately.
+Original record SHA-256: bfc74fcf2664667656f310ba897d0a14e1f54bac992a7fbaeb9a2c9568d7102a
+
+TMPDIR=<temporary-root>/alias
+PHYSICAL=<temporary-root>/physical
+SYMLINK=<temporary-root>/physical
+Python temporary directory: <temporary-root>/alias/<temporary-child>
+Canonical temporary directory: <temporary-root>/physical/<temporary-child>
+Explicit symlinked TMPDIR verified: true

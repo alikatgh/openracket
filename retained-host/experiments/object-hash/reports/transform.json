@@ -1,0 +1,8 @@
+{
+  "original_sha256": "1dbb533328bb46add290422c1e2fc6c1040d1f8e6d75b06f546734a294bb342f",
+  "instrumented_sha256": "808a728997c4f085a98fe5c30793c821d9a1097373431addd411370ba2d161d6",
+  "body_verbatim": true,
+  "custom_dispatch_unchanged": true,
+  "observed_helper_single_original_conversion": true,
+  "native_run": false
+}

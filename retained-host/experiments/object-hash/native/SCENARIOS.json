@@ -1,0 +1,8 @@
+{
+  "schema": "openracket-object-hash-native-scenarios/v1",
+  "native_run": false,
+  "fresh_process_per_case": true,
+  "fatal_assertions": true,
+  "off": ["off"],
+  "on": ["opaque", "same-inspector", "transparent", "mixed-inheritance", "impersonator", "conversion-fault", "recursive-results", "observer-fault", "observer-break", "caps-attempt", "caps-match", "thread-scope", "weak-registry", "custom-dispatch", "public-dispatch"]
+}

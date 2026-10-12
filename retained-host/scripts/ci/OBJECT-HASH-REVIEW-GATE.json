@@ -1,0 +1,13 @@
+{
+  "schema": "object-hash-review-gate/v1",
+  "native_dispatch_ready": true,
+  "blocker": null,
+  "scope": "known installed/static graph plus initial-place and inheriting-thread coverage; actual GUI handler/editor/core scalar eligibility only",
+  "frozen_core_source_changes": 1,
+  "extra_runtime_source_observer_authorized": false,
+  "online_handler_registry_complete": false,
+  "live_registry_observed": false,
+  "arbitrary_dynamic_graph_proven": false,
+  "child_place_dynamic_audit_complete": false,
+  "review_status": "source-reviewed; portable tests passed; native parsing/rebuild/GUI unrun"
+}

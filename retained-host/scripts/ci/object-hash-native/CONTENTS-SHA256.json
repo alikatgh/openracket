@@ -1,0 +1,45 @@
+{
+  "schema": "object-hash-helper-contents/v1",
+  "files": {
+    "API-PROVENANCE.json": {
+      "sha256": "f4e4b1d7ba004a285a566e0d6005ecf1985c933a34133db70a2649b3b1c40771",
+      "bytes": 890660
+    },
+    "README.md": {
+      "sha256": "d614a75f7a22a5fdbb31d84921f89234a48b3a0a9cabebff14a0ab83e8389d66",
+      "bytes": 12128
+    },
+    "VERIFICATION.json": {
+      "sha256": "dfa1e03727e4f84a9a85a0f8da922806851e0a184e94fda4bec4182e24a2ba82",
+      "bytes": 1947
+    },
+    "audit-loads.rkt": {
+      "sha256": "6074feb975b6ed15c4ddeb054dea5402aeb1b308d3bdc4d6d3991bd8d7ad31f2",
+      "bytes": 13928
+    },
+    "common.rkt": {
+      "sha256": "b806e61c05178738c37444047ee56d218b9a8dab9f53f59659423fc15d46a83d",
+      "bytes": 5391
+    },
+    "config-inventory.rkt": {
+      "sha256": "78481ed7c3efdc506d3bfb6ff3daefa1accf485f706ca318e095b90898602845",
+      "bytes": 11787
+    },
+    "core-first.rkt": {
+      "sha256": "8d8df8ea5cd8d9da6f15d8a8349d27f3e4d9b41ba9ecc31a3d8c0696f9a00e51",
+      "bytes": 3434
+    },
+    "rebuilt-receipts.rkt": {
+      "sha256": "e9e0f6a5995b419548e25b522f8f4ee269d257817d354c0beb0900a6b335298b",
+      "bytes": 9362
+    },
+    "receipt-lib.rkt": {
+      "sha256": "2aa1eba756dd8da82a33072119cebfc6227a5595d650aa4e0218876e5b7eb061",
+      "bytes": 9493
+    },
+    "test_helpers.py": {
+      "sha256": "7c2665fef1d3ba6c59af0024494524f9d3253810bafb95e1e96a79df0b379e26",
+      "bytes": 27267
+    }
+  }
+}

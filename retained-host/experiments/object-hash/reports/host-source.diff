@@ -1,0 +1,44 @@
+--- original/tests/reference-host-0520.rkt
++++ diagnostic/tests/reference-host-0520.rkt
+@@ -7,6 +7,7 @@
+ 
+ (define checks 0)
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
++(define-runtime-path hash-probe-module "../host-probe.rkt")
+ (define-runtime-path native-appearance-module "independent-native-appearance-workflows.rkt")
+ (define-runtime-path returning-stop-module "independent-native-stop-returning.rkt")
+ (define native-appearance-check? (equal? (getenv "OPENRACKET_NATIVE_APPEARANCE_CHECK") "1"))
+@@ -304,7 +305,8 @@
+                frame on-gui wait-for)
+               (on-gui
+                (lambda ()
+-                 ((dynamic-require follow-on-module 'run-follow-on-check!)
++                 ((dynamic-require hash-probe-module 'run-probed-follow-on-check!)
++                  (dynamic-require follow-on-module 'run-follow-on-check!)
+                   frame (string->symbol follow-on-case)))))))
+ 
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+--- original/tests/independent-native-workflows.rkt
++++ diagnostic/tests/independent-native-workflows.rkt
+@@ -3,7 +3,7 @@
+ ;; Invoke run-follow-on-check! on the genuine DrRacket GUI handler thread after
+ ;; normal startup, in a fresh disposable profile/process for EACH selected case.
+ (require racket/class racket/file racket/gui/base racket/list racket/string racket/set json
+-         string-constants rackunit)
++         string-constants rackunit "../host-probe.rkt")
+ (provide run-follow-on-check!)
+ 
+ (define (await! description predicate [seconds 20])
+@@ -161,10 +161,12 @@
+                             (regexp-match? #rx"(^|\n)42(\n|$)" (send ints get-text)))))
+      (define button (send frame syncheck:get-button))
+      (await! "Check Syntax enabled" (lambda () (send button is-enabled?)))
++     (probe-begin! frame defs ints)
+      (send button command)
+      (await! "real lexical binding arrows" (lambda ()
+                                              (and (send button is-enabled?)
+                                                   (positive? (hash-count (send defs syncheck:get-bindings-table))))))
++     (probe-end!)
+      (check-false (send frame syncheck:error-report-visible?))
+      (check-equal? (send defs get-text) contents)
+      (define arrows (hash-copy (send defs syncheck:get-bindings-table)))

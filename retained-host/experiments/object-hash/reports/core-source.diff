@@ -1,0 +1,302 @@
+--- original/class-internal.rkt
++++ diagnostic/class-internal.rkt
+@@ -3277,6 +3277,279 @@
+          (not (eq? elem not-all-visible)))
+        vec))
+ 
++;; SOURCE-ONLY DIAGNOSTIC. This is not the proposed hash optimization.
++;; Only weak identities and bounded scalar observations survive a call.
++(provide openracket-object-hash-probe-enabled?
++         openracket-object-hash-probe-instance
++         openracket-object-hash-probe-build-id
++         openracket-object-hash-probe-arm!
++         openracket-object-hash-probe-stop!
++         openracket-object-hash-probe-state)
++(define openracket-object-hash-probe-enabled?
++  (equal? (getenv "OPENRACKET_OBJECT_HASH_PROBE") "1"))
++(define openracket-object-hash-probe-instance (gensym 'object-hash-probe-v1))
++(define openracket-object-hash-probe-build-id "ea6770571325e4b76184868019632fc21cfdf2385bab6021a0a8c993bd2ded33")
++(define probe-match-cap 128)
++(define probe-attempt-cap 20000)
++(define probe-started? #f)
++(define probe-active? #f)
++(define probe-stop-reason 'not-armed)
++(define probe-definitions #f)
++(define probe-interactions #f)
++(define probe-handler #f)
++(define probe-attempts 0)
++(define probe-matches 0)
++(define probe-diagnostic-faults 0)
++(define probe-definitions-impersonator-matches 0)
++(define probe-definitions-impersonator-vectors 0)
++(define probe-definitions-impersonator-slots 0)
++(define probe-definitions-impersonator-max-slots 0)
++(define probe-definitions-impersonator-returns 0)
++(define probe-definitions-impersonator-fallbacks 0)
++(define probe-definitions-skipped-matches 0)
++(define probe-definitions-skipped-vectors 0)
++(define probe-definitions-skipped-slots 0)
++(define probe-definitions-skipped-max-slots 0)
++(define probe-definitions-skipped-returns 0)
++(define probe-definitions-skipped-fallbacks 0)
++(define probe-definitions-not-skipped-matches 0)
++(define probe-definitions-not-skipped-vectors 0)
++(define probe-definitions-not-skipped-slots 0)
++(define probe-definitions-not-skipped-max-slots 0)
++(define probe-definitions-not-skipped-returns 0)
++(define probe-definitions-not-skipped-fallbacks 0)
++(define probe-definitions-inspection-failed-matches 0)
++(define probe-definitions-inspection-failed-vectors 0)
++(define probe-definitions-inspection-failed-slots 0)
++(define probe-definitions-inspection-failed-max-slots 0)
++(define probe-definitions-inspection-failed-returns 0)
++(define probe-definitions-inspection-failed-fallbacks 0)
++(define probe-interactions-impersonator-matches 0)
++(define probe-interactions-impersonator-vectors 0)
++(define probe-interactions-impersonator-slots 0)
++(define probe-interactions-impersonator-max-slots 0)
++(define probe-interactions-impersonator-returns 0)
++(define probe-interactions-impersonator-fallbacks 0)
++(define probe-interactions-skipped-matches 0)
++(define probe-interactions-skipped-vectors 0)
++(define probe-interactions-skipped-slots 0)
++(define probe-interactions-skipped-max-slots 0)
++(define probe-interactions-skipped-returns 0)
++(define probe-interactions-skipped-fallbacks 0)
++(define probe-interactions-not-skipped-matches 0)
++(define probe-interactions-not-skipped-vectors 0)
++(define probe-interactions-not-skipped-slots 0)
++(define probe-interactions-not-skipped-max-slots 0)
++(define probe-interactions-not-skipped-returns 0)
++(define probe-interactions-not-skipped-fallbacks 0)
++(define probe-interactions-inspection-failed-matches 0)
++(define probe-interactions-inspection-failed-vectors 0)
++(define probe-interactions-inspection-failed-slots 0)
++(define probe-interactions-inspection-failed-max-slots 0)
++(define probe-interactions-inspection-failed-returns 0)
++(define probe-interactions-inspection-failed-fallbacks 0)
++
++(define (openracket-object-hash-probe-stop! [reason 'host-complete])
++  (unless (memq reason '(host-complete host-aborted match-cap attempt-cap diagnostic-fault))
++    (error 'object-hash-probe "Unsupported stop reason"))
++  (when probe-active? (set! probe-stop-reason reason))
++  (set! probe-active? #f)
++  (set! probe-definitions #f)
++  (set! probe-interactions #f)
++  (set! probe-handler #f)
++  (void))
++
++(define (openracket-object-hash-probe-arm! definitions interactions handler)
++  (unless (and openracket-object-hash-probe-enabled? (not probe-started?)
++               (object? definitions) (object? interactions)
++               (not (eq? definitions interactions))
++               (thread? handler) (eq? handler (current-thread)))
++    (error 'object-hash-probe "Requires enabled, once-only registration on the supplied handler"))
++  (set! probe-definitions (make-weak-box definitions))
++  (set! probe-interactions (make-weak-box interactions))
++  (set! probe-handler (make-weak-box handler))
++  (set! probe-started? #t)
++  (set! probe-active? #t)
++  (set! probe-stop-reason 'armed)
++  (void))
++
++;; These handlers cover diagnostic work only, never the original conversion,
++;; sentinel scan, recursive callback or identity hash. No caught value is stored.
++(define (probe-diagnostic-failure? v) (not (exn:break? v)))
++(define (probe-fault! ignored)
++  (set! probe-diagnostic-faults (add1 probe-diagnostic-faults))
++  (openracket-object-hash-probe-stop! 'diagnostic-fault)
++  #f)
++(define (probe-claim! obj)
++  (with-handlers ([probe-diagnostic-failure? probe-fault!])
++    (cond
++      [(not (and probe-active?
++                 (eq? (current-thread) (weak-box-value probe-handler)))) #f]
++      [else
++       ;; The denominator is registered-handler default-hash entries only.
++       (set! probe-attempts (add1 probe-attempts))
++       (define role
++         (cond [(eq? obj (weak-box-value probe-definitions)) 0]
++               [(eq? obj (weak-box-value probe-interactions)) 1]
++               [else #f]))
++       (define sample
++         (and role
++              (let ([kind
++                     (cond [(impersonator? obj) 0]
++                           [else
++                            ;; Do not unwrap or replace the call's inspector.
++                            (with-handlers ([probe-diagnostic-failure? (lambda (v) 3)])
++                              (define-values (type skipped?) (struct-info obj))
++                              (if skipped? 1 2))])])
++                (set! probe-matches (add1 probe-matches))
++                (define category (+ (* role 4) kind))
++                (case category
++  [(0) (set! probe-definitions-impersonator-matches (add1 probe-definitions-impersonator-matches))]
++  [(1) (set! probe-definitions-skipped-matches (add1 probe-definitions-skipped-matches))]
++  [(2) (set! probe-definitions-not-skipped-matches (add1 probe-definitions-not-skipped-matches))]
++  [(3) (set! probe-definitions-inspection-failed-matches (add1 probe-definitions-inspection-failed-matches))]
++  [(4) (set! probe-interactions-impersonator-matches (add1 probe-interactions-impersonator-matches))]
++  [(5) (set! probe-interactions-skipped-matches (add1 probe-interactions-skipped-matches))]
++  [(6) (set! probe-interactions-not-skipped-matches (add1 probe-interactions-not-skipped-matches))]
++  [(7) (set! probe-interactions-inspection-failed-matches (add1 probe-interactions-inspection-failed-matches))])
++                category)))
++       (cond [(>= probe-matches probe-match-cap)
++              (openracket-object-hash-probe-stop! 'match-cap)]
++             [(>= probe-attempts probe-attempt-cap)
++              (openracket-object-hash-probe-stop! 'attempt-cap)])
++       sample])))
++
++(define (probe-note-vector! category length)
++  (with-handlers ([probe-diagnostic-failure? probe-fault!])
++    ;; Only length is observed; no vector is passed to this procedure or stored.
++    (case category
++  [(0) (set! probe-definitions-impersonator-vectors (add1 probe-definitions-impersonator-vectors))
++       (set! probe-definitions-impersonator-slots (+ probe-definitions-impersonator-slots length))
++       (set! probe-definitions-impersonator-max-slots (max probe-definitions-impersonator-max-slots length))]
++  [(1) (set! probe-definitions-skipped-vectors (add1 probe-definitions-skipped-vectors))
++       (set! probe-definitions-skipped-slots (+ probe-definitions-skipped-slots length))
++       (set! probe-definitions-skipped-max-slots (max probe-definitions-skipped-max-slots length))]
++  [(2) (set! probe-definitions-not-skipped-vectors (add1 probe-definitions-not-skipped-vectors))
++       (set! probe-definitions-not-skipped-slots (+ probe-definitions-not-skipped-slots length))
++       (set! probe-definitions-not-skipped-max-slots (max probe-definitions-not-skipped-max-slots length))]
++  [(3) (set! probe-definitions-inspection-failed-vectors (add1 probe-definitions-inspection-failed-vectors))
++       (set! probe-definitions-inspection-failed-slots (+ probe-definitions-inspection-failed-slots length))
++       (set! probe-definitions-inspection-failed-max-slots (max probe-definitions-inspection-failed-max-slots length))]
++  [(4) (set! probe-interactions-impersonator-vectors (add1 probe-interactions-impersonator-vectors))
++       (set! probe-interactions-impersonator-slots (+ probe-interactions-impersonator-slots length))
++       (set! probe-interactions-impersonator-max-slots (max probe-interactions-impersonator-max-slots length))]
++  [(5) (set! probe-interactions-skipped-vectors (add1 probe-interactions-skipped-vectors))
++       (set! probe-interactions-skipped-slots (+ probe-interactions-skipped-slots length))
++       (set! probe-interactions-skipped-max-slots (max probe-interactions-skipped-max-slots length))]
++  [(6) (set! probe-interactions-not-skipped-vectors (add1 probe-interactions-not-skipped-vectors))
++       (set! probe-interactions-not-skipped-slots (+ probe-interactions-not-skipped-slots length))
++       (set! probe-interactions-not-skipped-max-slots (max probe-interactions-not-skipped-max-slots length))]
++  [(7) (set! probe-interactions-inspection-failed-vectors (add1 probe-interactions-inspection-failed-vectors))
++       (set! probe-interactions-inspection-failed-slots (+ probe-interactions-inspection-failed-slots length))
++       (set! probe-interactions-inspection-failed-max-slots (max probe-interactions-inspection-failed-max-slots length))])
++    (void)))
++(define (probe-note-result! category visible?)
++  (with-handlers ([probe-diagnostic-failure? probe-fault!])
++    ;; A completed false helper result selects the existing eq-hash-code branch.
++    (case category
++  [(0) (set! probe-definitions-impersonator-returns (add1 probe-definitions-impersonator-returns))]
++  [(1) (set! probe-definitions-skipped-returns (add1 probe-definitions-skipped-returns))]
++  [(2) (set! probe-definitions-not-skipped-returns (add1 probe-definitions-not-skipped-returns))]
++  [(3) (set! probe-definitions-inspection-failed-returns (add1 probe-definitions-inspection-failed-returns))]
++  [(4) (set! probe-interactions-impersonator-returns (add1 probe-interactions-impersonator-returns))]
++  [(5) (set! probe-interactions-skipped-returns (add1 probe-interactions-skipped-returns))]
++  [(6) (set! probe-interactions-not-skipped-returns (add1 probe-interactions-not-skipped-returns))]
++  [(7) (set! probe-interactions-inspection-failed-returns (add1 probe-interactions-inspection-failed-returns))])
++    (unless visible?
++      (case category
++  [(0) (set! probe-definitions-impersonator-fallbacks (add1 probe-definitions-impersonator-fallbacks))]
++  [(1) (set! probe-definitions-skipped-fallbacks (add1 probe-definitions-skipped-fallbacks))]
++  [(2) (set! probe-definitions-not-skipped-fallbacks (add1 probe-definitions-not-skipped-fallbacks))]
++  [(3) (set! probe-definitions-inspection-failed-fallbacks (add1 probe-definitions-inspection-failed-fallbacks))]
++  [(4) (set! probe-interactions-impersonator-fallbacks (add1 probe-interactions-impersonator-fallbacks))]
++  [(5) (set! probe-interactions-skipped-fallbacks (add1 probe-interactions-skipped-fallbacks))]
++  [(6) (set! probe-interactions-not-skipped-fallbacks (add1 probe-interactions-not-skipped-fallbacks))]
++  [(7) (set! probe-interactions-inspection-failed-fallbacks (add1 probe-interactions-inspection-failed-fallbacks))])
++      (void))
++    (void)))
++
++(define (openracket-object-hash-probe-state)
++  (hasheq 'schema "openracket-object-hash-probe/v1"
++          'enabled openracket-object-hash-probe-enabled?
++          'instance (symbol->string openracket-object-hash-probe-instance)
++          'started probe-started? 'active probe-active?
++          'stop_reason (symbol->string probe-stop-reason)
++          'attempt_cap probe-attempt-cap 'match_cap probe-match-cap
++          'attempts probe-attempts 'matches probe-matches
++          'diagnostic_faults probe-diagnostic-faults
++          'scope "registered-handler-default-hash-entries"
++          'allocation_unit "original-struct-vector-slots"
++          'eligibility (cond [(positive? probe-diagnostic-faults) "unresolved-diagnostic-fault"]
++                             [(positive? (+ probe-definitions-inspection-failed-matches
++                                            probe-interactions-inspection-failed-matches))
++                              "unresolved-inspection-failure"]
++                             [(zero? probe-matches) "unresolved-no-matching-calls"]
++                             [(positive? (+ probe-definitions-skipped-fallbacks
++                                            probe-interactions-skipped-fallbacks))
++                              "plain-skipped-original-fallback-observed"]
++                             [else "no-plain-skipped-fallback-observed-in-bounded-sample"])
++          'definitions_impersonator_matches probe-definitions-impersonator-matches
++          'definitions_impersonator_vectors probe-definitions-impersonator-vectors
++          'definitions_impersonator_slots probe-definitions-impersonator-slots
++          'definitions_impersonator_max_slots probe-definitions-impersonator-max-slots
++          'definitions_impersonator_returns probe-definitions-impersonator-returns
++          'definitions_impersonator_fallbacks probe-definitions-impersonator-fallbacks
++          'definitions_skipped_matches probe-definitions-skipped-matches
++          'definitions_skipped_vectors probe-definitions-skipped-vectors
++          'definitions_skipped_slots probe-definitions-skipped-slots
++          'definitions_skipped_max_slots probe-definitions-skipped-max-slots
++          'definitions_skipped_returns probe-definitions-skipped-returns
++          'definitions_skipped_fallbacks probe-definitions-skipped-fallbacks
++          'definitions_not_skipped_matches probe-definitions-not-skipped-matches
++          'definitions_not_skipped_vectors probe-definitions-not-skipped-vectors
++          'definitions_not_skipped_slots probe-definitions-not-skipped-slots
++          'definitions_not_skipped_max_slots probe-definitions-not-skipped-max-slots
++          'definitions_not_skipped_returns probe-definitions-not-skipped-returns
++          'definitions_not_skipped_fallbacks probe-definitions-not-skipped-fallbacks
++          'definitions_inspection_failed_matches probe-definitions-inspection-failed-matches
++          'definitions_inspection_failed_vectors probe-definitions-inspection-failed-vectors
++          'definitions_inspection_failed_slots probe-definitions-inspection-failed-slots
++          'definitions_inspection_failed_max_slots probe-definitions-inspection-failed-max-slots
++          'definitions_inspection_failed_returns probe-definitions-inspection-failed-returns
++          'definitions_inspection_failed_fallbacks probe-definitions-inspection-failed-fallbacks
++          'interactions_impersonator_matches probe-interactions-impersonator-matches
++          'interactions_impersonator_vectors probe-interactions-impersonator-vectors
++          'interactions_impersonator_slots probe-interactions-impersonator-slots
++          'interactions_impersonator_max_slots probe-interactions-impersonator-max-slots
++          'interactions_impersonator_returns probe-interactions-impersonator-returns
++          'interactions_impersonator_fallbacks probe-interactions-impersonator-fallbacks
++          'interactions_skipped_matches probe-interactions-skipped-matches
++          'interactions_skipped_vectors probe-interactions-skipped-vectors
++          'interactions_skipped_slots probe-interactions-skipped-slots
++          'interactions_skipped_max_slots probe-interactions-skipped-max-slots
++          'interactions_skipped_returns probe-interactions-skipped-returns
++          'interactions_skipped_fallbacks probe-interactions-skipped-fallbacks
++          'interactions_not_skipped_matches probe-interactions-not-skipped-matches
++          'interactions_not_skipped_vectors probe-interactions-not-skipped-vectors
++          'interactions_not_skipped_slots probe-interactions-not-skipped-slots
++          'interactions_not_skipped_max_slots probe-interactions-not-skipped-max-slots
++          'interactions_not_skipped_returns probe-interactions-not-skipped-returns
++          'interactions_not_skipped_fallbacks probe-interactions-not-skipped-fallbacks
++          'interactions_inspection_failed_matches probe-interactions-inspection-failed-matches
++          'interactions_inspection_failed_vectors probe-interactions-inspection-failed-vectors
++          'interactions_inspection_failed_slots probe-interactions-inspection-failed-slots
++          'interactions_inspection_failed_max_slots probe-interactions-inspection-failed-max-slots
++          'interactions_inspection_failed_returns probe-interactions-inspection-failed-returns
++          'interactions_inspection_failed_fallbacks probe-interactions-inspection-failed-fallbacks
++          ))
++
++(define (probe-inspectable-struct->vector v category)
++  (define vec (struct->vector v not-all-visible))
++  (probe-note-vector! category (vector-length vec))
++  (and (for/and ([elem (in-vector vec)])
++         (not (eq? elem not-all-visible)))
++       vec))
++
+ ; Even though equality on objects is morally just struct equality, we have to reimplement it here
+ ; because of the way class contracts work. Every time a class contract is applied, it creates a new
+ ; class, which in turn creates a new struct. This breaks equal? on objects, since two structs of
+@@ -3298,10 +3571,18 @@
+                                            [elem-b (in-vector vec-b 1)])
+                                    (recur elem-a elem-b))))))))
+ (define (object-hash-code obj recur)
++  (define sample (and openracket-object-hash-probe-enabled? (probe-claim! obj)))
++  (let ([inspectable-struct->vector
++         (if sample
++             (lambda (v)
++               (define result (probe-inspectable-struct->vector v sample))
++               (probe-note-result! sample (and result #t))
++               result)
++             inspectable-struct->vector)])
+   (let ([vec (inspectable-struct->vector obj)])
+     (if vec
+         (recur (vector (object-ref obj) vec))
+-        (eq-hash-code obj))))
++        (eq-hash-code obj)))))
+ 
+ (define object<%> (let ([object<%>
+ 			 ((make-naming-constructor struct:interface 'interface:object% #f)
