@@ -1,0 +1,62 @@
+{
+  "run_url": "https://github.com/alikatgh/openracket/actions/runs/38048840909",
+  "commit": "720699694999cbf3cf97d864666b2e48c64aadc4",
+  "overall_result": "failed: modern-dark painter synchronization and macOS checksum pin",
+  "linux_results": [
+    "CI guard and runtime paths: PASS Exact public prototype branch; ephemeral full distribution",
+    "Record pristine runtime source hashes: PASS exit=0",
+    "Generate exact-version source overlay: PASS exit=0",
+    "Python patch integrity: PASS exit=0",
+    "Independent patch integrity: PASS exit=0",
+    "Headless preservation and renderer: PASS exit=0",
+    "Performance harness and fixture unit tests: PASS exit=0",
+    "Prepare synthetic legacy startup diagnostic fixture: PASS exit=0",
+    "Record legacy startup dialog (observation only): PASS exit=0",
+    "pristine-stock actual profile separation: PASS exit=0",
+    "pristine-stock native toolbar behavior: PASS exit=0",
+    "pristine-stock genuine host/editor assertions: PASS exit=0; report-status=passed",
+    "pristine-stock OS screenshot capture: PASS 1100x760, 48646 bytes, SHA256 02badec83d898b91c469e27ccf6da048288430498532b9704c4d00ce1f0236b5",
+    "Copy pristine runtime for presentation overlay: PASS exit=0",
+    "Apply exact-SHA disposable overlay: PASS exit=0",
+    "Register appearance tool locally: PASS exit=0",
+    "Compile real GUI and register appearance metadata: PASS exit=0",
+    "Compile actual theme tool and DrRacket host: PASS exit=0",
+    "Compile retained DrRacket entrypoint: PASS exit=0",
+    "Verify actual runtime isolation and unchanged pristine hashes: PASS exit=0",
+    "stock-fallback actual profile separation: PASS exit=0",
+    "stock-fallback native toolbar behavior: PASS exit=0",
+    "stock-fallback genuine host/editor assertions: PASS exit=0; report-status=passed",
+    "stock-fallback OS screenshot capture: PASS 1100x760, 49416 bytes, SHA256 294a5915330d20b37f563fbb660e2327fb1500724d99cf5670c543ef39fc4f2a",
+    "modern-light actual profile separation: PASS exit=0",
+    "modern-light native toolbar behavior: PASS exit=0",
+    "modern-light native canvas and status preservation: PASS exit=0",
+    "modern-light genuine host/editor assertions: PASS exit=0; report-status=passed",
+    "modern-light OS screenshot capture: PASS 1100x760, 52341 bytes, SHA256 12a5c5c2807e68e2d3b3625e20463ac16bd21cd5fcbba52cfd09f359ec2044a3",
+    "modern-dark actual profile separation: PASS exit=0",
+    "modern-dark native toolbar behavior: PASS exit=0",
+    "modern-dark native canvas and status preservation: PASS exit=0",
+    "modern-dark genuine host/editor assertions: FAIL exit=1; report-status=failed",
+    "modern-dark-failure-diagnostic OS screenshot capture: PASS 1280x900, 36661 bytes, SHA256 1a9e168e232db21cf76a01a15fa7f42af9de2d05ecc55fb2db9e241c18606e94",
+    "Verify pristine source unchanged after overlay tests: PASS exit=0"
+  ],
+  "host_checks_passed": {
+    "pristine-stock": 20,
+    "stock-fallback": 20,
+    "modern-light": 24
+  },
+  "modern_dark_result": "17 checks passed; strict toolbar painter/editor mode synchronization assertion failed before editing/evaluation checks. Screenshot confirms dark editor with light toolbar.",
+  "performance_result": "Skipped by correctness-first gate after modern-dark failure; no valid performance claim.",
+  "macos_result": "Public repository guard passed. Official DMG checksum verification failed before install; CI pin under correction, no native macOS result.",
+  "pristine_runtime_integrity": "Resolved runtime collection isolation and unchanged pristine source hashes passed.",
+  "image_sha256": {
+    "modern-dark-failure-diagnostic.png": "1a9e168e232db21cf76a01a15fa7f42af9de2d05ecc55fb2db9e241c18606e94",
+    "modern-light.png": "12a5c5c2807e68e2d3b3625e20463ac16bd21cd5fcbba52cfd09f359ec2044a3",
+    "stock-fallback.png": "294a5915330d20b37f563fbb660e2327fb1500724d99cf5670c543ef39fc4f2a",
+    "pristine-stock.png": "02badec83d898b91c469e27ccf6da048288430498532b9704c4d00ce1f0236b5"
+  },
+  "visual_review": "Actual light capture retains toolbar ordering, stock evaluator output 42 and 128 MB selected memory limit. Native menus/status/borders still stock. Japanese missing-glyph boxes also appear in pristine stock, a runner font limitation, not Unicode data loss.",
+  "log_sha256": {
+    "linux.log": "4e82af5c297704db2915a367e7462c8f1146ae9cb5a3fe4a2b558550d14a30e2",
+    "macos.log": "f99efc988f254bc22bd533714cccf2a20511d126e2cae7889dea96281417ef81"
+  }
+}

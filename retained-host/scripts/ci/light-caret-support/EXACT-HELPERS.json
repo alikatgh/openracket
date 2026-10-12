@@ -1,0 +1,9 @@
+{
+  "app-ci-contract.py": "3953286f9d13ab0371f007dd0f9b06bb8e7c919a2084cd52ccf06d8546c32fac",
+  "light-ci-contract.py": "0a518b074c1d2a8d4dbc6633db294e20816bf0cc9324146b8e1dce3f63f1eac0",
+  "install-full-racket.sh": "ee69a75a01d0ca4a9523fb824f770a8b5a385b78a87d1cc0e48d26c44d9199a6",
+  "verify-modern-tool-registration.rkt": "925f8c7cc7155c22b22d9119472d342e186eaad1e3cd5a7ebbb31b45e8194997",
+  "emit-replay-evidence.py": "4d3d2a3592f47de59733bdc2fcc04ac0fcbac4816d4f42ec29051ab88da4e2fe",
+  "decode-replay-evidence.py": "d26254900d929301abf945bcf9d9d04fdb66731d87193bc7512cca27d505a263",
+  "decode-light-tools-evidence.py": "90b085f1fcd3917b80de07023a781c90d66874c2504432f10f6af4d7600a145f"
+}

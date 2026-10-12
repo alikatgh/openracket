@@ -1,0 +1,50 @@
+--- accepted1553/tests/independent-native-light-tools-host.rkt
++++ focused/tests/independent-native-light-caret-host.rkt
+@@ -5,7 +5,8 @@
+ (require racket/class racket/file racket/gui/base racket/list racket/string racket/runtime-path
+          json mrlib/switchable-button "native-tool-dispatch.rkt"
+          "native-tool-failure-diagnostics.rkt"
+-         "native-light-state-observer.rkt")
++         "native-light-state-observer.rkt"
++         "native-light-caret-observer.rkt")
+ 
+ (define checks 0)
+ (define-runtime-path follow-on-module "independent-native-workflows.rkt")
+@@ -156,6 +157,10 @@
+            (failure-diagnostics! original)))
+         (cleanup!)
+         (exit 1))])
++  ;; Focused original/patched pair retains exactly the accepted Macro Stepper workflow.
++  (unless (and (equal? (getenv "OPENRACKET_NATIVE_CASE") "macro-stepper")
++               (member (getenv "OPENRACKET_CARET_ARM") '("original" "patched")))
++    (error 'native-light-caret "Explicit palette arm and Macro Stepper required"))
+   ;; This separate entrypoint accepts only the explicit modern-light tool arm.
+   ;; The stock control still runs the byte-identical accepted original host.
+   (unless (and (equal? (getenv "OPENRACKET_UI") "modern")
+@@ -348,6 +353,9 @@
+                 (list (hash 'stage "after-tool"
+                             'observed (on-gui (lambda () (observe-light-state! "after-tool")))))))
+ 
++  ;; Add one real collapsed selection before the existing final paint/capture path.
++  (on-gui (lambda () (prepare-caret-capture! frame definitions)))
++
+   ;; A low-priority event turn allows actual paint work to follow the last update.
+   (on-gui (lambda ()
+             ;; Capture dimensions only: fit the actual runner display (the macOS
+@@ -358,6 +366,8 @@
+             (send frame show #t)
+             (send (send frame get-definitions-canvas) focus)))
+   (yield (alarm-evt (+ (current-inexact-milliseconds) 500)))
++  ;; Observe after the unchanged 500ms normal paint settle. No direct repaint.
++  (define caret-state (on-gui (lambda () (observe-caret-state! frame definitions))))
+   (define geometry
+     (on-gui
+      (lambda ()
+@@ -369,6 +379,7 @@
+           'genuine_host #t 'repeated_real_run #t 'geometry geometry
+           'native_appearance_lifecycle (or native-appearance-result 'null)
+           'light_tool_states light-tool-states
++          'caret_state caret-state
+           'follow_on_case (or follow-on-case 'null) 'follow_on_result (or follow-on-result 'null)
+           'complete_stock_parity #f 'physical_input_to_photon_measured #f))
+   (printf "OPENRACKET_NATIVE_RESULT ~a\n" (jsexpr->string report))

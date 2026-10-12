@@ -1,0 +1,5 @@
+2026-10-10: bounded Cocoa selector annotation repair and returning-Stop harness.
+188 source-preservation, paint, typography, theme, bridge, transaction, chrome, and controller/integration Racket tests passed in mutable polish with the identical repaired Cocoa source.
+The repaired Cocoa module compiles from this candidate. Both changed native harness modules are reader-valid.
+The adapter owner independently reran 34 focused and 17 controller/integration assertions and audited all Objective-C argument types.
+Native Cocoa execution remains required. No local GUI/display or native host launch was attempted.

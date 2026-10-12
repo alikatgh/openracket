@@ -1,0 +1,45 @@
+{
+  "status": "local review prepared; native execution pending",
+  "portable_tests": {
+    "ordinary": 38,
+    "genuinely_aliased_tmpdir": 38,
+    "both_passed": true
+  },
+  "accepted_source_members_verified": 155,
+  "accepted_input_preserved": true,
+  "composed_members_per_arm": 175,
+  "actual_arm_difference": [
+    "tool/info.rkt"
+  ],
+  "production_entries_changed": 1,
+  "reverse_patch_restores_exact_original": true,
+  "native_matrix": [
+    "original-modern-light macro-stepper collapsed-caret",
+    "patched-modern-light macro-stepper collapsed-caret"
+  ],
+  "required_native_racket_modules": 22,
+  "required_direct_headless_controls_per_arm": 12,
+  "racket_reader": "not run",
+  "racket_compiler": "not run",
+  "headless_racket_controls": "not run",
+  "native_launch": "not run",
+  "native_screenshots": "not captured",
+  "native_visual_review": "pending",
+  "remote_publication": "not performed",
+  "intended_color_contrast": {
+    "original": 4.43009856144889,
+    "patched": 4.617119494850047,
+    "threshold": 4.5
+  },
+  "png_validation_scope": "signature, chunk structure and CRC only; actual decoded image inspection remains mandatory",
+  "full_accessibility_claim": false,
+  "screenshot_pixel_contrast_measured": false,
+  "review_changes": [
+    "Best-effort state output preserves typed assertions",
+    "Oversized integer coordinates/timestamps are controlled refusals",
+    "Capture and acknowledgment remain within original20-second wait",
+    "PID reuse permitted only with distinct recorded launch identities",
+    "Dedicated success-state emitter preserves asynchronous breaks; ordinary output failures cannot replace typed validation"
+  ],
+  "supersedes_snapshot_manifest_sha256": "bd67027a1be906e8f992e9e81623166faf3b0863aebc8a5f8d17c9af3f6116dc"
+}

@@ -1,0 +1,34 @@
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.080s
+
+OK
+test_apply_rejects_tampered_overlay_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_tampered_overlay_without_changes) ... ok
+test_apply_rejects_tampered_painter_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_tampered_painter_without_changes) ... ok
+test_apply_rejects_unrelated_target_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_unrelated_target_without_changes) ... ok
+test_missing_target_does_not_create_runtime (__main__.IndependentPatchIntegrity.test_missing_target_does_not_create_runtime) ... ok
+test_prepare_rejects_byte_different_crlf_source (__main__.IndependentPatchIntegrity.test_prepare_rejects_byte_different_crlf_source) ... ok
+test_pristine_apply_then_revert_is_byte_exact (__main__.IndependentPatchIntegrity.test_pristine_apply_then_revert_is_byte_exact) ... ok
+test_profile_root_symlink_is_refused (__main__.IndependentPatchIntegrity.test_profile_root_symlink_is_refused) ... ok
+test_revert_rejects_tampered_vendor_without_changes (__main__.IndependentPatchIntegrity.test_revert_rejects_tampered_vendor_without_changes) ... ok
+test_target_symlink_escape_is_refused (__main__.IndependentPatchIntegrity.test_target_symlink_escape_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.767s
+
+OK
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.494s
+
+OK
+raco test: (file "tests/source-preservation.rkt")
+Verified 18 original methods; only (on-paint update-sizes get-large-width) are permitted presentation changes.
+raco test: (file "tests/paint-test.rkt")
+raco test: (file "tool/tests.rkt")
+raco test: (file "tool/frame-chrome-tests.rkt")
+raco test: (file "tests/independent-appearance-test.rkt")
+raco test: (file "tests/independent-paint-test.rkt")
+raco test: (file "tests/independent-theme-bridge-test.rkt")
+raco test: (file "performance/lifecycle-test.rkt")
+120 tests passed

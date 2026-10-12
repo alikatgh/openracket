@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://download.racket-lang.org/releases/9.3/pkgs/drracket-core-lib.zip",
+    "catalog_checksum": "d55515fcc1d1da846555ea0b5c1b593c4af619ef",
+    "archive_sha1": "d55515fcc1d1da846555ea0b5c1b593c4af619ef",
+    "matches": true
+  },
+  {
+    "url": "https://download.racket-lang.org/releases/9.3/pkgs/gui-lib.zip",
+    "catalog_checksum": "31187c9593c5eaabcb1850c0120408d7d9734496",
+    "archive_sha1": "31187c9593c5eaabcb1850c0120408d7d9734496",
+    "matches": true
+  },
+  {
+    "url": "https://download.racket-lang.org/releases/9.3/pkgs/drracket.zip",
+    "catalog_checksum": "c97a8ed69ee7174c951197b819497a5dcdd4ffe8",
+    "archive_sha1": "c97a8ed69ee7174c951197b819497a5dcdd4ffe8",
+    "matches": true
+  },
+  {
+    "url": "https://download.racket-lang.org/releases/9.3/pkgs/htdp-lib.zip",
+    "catalog_checksum": "98aa17c62a41d8f1dcc720c7af41a00392188b87",
+    "archive_sha1": "98aa17c62a41d8f1dcc720c7af41a00392188b87",
+    "matches": true
+  }
+]

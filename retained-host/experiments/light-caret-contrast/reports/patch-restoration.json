@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "forward_patch_exit": 0,
+  "reverse_patch_exit": 0,
+  "original_info_sha256": "b5cf6c820be53a5d4b95bb814947638ba49d126410003ea3d4560dae33b0c7d2",
+  "patched_info_sha256": "53a439f4069b175d1d543615f4df0ab0b8de8c01e9242511099f029e9836ae17",
+  "restored_bytes_equal_original": true,
+  "stdout_forward": "patching file tool/info.rkt\n",
+  "stdout_reverse": "patching file tool/info.rkt\n"
+}

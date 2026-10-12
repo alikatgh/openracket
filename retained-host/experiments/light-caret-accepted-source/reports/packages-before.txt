@@ -1,0 +1,29 @@
+Installation-wide:
+ Package[*=auto]  Checksum                                  Source
+ base*            6272bda442d1c26a40d2403a251665d500147ab3  catalog base
+ racket-lib       62eb15ddc03bc26a1c0f85c8aff03aa6ef7a518a  catalog racket-lib
+User-specific for installation "9.3":
+ Package[*=auto]         Checksum           Source
+ at-exp-lib*             83c545ad703838...  catalog...exp-lib
+ compatibility-lib*      360c9347eadb2e...  catalog...6931403
+ compiler-lib*           8270ecc4ff62a0...  catalog...ler-lib
+ draw-lib*               d7314cddf50814...  catalog...f1d2089
+ drracket-tool-text-lib  795365d2838877...  catalog...02e99e6
+ errortrace-lib*         ebcc160583620f...  catalog...f081ee4
+ net-lib*                3a0b21cc9c66f6...  catalog net-lib
+ option-contract-lib*    bbb06c2fe3f874...  catalog...9989c59
+ parser-tools-lib*       fbe6791cfd0acd...  catalog...5daf8a5
+ planet-lib*             d7d9e83cddf4da...  catalog...6766154
+ racket-index*           4e976944fd165f...  catalog...t-index
+ rackunit-lib*           47fed14bfd620d...  catalog...3ebac42
+ sandbox-lib*            0f7f37a8569982...  catalog...box-lib
+ scheme-lib*             5e4734e23cb705...  catalog...cef18f5
+ scribble-html-lib*      c9269dbbf84c3a...  catalog...0bf4dec
+ scribble-lib*           ee7f29e9889611...  catalog...0bf4dec
+ scribble-text-lib*      01926b2d6891dd...  catalog...0bf4dec
+ source-syntax*          125a63b2e3dfff...  catalog...502963f
+ srfi-lite-lib*          771fb5b4469075...  catalog...c23617a
+ string-constants-lib*   716e650017a106...  catalog...6663fd4
+ syntax-color-lib        69b651aea135db...  catalog...8c7e3df
+ testing-util-lib*       553cf1892b27c1...  catalog...3ebac42
+ zo-lib*                 86cd5b899d7d25...  catalog zo-lib

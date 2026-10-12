@@ -1,0 +1,11 @@
+--- a/tool/info.rkt
++++ b/tool/info.rkt
+@@ -22,7 +22,7 @@
+              (framework:line-numbers #(98 113 138))
+              (framework:line-numbers-when-word-wrapping #(98 113 138))
+              (framework:line-numbers-current-line-number-background #(220 228 239))
+-             (framework:line-numbers-current-line-number-foreground #(36 94 219))
++             (framework:line-numbers-current-line-number-foreground #(35 91 215))
+              (framework:warning-background-color #(255 225 149))
+              (framework:failed-search-background-color #(255 217 222))
+              (framework:disabled-background-color #(233 237 244))

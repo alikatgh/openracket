@@ -1,0 +1,3 @@
+raco test: (file "tests/independent-theme-bridge-test.rkt")
+raco test: (file "tests/independent-appearance-test.rkt")
+30 tests passed

@@ -1,0 +1,36 @@
+test_apply_rejects_tampered_overlay_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_tampered_overlay_without_changes) ... FAIL
+test_apply_rejects_unrelated_target_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_unrelated_target_without_changes) ... ok
+test_missing_target_does_not_create_runtime (__main__.IndependentPatchIntegrity.test_missing_target_does_not_create_runtime) ... ok
+test_prepare_rejects_byte_different_crlf_source (__main__.IndependentPatchIntegrity.test_prepare_rejects_byte_different_crlf_source) ... FAIL
+test_pristine_apply_then_revert_is_byte_exact (__main__.IndependentPatchIntegrity.test_pristine_apply_then_revert_is_byte_exact) ... ok
+test_revert_rejects_tampered_vendor_without_changes (__main__.IndependentPatchIntegrity.test_revert_rejects_tampered_vendor_without_changes) ... FAIL
+test_target_symlink_escape_is_refused (__main__.IndependentPatchIntegrity.test_target_symlink_escape_is_refused) ... ok
+
+======================================================================
+FAIL: test_apply_rejects_tampered_overlay_without_changes (__main__.IndependentPatchIntegrity.test_apply_rejects_tampered_overlay_without_changes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/shared/openracket-drracket-host/tests/independent-patcher-test.py", line 65, in test_apply_rejects_tampered_overlay_without_changes
+    self.assertNotEqual(result.returncode, 0, "Installed unverified overlay despite manifest mismatch")
+AssertionError: 0 == 0 : Installed unverified overlay despite manifest mismatch
+
+======================================================================
+FAIL: test_prepare_rejects_byte_different_crlf_source (__main__.IndependentPatchIntegrity.test_prepare_rejects_byte_different_crlf_source)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/shared/openracket-drracket-host/tests/independent-patcher-test.py", line 57, in test_prepare_rejects_byte_different_crlf_source
+    self.assertNotEqual(result.returncode, 0, "Exact-byte source pin accepted CRLF-transformed bytes")
+AssertionError: 0 == 0 : Exact-byte source pin accepted CRLF-transformed bytes
+
+======================================================================
+FAIL: test_revert_rejects_tampered_vendor_without_changes (__main__.IndependentPatchIntegrity.test_revert_rejects_tampered_vendor_without_changes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/shared/openracket-drracket-host/tests/independent-patcher-test.py", line 74, in test_revert_rejects_tampered_vendor_without_changes
+    self.assertNotEqual(result.returncode, 0, "Revert installed unverified vendor bytes")
+AssertionError: 0 == 0 : Revert installed unverified vendor bytes
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.512s
+
+FAILED (failures=3)

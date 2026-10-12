@@ -1,0 +1,10 @@
+{
+  "accepted_manifest_sha256": "2569c1bacdfb70ddc3042908b19d9e898fcebd274418668085bfe51f3a739552",
+  "accepted_manifest_members": 155,
+  "frozen_native_source_members_verified": 47,
+  "old_info_sha256": "b5cf6c820be53a5d4b95bb814947638ba49d126410003ea3d4560dae33b0c7d2",
+  "new_info_sha256": "53a439f4069b175d1d543615f4df0ab0b8de8c01e9242511099f029e9836ae17",
+  "production_changed_entries": [
+    "OpenRacket Light/framework:line-numbers-current-line-number-foreground"
+  ]
+}

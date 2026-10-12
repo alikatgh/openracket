@@ -1,0 +1,43 @@
+test_alias_tmpdir_is_real_when_requested (__main__.CompositionTests.test_alias_tmpdir_is_real_when_requested) ... ok
+test_casefold_collision_refused_without_filesystem_assumption (__main__.CompositionTests.test_casefold_collision_refused_without_filesystem_assumption) ... ok
+test_missing_full_source_fails_before_output (__main__.CompositionTests.test_missing_full_source_fails_before_output) ... ok
+test_synthetic_composition_preserves_input_under_alias (__main__.CompositionTests.test_synthetic_composition_preserves_input_under_alias) ... ok
+test_all_12_controls (__main__.EvidenceTests.test_all_12_controls) ... ok
+test_bad_control_exit_timeout_and_markers (__main__.EvidenceTests.test_bad_control_exit_timeout_and_markers) ... ok
+test_exact_composition_receipts (__main__.EvidenceTests.test_exact_composition_receipts) ... ok
+test_missing_controls (__main__.EvidenceTests.test_missing_controls) ... ok
+test_missing_duplicate_or_early_caret_state_refused (__main__.EvidenceTests.test_missing_duplicate_or_early_caret_state_refused) ... ok
+test_native_adapter_accepts_both_synthetic_receipts (__main__.EvidenceTests.test_native_adapter_accepts_both_synthetic_receipts) ... ok
+test_native_failure_never_success (__main__.EvidenceTests.test_native_failure_never_success) ... ok
+test_png_corruption_refused (__main__.EvidenceTests.test_png_corruption_refused) ... ok
+test_reader_compile_required (__main__.EvidenceTests.test_reader_compile_required) ... ok
+test_state_mismatch_ready_refused (__main__.EvidenceTests.test_state_mismatch_ready_refused) ... ok
+test_supervision_refusals (__main__.EvidenceTests.test_supervision_refusals) ... ok
+test_valid_supervision (__main__.EvidenceTests.test_valid_supervision) ... ok
+test_pair_requires_both_arms_and_separate_profiles (__main__.PairTests.test_pair_requires_both_arms_and_separate_profiles) ... ok
+test_accepted_manifest (__main__.SourceTests.test_accepted_manifest) ... ok
+test_all_native_sources_balanced (__main__.SourceTests.test_all_native_sources_balanced) ... ok
+test_exact_host_derivation (__main__.SourceTests.test_exact_host_derivation) ... ok
+test_exact_reversible_one_entry (__main__.SourceTests.test_exact_reversible_one_entry) ... ok
+test_expected_macro_source_is_exact (__main__.SourceTests.test_expected_macro_source_is_exact) ... ok
+test_frozen_references_match_manifest (__main__.SourceTests.test_frozen_references_match_manifest) ... ok
+test_observer_no_renderer_or_theme_mutation (__main__.SourceTests.test_observer_no_renderer_or_theme_mutation) ... ok
+test_official_renderer_pins_and_git_blobs (__main__.SourceTests.test_official_renderer_pins_and_git_blobs) ... ok
+test_original_host_is_subsequence (__main__.SourceTests.test_original_host_is_subsequence) ... ok
+test_patch_exact (__main__.SourceTests.test_patch_exact) ... ok
+test_state_output_preserves_breaks_and_typed_validation (__main__.SourceTests.test_state_output_preserves_breaks_and_typed_validation) ... ok
+test_unrounded_contrast (__main__.SourceTests.test_unrounded_contrast) ... ok
+test_wait_and_failure_blocks_unchanged (__main__.SourceTests.test_wait_and_failure_blocks_unchanged) ... ok
+test_boolean_numeric_standins (__main__.StateTests.test_boolean_numeric_standins) ... ok
+test_extra_keys_refused (__main__.StateTests.test_extra_keys_refused) ... ok
+test_missing_each_key (__main__.StateTests.test_missing_each_key) ... ok
+test_original_is_valid_known_below_threshold_baseline (__main__.StateTests.test_original_is_valid_known_below_threshold_baseline) ... ok
+test_patched_valid (__main__.StateTests.test_patched_valid) ... ok
+test_viewport_refusals (__main__.StateTests.test_viewport_refusals) ... ok
+test_wrong_each_fixed_value (__main__.StateTests.test_wrong_each_fixed_value) ... ok
+test_wrong_rgb_and_arm (__main__.StateTests.test_wrong_rgb_and_arm) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 0.070s
+
+OK

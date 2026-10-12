@@ -1,0 +1,172 @@
+{
+  "run_url": "https://github.com/alikatgh/openracket/actions/runs/38050213153",
+  "commit": "0c8510d768483840d37c19afc4833ddc180a66a0",
+  "linux_result": "All core and eight preservation cases passed. Benchmark harness failed before workload metrics.",
+  "macos_result": "115 headless Racket tests and both patch integrity suites passed; performance timeout-supervisor unit test hit PermissionError in final process-group cleanup, stopping before native stages. Prior run macOS native passes still apply to unchanged production source.",
+  "preservation_cases_passed": [
+    "pristine-stock stop",
+    "pristine-stock input-eof",
+    "pristine-stock wxme",
+    "pristine-stock check-syntax",
+    "modern-dark stop",
+    "modern-dark input-eof",
+    "modern-dark wxme",
+    "modern-dark check-syntax"
+  ],
+  "check_syntax_graph_equal": true,
+  "check_syntax_binding_graph": [
+    [
+      6,
+      17,
+      19,
+      25
+    ],
+    [
+      6,
+      17,
+      35,
+      35
+    ],
+    [
+      6,
+      17,
+      36,
+      37
+    ],
+    [
+      6,
+      17,
+      40,
+      40
+    ],
+    [
+      6,
+      17,
+      44,
+      44
+    ],
+    [
+      6,
+      17,
+      50,
+      50
+    ],
+    [
+      27,
+      31,
+      45,
+      49
+    ],
+    [
+      32,
+      33,
+      38,
+      39
+    ]
+  ],
+  "stop_state_sequence_equal": true,
+  "stop_state_sequence": [
+    {
+      "break_custodian_present": true,
+      "break_thread_live": true,
+      "run_enabled": true,
+      "running": true,
+      "stage": "before-stop",
+      "stop_enabled": true,
+      "stop_label": "Stop"
+    },
+    {
+      "break_custodian_present": true,
+      "break_thread_live": true,
+      "run_enabled": true,
+      "running": true,
+      "stage": "after-stop-before-event-loop",
+      "stop_enabled": true,
+      "stop_label": "Kill"
+    },
+    {
+      "break_custodian_present": false,
+      "break_thread_live": false,
+      "run_enabled": true,
+      "running": false,
+      "stage": "after-interrupt-cleanup",
+      "stop_enabled": true,
+      "stop_label": "Kill"
+    }
+  ],
+  "benchmark_error": "kill-thread: the current custodian does not solely manage the specified thread (startup watcher cleanup)",
+  "usable_benchmark_workloads": 0,
+  "production_source_changed": false,
+  "platform_results": {
+    "linux": [
+      "CI guard and runtime paths: PASS Exact public prototype branch; ephemeral full distribution",
+      "Record pristine runtime source hashes: PASS exit=0",
+      "Generate exact-version source overlay: PASS exit=0",
+      "Python patch integrity: PASS exit=0",
+      "Independent patch integrity: PASS exit=0",
+      "Headless preservation and renderer: PASS exit=0",
+      "Performance harness and fixture unit tests: PASS exit=0",
+      "Prepare synthetic legacy startup diagnostic fixture: PASS exit=0",
+      "Record legacy startup dialog (observation only): PASS exit=0",
+      "pristine-stock actual profile separation: PASS exit=0",
+      "pristine-stock native toolbar behavior: PASS exit=0",
+      "pristine-stock genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "pristine-stock OS screenshot capture: PASS 1100x760, 48567 bytes, SHA256 f504ad70983719153d3da2e0b62be11a6988ae040bc801534694f426bdc8f22e",
+      "Copy pristine runtime for presentation overlay: PASS exit=0",
+      "Apply exact-SHA disposable overlay: PASS exit=0",
+      "Register appearance tool locally: PASS exit=0",
+      "Compile real GUI and register appearance metadata: PASS exit=0",
+      "Compile actual theme tool and DrRacket host: PASS exit=0",
+      "Compile retained DrRacket entrypoint: PASS exit=0",
+      "Verify actual runtime isolation and unchanged pristine hashes: PASS exit=0",
+      "stock-fallback actual profile separation: PASS exit=0",
+      "stock-fallback native toolbar behavior: PASS exit=0",
+      "stock-fallback genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "stock-fallback OS screenshot capture: PASS 1100x760, 49142 bytes, SHA256 11cf6cfb2325791ebc9a13e6951d88033ea9cf4310cdf92807f053b23be2be06",
+      "modern-light actual profile separation: PASS exit=0",
+      "modern-light native toolbar behavior: PASS exit=0",
+      "modern-light native canvas and status preservation: PASS exit=0",
+      "modern-light genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-light OS screenshot capture: PASS 1100x760, 52484 bytes, SHA256 7d0851a90a005722c2f49cf6db497cb09a1cf5ffcb39ecdece74c73ae3f833a1",
+      "modern-dark actual profile separation: PASS exit=0",
+      "modern-dark native toolbar behavior: PASS exit=0",
+      "modern-dark native canvas and status preservation: PASS exit=0",
+      "modern-dark genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-dark OS screenshot capture: PASS 1100x760, 51959 bytes, SHA256 55ffa102c6921535eda222d754180962cbae5526f72a3e51c223aa09bfe8b4b4",
+      "Verify pristine source unchanged after overlay tests: PASS exit=0",
+      "pristine-stock-stop genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "pristine-stock-stop OS screenshot capture: PASS 1100x760, 50070 bytes, SHA256 80acef26db24a0c5a42045afcbf2a8c3e025779f428dc0db82eb6a3186d9768d",
+      "pristine-stock-input-eof genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "pristine-stock-input-eof OS screenshot capture: PASS 1100x760, 53498 bytes, SHA256 75413f62ebdaa497c6af7fad08b2878a236dc6228057a11946a72b6fa373d8b2",
+      "pristine-stock-wxme genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "pristine-stock-wxme OS screenshot capture: PASS 1100x760, 29564 bytes, SHA256 46d908d7f21ba112f9b9e5338193ffc740d962dbb010c90177ede6361f07e2c2",
+      "pristine-stock-check-syntax genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "pristine-stock-check-syntax OS screenshot capture: PASS 1100x760, 28221 bytes, SHA256 94eda9f2d0dd6a0e77997030e9011eb8a6dd8fd5ea2f825537d68d77aaaf3ee6",
+      "modern-dark-stop genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-dark-stop OS screenshot capture: PASS 1100x760, 53742 bytes, SHA256 57b2ad44b3cc47939f1ac23c0cb8915a413a161dbfa7d7402c6ea7c5d91ad8e9",
+      "modern-dark-input-eof genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-dark-input-eof OS screenshot capture: PASS 1100x760, 58790 bytes, SHA256 0463af40587aaf5bfd6ed9f5b87403b173ecead5edea95a6e573ba99e9fdfef1",
+      "modern-dark-wxme genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-dark-wxme OS screenshot capture: PASS 1100x760, 28864 bytes, SHA256 f06c74c4bee30b8dd152ba9e014b7367e0ced7294c83c1c77e32f908491326e1",
+      "modern-dark-check-syntax genuine host/editor assertions: PASS exit=0; report-status=passed",
+      "modern-dark-check-syntax OS screenshot capture: PASS 1100x760, 27363 bytes, SHA256 7f0632783a6de2b3c16335a5d638dc79adafc11f0e6c5a1994222d043e33e2fa",
+      "Verify pristine source unchanged after preservation workflows: PASS exit=0",
+      "pristine-stock paired native performance: FAIL exit=1",
+      "modern-dark paired native performance: FAIL exit=1",
+      "Verify pristine source unchanged after measurements: PASS exit=0"
+    ],
+    "macos": [
+      "CI guard and runtime paths: PASS Exact public prototype branch; ephemeral full distribution",
+      "Record pristine runtime source hashes: PASS exit=0",
+      "Generate exact-version source overlay: PASS exit=0",
+      "Python patch integrity: PASS exit=0",
+      "Independent patch integrity: PASS exit=0",
+      "Headless preservation and renderer: PASS exit=0",
+      "Performance harness and fixture unit tests: FAIL exit=1"
+    ]
+  },
+  "log_sha256": {
+    "linux": "b9cee770cb5ca1d061c75736252797eef96f195ee7c7600513da189933179af7",
+    "macos": "06465921a2c1c92bba896b67ccd3bac02835d777d6e696ed4d4506bafd05978a"
+  }
+}

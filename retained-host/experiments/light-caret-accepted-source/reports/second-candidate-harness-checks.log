@@ -1,0 +1,8 @@
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.171s
+
+OK
+Reader checked tests/independent-native-host.rkt
+Reader checked tests/independent-native-toolbar.rkt
+Reader checked design/native-chrome-test.rkt

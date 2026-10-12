@@ -1,0 +1,57 @@
+{
+  "repository": "racket/gui",
+  "ref": {
+    "ref": "refs/tags/v9.3",
+    "node_id": "MDM6UmVmMjc0MTM0MzU6cmVmcy90YWdzL3Y5LjM=",
+    "url": "https://api.github.com/repos/racket/gui/git/refs/tags/v9.3",
+    "object": {
+      "sha": "ee75bb8250f43bc9db2f328c79b07b44b5be0f14",
+      "type": "tag",
+      "url": "https://api.github.com/repos/racket/gui/git/tags/ee75bb8250f43bc9db2f328c79b07b44b5be0f14"
+    }
+  },
+  "tag": {
+    "node_id": "TA_kwDOAaJLu9oAKGVlNzViYjgyNTBmNDNiYzlkYjJmMzI4Yzc5YjA3YjQ0YjViZTBmMTQ",
+    "sha": "ee75bb8250f43bc9db2f328c79b07b44b5be0f14",
+    "url": "https://api.github.com/repos/racket/gui/git/tags/ee75bb8250f43bc9db2f328c79b07b44b5be0f14",
+    "tagger": {
+      "name": "John Clements",
+      "email": "clements@brinckerhoff.org",
+      "date": "2026-08-11T02:10:37Z"
+    },
+    "object": {
+      "sha": "6f0213fa0535d87dd4e35f56c8266d948c8c089e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/racket/gui/git/commits/6f0213fa0535d87dd4e35f56c8266d948c8c089e"
+    },
+    "tag": "v9.3",
+    "message": "",
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "files": [
+    {
+      "path": "openracket-palette-audit-20261011-1930/official/text-line-numbers.rkt",
+      "bytes": 15098,
+      "sha256": "14ff8bd96dcaf07b8b8c115a85eb88a49f97f4e37cf7fbee03d50c5493a2f5e7",
+      "source_path": "gui-lib/framework/private/text-line-numbers.rkt",
+      "git_blob": "1d84b47aed5abfeef65dba32b2b82a125c0cd96d",
+      "git_blob_verified": true,
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/framework/private/text-line-numbers.rkt"
+    },
+    {
+      "path": "openracket-palette-audit-20261011-1930/official/cocoa-procs.rkt",
+      "bytes": 10329,
+      "sha256": "b6ce80e7673088f57edb9cd1fc5535a35741190c3f1197eedb55ddde850c00ca",
+      "source_path": "gui-lib/mred/private/wx/cocoa/procs.rkt",
+      "git_blob": "786b064d7ecd6015e995856ec270ab64540889af",
+      "git_blob_verified": true,
+      "source_url": "https://github.com/racket/gui/blob/6f0213fa0535d87dd4e35f56c8266d948c8c089e/gui-lib/mred/private/wx/cocoa/procs.rkt"
+    }
+  ]
+}
