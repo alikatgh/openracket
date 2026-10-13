@@ -24,15 +24,66 @@ add a filesystem-root exemption. All other images retain actual-file, canonical
 confinement and dependency checks. The public enumeration checks visible drift;
 it is not an atomic snapshot or hostile-process attestation.
 
-The adapter runner, workflow, every existing gate and all deadlines remain
-unchanged. Only its source pin/member counts, the matching exact-inventory test,
-and these technical labels change. The portable release suite contains 107
-source tests, 53 adapter tests and 22 transport tests (182 total). It runs through
+The shared-cache source retry kept the adapter runner, workflow and deadlines
+unchanged, updating its source pin/member counts and matching inventory test.
+The later verdict compatibility repair is described below. The current portable
+release suite contains 107
+source tests, 73 adapter tests and 22 transport tests (202 total). It runs through
 a genuinely symlinked TMPDIR, with alias selection proved in a fresh subprocess.
 Case-collision rejection is exercised through explicit inventory records, not by
 assuming a disk can create both capitalization variants. Physical case-insensitive
-filesystem coverage is not inferred from those synthetic checks. Native execution
-of this derivative remains pending until a separately authorized exact-commit run.
+filesystem coverage is not inferred from those synthetic checks. The source was
+frozen before native execution; the later run below exercised those exact source
+bytes, while the repaired adapter still requires a new exact-commit CI run.
+
+## Adapter verdict compatibility repair
+
+Historical run 38189790954 reached two actual native observations, and its pinned
+native supervisor exited successfully with `bounded-path-probe-passed`. The outer
+adapter then rejected the source's fourth verdict field,
+`loaded_image_classifications`, because it still expected a three-key dictionary.
+That CI run remains failed. Byte-verified offline replay is a contract regression
+check, not a retrospective green job or another native execution.
+
+The repaired adapter accepts exactly the four current verdict fields. It binds
+each GUI/child classification to the same raw image name, exact index, unique
+header address, arm64 Mach-O fields, exact Boolean cache query and cache-header
+flag. Cache entries cannot claim filesystem resolution, and OS-file or bundle-file
+entries cannot substitute for cache evidence. Unknown, missing, duplicate,
+reordered or cross-process/location data fails closed.
+
+The recorded executable must belong to its own process/location, appear in that
+arm's image witness and match its executable path records. Bundled images bind
+to the build's relative Mach-O inventory, including the generated native hash.
+Every active dependency-closure row binds to the corresponding inventory image,
+arm64 dependency and complete sorted set of recorded measured/system candidates.
+Bundle digests remain bound to both independent post-launch witnesses and the unchanged default/cleanup
+records. Independent raw reports and baseline/post data compare JSON values and
+types exactly; Boolean/integer/float substitutions are rejected.
+Source/runner/CLI/process deadlines, prelaunch refusal gates and security
+behavior are unchanged.
+
+The initial app no longer exists at its original path after relocation. The outer
+validator therefore checks recorded data using pure lexical POSIX paths. It never
+reruns `classify_loaded_images`, resolves historical app/library paths, or invents
+new live-file proof. The frozen supervisor's launch-time file, process and loader
+checks remain authoritative. Because these receipts carry no independent alias
+map, a bundled raw/resolved name must identify the same inventory member; an
+unproved historical alias or case substitution is rejected rather than guessed.
+
+A producer/consumer regression derives classifications through the actual frozen
+classifier over synthetic files and typed cache witnesses, renames the bundle,
+and then validates the outer receipts with historical resolution/stat calls
+forbidden. Full source/adapter/transport checks run normally and with a genuinely
+aliased TMPDIR. Separate local replay verifies all 68 raw historical file hashes,
+the exact native summary and all 2,544 image-classification bindings. The native
+source is unchanged, and a new exact-commit native CI run is still required.
+
+For queue composition, explicitly restore the unchanged launcher workflow with
+SHA-256 `f81f1c20867cecb3224a840c0e8f299115db2b0f3dceba4c750871bd92119c06`.
+Other queued diagnostics may have replaced the workflow at the same path. Apply
+only the reviewed additive allowlist after those runs; do not replace unrelated
+repository files or reinterpret their historical results.
 
 ## Exact input and execution contract
 

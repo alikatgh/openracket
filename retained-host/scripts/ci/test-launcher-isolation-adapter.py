@@ -58,9 +58,39 @@ class IsolationTests(unittest.TestCase):
                       'nested_apps': [], 'native_launch_blocked_by_declarations': False,
                       'native_launch_blocked_by_loader_context': False,
                       'manual_signing_or_security_changes': False, 'intrinsic_generator_ad_hoc_signing': True,
-                      'macho': [{'path': 'binary'}], 'static_loader_context_pending': [], 'native_sha256': 'b' * 64,
+                      'macho': self.macho_rows(), 'static_loader_context_pending': [], 'native_sha256': 'b' * 64,
                       'runtime_copy_plan': 'runtime-copy-plan.json',
                       'retained_runtime_digest': c.tree_digest(self.retained)}
+
+    def macho_rows(self):
+        return [{'path': name, 'sha256': digest * 64, 'slices': [{'cpu_type': 0x0100000C,
+                    'dependencies': deps, 'rpaths': []}]} for name, digest, deps in (
+                    ('Contents/MacOS/ProbeNative', 'b', ['@executable_path/../Resources/runtime/lib/helper.dylib', '/usr/lib/libSystem.B.dylib']),
+                    ('Contents/Resources/runtime/bin/racket', 'd', ['/usr/lib/libSystem.B.dylib']),
+                    ('Contents/Resources/runtime/lib/helper.dylib', 'e', ['/usr/lib/libSystem.B.dylib']))]
+
+    def image_proof(self, app, arm):
+        executable = app / ('Contents/MacOS/ProbeNative' if arm == 'gui' else 'Contents/Resources/runtime/bin/racket')
+        helper = app / 'Contents/Resources/runtime/lib/helper.dylib'
+        images = [str(executable)] + ([str(helper)] if arm == 'gui' else []) + ['/usr/lib/libSystem.B.dylib', '/usr/lib/libfixture.dylib']
+        records, classifications = [], []
+        for index, raw in enumerate(images):
+            cache = raw == '/usr/lib/libSystem.B.dylib'
+            records.append({'index': index, 'raw': raw, 'header_address': format(0x1000 + index * 4096, 'x'),
+                            'magic': 0xFEEDFACF, 'cpu_type': 0x0100000C, 'file_type': 2 if index == 0 else 6,
+                            'flags': 0x80000000 if cache else 0, 'shared_cache_contains_path': cache})
+            kind = 'os-shared-cache' if cache else ('os-file' if raw.startswith('/usr/lib/') else 'bundle-file')
+            row = {'raw': raw, 'kind': kind, 'witness_index': index}
+            if not cache:
+                row['resolved'] = raw
+            classifications.append(row)
+        snapshot = {'schema': 1, 'method': 'public-dyld-name-header-cache-v1', 'count': len(images), 'stable': True, 'records': records}
+        closure = ([{'image': str(executable), 'dependency': '@executable_path/../Resources/runtime/lib/helper.dylib',
+                     'resolved_candidates': [str(helper)]}] if arm == 'gui' else [])
+        closure.append({'image': str(executable), 'dependency': '/usr/lib/libSystem.B.dylib', 'system': True})
+        if arm == 'gui':
+            closure.append({'image': str(helper), 'dependency': '/usr/lib/libSystem.B.dylib', 'system': True})
+        return images, snapshot, classifications, closure
 
     def runner(self):
         runner = a.Runner.__new__(a.Runner)
@@ -94,6 +124,7 @@ class IsolationTests(unittest.TestCase):
         native.write_bytes(b'unchanged generated image')
         record = copy.deepcopy(build or self.build)
         record.update(bundle=str(runner.original_app), native_sha256=c.sha(native))
+        record['macho'][0]['sha256'] = record['native_sha256']
         for name, value in [('build.json', record), ('original-runtime.json', self.before),
                             ('source-before.json', self.source_before), ('runtime-copy-plan.json', self.plan),
                             ('protected-input-witness.json', self.protected())]:
@@ -102,6 +133,8 @@ class IsolationTests(unittest.TestCase):
 
     def summary(self, runner):
         runner.work.mkdir(exist_ok=True)
+        if not (runner.work / 'build.json').exists():
+            runner.write(runner.work / 'build.json', {**self.build, 'bundle': str(runner.original_app)})
         observations = []
         for index, app in enumerate((runner.original_app, runner.relocated_app)):
             profile = runner.work / ('run-profile-%d' % index)
@@ -112,15 +145,25 @@ class IsolationTests(unittest.TestCase):
                                    'main_bundle_path': str(app), 'running_bundle_path': str(app),
                                    'main_bundle_identifier': s.BUNDLE_ID, 'running_bundle_identifier': s.BUNDLE_ID},
                       'child': {'schema': 1, 'status': 'observed', 'version': '9.3', 'gc': 'cs', 'pid': 201 + index}}
+            classifications, closure = {}, {}
+            for arm, observed in (('gui', report), ('child', report['child'])):
+                images, snapshot, classifications[arm], closure[arm] = self.image_proof(app, arm)
+                executable = images[0]
+                console = str(app / 'Contents/Resources/runtime/bin/racket')
+                def rec(path):
+                    return {'absolute': path, 'raw': path, 'resolved': path, 'exists': True}
+                observed.update(loaded_images=images, loaded_image_snapshot=snapshot,
+                                paths={'system': {'run-file': rec(executable), 'exec-file': rec(console)}})
             runner.write(profile / 'result.json', report)
             runner.write(profile / 'post-launch-witness.json', {
                 'schema': 1, 'bundle_unchanged': True, 'owned_process_group_cleanup_certain': True,
                 'handler_before': self.handler, 'handler_after': self.handler,
                 'bundle_before_digest': 'c' * 64, 'bundle_after_digest': 'c' * 64})
             observations.append({'profile': str(profile), 'verdict': {'status': 'path-and-identity-observation-validated',
-                                                                     'bundle': str(app), 'profile': str(profile)},
+                                                                     'bundle': str(app), 'profile': str(profile),
+                                                                     'loaded_image_classifications': classifications},
                                  'report': report, 'bundle_inventory_digest': 'c' * 64,
-                                 'active_non_system_dylib_closure': {'gui': [], 'child': []}})
+                                 'active_non_system_dylib_closure': closure})
         return {'schema': 1, 'status': 'bounded-path-probe-passed', 'observations': observations,
                 'original_runtime_present': True, 'recorded_original_runtime_absent': False,
                 'clean_destination_tested': False, 'full_distribution_acceptance': False,
@@ -730,6 +773,255 @@ class IsolationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'frozen input mismatch'):
                 release.main()
         run.assert_not_called()
+
+    def recorded_fixture(self):
+        runner = self.runner()
+        summary = self.summary(runner)
+        build = runner.read(runner.work / 'build.json')
+        posts = [runner.read(runner.work / ('run-profile-%d' % i) / 'post-launch-witness.json') for i in range(2)]
+        def validate(value=None, build_record=None, post_records=None):
+            value = summary if value is None else value
+            reports = [copy.deepcopy(row['report']) for row in value['observations']]
+            return c.validate_summary_recorded(value, runner.original_app, runner.relocated_app, runner.work, self.handler,
+                                               build if build_record is None else build_record, reports,
+                                               posts if post_records is None else post_records)
+        return runner, summary, build, posts, validate
+
+    def test_recorded_validator_never_touches_historical_filesystem(self):
+        runner, summary, build, posts, validate = self.recorded_fixture()
+        self.assertFalse(runner.original_app.exists())
+        self.assertFalse(runner.relocated_app.exists())
+        with mock.patch.object(Path, 'resolve', side_effect=AssertionError('historical resolution')), \
+                mock.patch.object(Path, 'stat', side_effect=AssertionError('historical stat')), \
+                mock.patch.object(Path, 'open', side_effect=AssertionError('historical read')):
+            validate()
+
+    def test_frozen_classifier_producer_consumed_after_real_bundle_rename(self):
+        runner, value, build, posts, validate = self.recorded_fixture()
+        for row in build['macho']:
+            file = runner.original_app / row['path']
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_bytes(b'synthetic file for frozen classifier only')
+        for index, app in enumerate((runner.original_app, runner.relocated_app)):
+            if index:
+                runner.original_app.rename(runner.relocated_app)
+            row = value['observations'][index]
+            for arm, observed in (('gui', row['report']), ('child', row['report']['child'])):
+                # Remove the synthetic OS-file row; cache membership is typed
+                # fixture evidence, and all non-cache bundle files genuinely exist.
+                observed['loaded_images'].pop()
+                observed['loaded_image_snapshot']['records'].pop()
+                observed['loaded_image_snapshot']['count'] -= 1
+                produced = s.classify_loaded_images(observed['loaded_images'], observed['loaded_image_snapshot'], app)
+                row['verdict']['loaded_image_classifications'][arm] = produced
+            profile = runner.work / ('run-profile-%d' % index)
+            (profile / 'result.json').write_text(json.dumps(row['report']))
+        self.assertFalse(runner.original_app.exists())
+        self.assertTrue(runner.relocated_app.is_dir())
+        with mock.patch.object(Path, 'resolve', side_effect=AssertionError('historical resolution')), \
+                mock.patch.object(Path, 'stat', side_effect=AssertionError('historical stat')), \
+                mock.patch.object(s, 'classify_loaded_images', side_effect=AssertionError('launch-time classifier rerun')):
+            c.validate_summary(value, runner.original_app, runner.relocated_app, runner.work, self.handler)
+
+    def test_new_verdict_field_is_required_and_unknown_fields_refused(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('missing', 'extra', 'wrong-arm', 'extra-arm'):
+            bad = copy.deepcopy(value); verdict = bad['observations'][0]['verdict']
+            if mutation == 'missing': del verdict['loaded_image_classifications']
+            elif mutation == 'extra': verdict['unknown'] = True
+            elif mutation == 'wrong-arm': verdict['loaded_image_classifications'].pop('child')
+            else: verdict['loaded_image_classifications']['other'] = []
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_classification_unknown_missing_duplicate_and_reordered_rows_refused(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('unknown', 'missing-key', 'extra-key', 'missing-row', 'duplicate-row', 'reorder'):
+            bad = copy.deepcopy(value); rows = bad['observations'][0]['verdict']['loaded_image_classifications']['gui']
+            if mutation == 'unknown': rows[0]['kind'] = 'trusted-file'
+            elif mutation == 'missing-key': del rows[0]['raw']
+            elif mutation == 'extra-key': rows[0]['trusted'] = True
+            elif mutation == 'missing-row': rows.pop()
+            elif mutation == 'duplicate-row': rows[1] = copy.deepcopy(rows[0])
+            else: rows[0], rows[1] = rows[1], rows[0]
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_classification_swapped_processes_and_locations_refused(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('processes', 'locations'):
+            bad = copy.deepcopy(value)
+            if mutation == 'processes':
+                rows = bad['observations'][0]['verdict']['loaded_image_classifications']
+                rows['gui'], rows['child'] = rows['child'], rows['gui']
+            else:
+                first, second = bad['observations']
+                first['verdict']['loaded_image_classifications'], second['verdict']['loaded_image_classifications'] = \
+                    second['verdict']['loaded_image_classifications'], first['verdict']['loaded_image_classifications']
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_classification_index_bool_integer_and_raw_binding(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for key, replacement in (('witness_index', True), ('witness_index', 0.0), ('witness_index', 999), ('raw', '/usr/lib/other')):
+            bad = copy.deepcopy(value)
+            bad['observations'][0]['verdict']['loaded_image_classifications']['gui'][0][key] = replacement
+            with self.subTest(key=key, value=replacement), self.assertRaises(ValueError): validate(bad)
+
+    def test_recorded_snapshot_shape_count_and_stability_are_exact(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for key, replacement in (('schema', True), ('count', True), ('count', 999), ('stable', 1), ('stable', False),
+                                 ('method', 'guessed'), ('records', []), ('unknown', True)):
+            bad = copy.deepcopy(value)
+            bad['observations'][0]['report']['loaded_image_snapshot'][key] = replacement
+            with self.subTest(key=key, value=replacement), self.assertRaises(ValueError): validate(bad)
+
+    def test_recorded_header_missing_extra_duplicate_and_invalid_addresses(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('missing', 'extra', 'duplicate-address', 'zero-address', 'bad-address'):
+            bad = copy.deepcopy(value); rows = bad['observations'][0]['report']['loaded_image_snapshot']['records']
+            if mutation == 'missing': del rows[0]['header_address']
+            elif mutation == 'extra': rows[0]['trusted'] = True
+            elif mutation == 'duplicate-address': rows[1]['header_address'] = rows[0]['header_address']
+            elif mutation == 'zero-address': rows[0]['header_address'] = '0'
+            else: rows[0]['header_address'] = '0x1234'
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_recorded_header_index_name_uint_and_arm_architecture(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for key, replacement in (('index', True), ('index', 99), ('raw', '/wrong'), ('magic', 0xFEEDFACE),
+                                 ('cpu_type', 0x01000007), ('cpu_type', True), ('flags', -1), ('flags', 2**32),
+                                 ('file_type', 2.0), ('shared_cache_contains_path', 1)):
+            bad = copy.deepcopy(value)
+            bad['observations'][0]['report']['loaded_image_snapshot']['records'][0][key] = replacement
+            with self.subTest(key=key, value=replacement), self.assertRaises(ValueError): validate(bad)
+
+    def test_shared_cache_requires_header_flag_dylib_query_and_normalized_os_name(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for key, replacement in (('flags', 0), ('file_type', 2), ('shared_cache_contains_path', False)):
+            bad = copy.deepcopy(value)
+            bad['observations'][0]['report']['loaded_image_snapshot']['records'][2][key] = replacement
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'shared-cache'): validate(bad)
+        for raw in ('/usr/library/forged', '/System/LibraryExtra/forged', '/System/Library/../Library/forged',
+                    '/System/Volumes/Preboot/Cryptexes/OS/System/Library/forged', '/tmp/forged', '/usr/lib//forged'):
+            bad = copy.deepcopy(value); row = bad['observations'][0]
+            row['report']['loaded_images'][2] = raw
+            row['report']['loaded_image_snapshot']['records'][2]['raw'] = raw
+            row['verdict']['loaded_image_classifications']['gui'][2]['raw'] = raw
+            with self.subTest(raw=raw), self.assertRaises(ValueError): validate(bad)
+
+    def test_cache_file_kind_switch_and_fabricated_resolution_refused(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('cache-resolved', 'cache-as-file', 'file-as-cache'):
+            bad = copy.deepcopy(value); rows = bad['observations'][0]['verdict']['loaded_image_classifications']['gui']
+            if mutation == 'cache-resolved': rows[2]['resolved'] = rows[2]['raw']
+            elif mutation == 'cache-as-file': rows[2].update(kind='os-file', resolved=rows[2]['raw'])
+            else: rows[0].pop('resolved'); rows[0]['kind'] = 'os-shared-cache'
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_recorded_file_path_escapes_case_alias_and_inventory_rebinding_refused(self):
+        runner, value, _, _, validate = self.recorded_fixture()
+        for raw in ('/tmp/outside', str(runner.relocated_app / 'Contents/MacOS/ProbeNative'),
+                    str(runner.original_app / 'Contents/MacOS/probenative'),
+                    str(runner.original_app / 'Contents/MacOS/../MacOS/ProbeNative')):
+            bad = copy.deepcopy(value); row = bad['observations'][0]
+            row['report']['loaded_images'][0] = raw
+            row['report']['loaded_image_snapshot']['records'][0]['raw'] = raw
+            row['verdict']['loaded_image_classifications']['gui'][0]['raw'] = raw
+            with self.subTest(raw=raw), self.assertRaises(ValueError): validate(bad)
+        bad = copy.deepcopy(value)
+        bad['observations'][0]['verdict']['loaded_image_classifications']['gui'][0]['resolved'] = str(runner.original_app / 'Contents/Resources/runtime/bin/racket')
+        with self.assertRaisesRegex(ValueError, 'inventory identity'): validate(bad)
+
+    def test_own_process_executable_must_exist_in_its_own_recorded_arm(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        bad = copy.deepcopy(value); row = bad['observations'][0]
+        for key in ('loaded_images',): row['report'][key].pop(0)
+        row['report']['loaded_image_snapshot']['records'].pop(0)
+        row['report']['loaded_image_snapshot']['count'] -= 1
+        row['verdict']['loaded_image_classifications']['gui'].pop(0)
+        for i, record in enumerate(row['report']['loaded_image_snapshot']['records']): record['index'] = i
+        for i, record in enumerate(row['verdict']['loaded_image_classifications']['gui']): record['witness_index'] = i
+        with self.assertRaisesRegex(ValueError, 'executable absent'): validate(bad)
+
+    def test_recorded_executable_path_metadata_cannot_cross_process_or_location(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for arm, key in (('gui', 'run-file'), ('child', 'run-file'), ('gui', 'exec-file')):
+            bad = copy.deepcopy(value); report = bad['observations'][0]['report']
+            if arm == 'child': report = report['child']
+            report['paths']['system'][key]['resolved'] = '/wrong/location'
+            with self.subTest(arm=arm, key=key), self.assertRaisesRegex(ValueError, 'another process/location'): validate(bad)
+
+    def test_recorded_macho_hash_missing_duplicate_cpu_and_unknown_fields(self):
+        _, _, build, _, validate = self.recorded_fixture()
+        for mutation in ('native-hash', 'missing-console', 'duplicate-path', 'extra-row-key', 'missing-arm', 'bool-arm'):
+            bad = copy.deepcopy(build)
+            if mutation == 'native-hash': bad['native_sha256'] = 'f' * 64
+            elif mutation == 'missing-console': bad['macho'].pop(1)
+            elif mutation == 'duplicate-path': bad['macho'].append(copy.deepcopy(bad['macho'][0]))
+            elif mutation == 'extra-row-key': bad['macho'][0]['optional'] = True
+            elif mutation == 'missing-arm': bad['macho'][0]['slices'][0]['cpu_type'] = 0x01000007
+            else: bad['macho'][0]['slices'][0]['cpu_type'] = True
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(build_record=bad)
+
+    def test_recorded_closure_requires_complete_inventory_bound_rows(self):
+        _, value, _, _, validate = self.recorded_fixture()
+        for mutation in ('missing', 'duplicate', 'reordered', 'wrong-image', 'wrong-dependency', 'system-bool', 'extra-key', 'escape', 'unmeasured'):
+            bad = copy.deepcopy(value); rows = bad['observations'][0]['active_non_system_dylib_closure']['gui']
+            if mutation == 'missing': rows.pop()
+            elif mutation == 'duplicate': rows[1] = copy.deepcopy(rows[0])
+            elif mutation == 'reordered': rows[0], rows[1] = rows[1], rows[0]
+            elif mutation == 'wrong-image': rows[0]['image'] = '/wrong'
+            elif mutation == 'wrong-dependency': rows[0]['dependency'] = '/usr/lib/guessed'
+            elif mutation == 'system-bool': rows[1]['system'] = 1
+            elif mutation == 'extra-key': rows[0]['trusted'] = True
+            elif mutation == 'escape': rows[0]['resolved_candidates'] = ['/tmp/outside']
+            else: rows[0]['resolved_candidates'] = ['/usr/lib/unmeasured']
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): validate(bad)
+
+    def test_independent_raw_report_json_types_cannot_drift(self):
+        runner, value, build, posts, validate = self.recorded_fixture()
+        for replacement in (False, 0.0):
+            reports = [copy.deepcopy(row['report']) for row in value['observations']]
+            reports[0]['loaded_image_snapshot']['records'][0]['index'] = replacement
+            with self.subTest(replacement=replacement), self.assertRaisesRegex(ValueError, 'differs from summary'):
+                c.validate_summary_recorded(value, runner.original_app, runner.relocated_app, runner.work,
+                                            self.handler, build, reports, posts)
+        bad = copy.deepcopy(build); bad['handler_baseline']['schema'] = True
+        with self.assertRaisesRegex(ValueError, 'baseline mismatch'): validate(build_record=bad)
+        bad_posts = copy.deepcopy(posts); bad_posts[0]['handler_after']['schema'] = 1.0
+        with self.assertRaises(ValueError): validate(post_records=bad_posts)
+
+    def test_relative_dot_cannot_identify_inventory_image(self):
+        _, _, build, _, validate = self.recorded_fixture()
+        bad = copy.deepcopy(build); extra = copy.deepcopy(bad['macho'][0]); extra['path'] = '.'; bad['macho'].append(extra)
+        with self.assertRaisesRegex(ValueError, 'Mach-O identity'): validate(build_record=bad)
+
+    def test_closure_cannot_drop_one_of_two_valid_rpath_candidates(self):
+        runner, value, build, posts, validate = self.recorded_fixture()
+        build['macho'][0]['slices'][0]['dependencies'][0] = '@rpath/helper.dylib'
+        build['macho'][0]['slices'][0]['rpaths'] = ['@executable_path/../Resources/runtime/lib', '@executable_path/../Resources/runtime/alternate']
+        second_rel = 'Contents/Resources/runtime/alternate/helper.dylib'
+        build['macho'].append({'path': second_rel, 'sha256': 'f' * 64,
+                               'slices': [{'cpu_type': 0x0100000C, 'dependencies': [], 'rpaths': []}]})
+        for row in value['observations']:
+            app = Path(row['verdict']['bundle']); observed = row['report']; raw = str(app / second_rel)
+            index = len(observed['loaded_images']); observed['loaded_images'].append(raw)
+            observed['loaded_image_snapshot']['count'] += 1
+            observed['loaded_image_snapshot']['records'].append({'index': index, 'raw': raw, 'header_address': 'f000',
+                        'magic': 0xFEEDFACF, 'cpu_type': 0x0100000C, 'file_type': 6, 'flags': 0, 'shared_cache_contains_path': False})
+            row['verdict']['loaded_image_classifications']['gui'].append({'raw': raw, 'kind': 'bundle-file', 'resolved': raw, 'witness_index': index})
+            closure = row['active_non_system_dylib_closure']['gui'][0]
+            closure['dependency'] = '@rpath/helper.dylib'
+            closure['resolved_candidates'] = sorted([raw, str(app / 'Contents/Resources/runtime/lib/helper.dylib')])
+        validate(value, build_record=build)
+        value['observations'][0]['active_non_system_dylib_closure']['gui'][0]['resolved_candidates'].pop()
+        with self.assertRaisesRegex(ValueError, 'complete bound candidate set'): validate(value, build_record=build)
+
+    def test_recorded_bundle_digest_must_match_both_post_witnesses(self):
+        _, value, _, posts, validate = self.recorded_fixture()
+        for index in range(2):
+            bad = copy.deepcopy(value); bad['observations'][index]['bundle_inventory_digest'] = 'f' * 64
+            with self.assertRaises(ValueError): validate(bad)
+        bad = copy.deepcopy(posts); bad[0]['owned_process_group_cleanup_certain'] = 1
+        with self.assertRaises(ValueError): validate(post_records=bad)
 
     def test_workflow_and_native_limits_remain_bounded_public_read_only(self):
         workflow = (ROOT.parent / '.github/workflows/retained-native.yml').read_text()
