@@ -101,7 +101,7 @@ def copy_arm(original,package,temp,purpose):
     need(':' not in str(w/'compiled'),'Colon compiled-root path list refused')
     verify_frozen(q)
     for p in q.rglob('*'):need(p.suffix not in ('.zo','.dep'),'Copied package bytecode refused')
-    return {'purpose':purpose,'work':str(w),'runtime':str(c),'package':str(q),'compiled':str(w/'compiled'),'profile':str(w/'profile'),'quarantine':str(w/'quarantine')}
+    return {'purpose':purpose,'work':str(w),'runtime':str(c),'package':str(q),'compiled':str(w/'compiled'),'profile':str(w/'profile'),'quarantine':str(w/'quarantine'),'initial_before':tree(c)}
 
 def profile(arm,label):
     need(label and all(c in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in label),'Bounded profile label required')
@@ -144,44 +144,96 @@ def compile_commands(arm,p,helpers):
             ('setup',r+['-l','setup','--',*SETUP_FLAGS]),
             ('native_compile',r+['-l','raco','--','make','-v',*[str(x) for x in native+stock]])]
 
-def quarantine(arm):
+def accept_overlay(arm,after):
+    before=arm['initial_before'];entries=before['entries'];actual=after['entries']
+    need(after['root']==before['root'] and set(actual)==set(entries),'Overlay tree shape changed')
+    core='collects/racket/private/class-internal.rkt';need(core in entries,'Required core absent from clone baseline')
+    for name,row in entries.items():
+        if name==core and arm['purpose']=='object-hash-diagnostic':
+            value=actual[name]
+            need(row[0]=='file' and row[3]==ORIGINAL_CLASS and value[0]=='file' and value[1]==row[1] and value[3]==DIAGNOSTIC_CLASS,'Exact one-file diagnostic overlay required')
+        else:need(actual[name]==row,'Unexpected overlay input change: '+name)
+    arm['immutable_before']=after
+    return True
+
+def old_product(name,metadata):
+    return name.endswith(('.zo','.dep')) or name in metadata or ('compiled' in P(name).parts and name.endswith('.rktd'))
+
+def quarantine(arm,persist=lambda state:None):
+    need('quarantine_state' not in arm,'Quarantine may be attempted only once')
+    state={'schema':'object-hash-quarantine/v1','phase':'in-progress','moves':[]};arm['quarantine_state']=state
+    persist({'event':'phase','phase':state['phase']}) # Durable intent precedes each move.
     c=existing(arm['runtime']);dest=existing(arm['quarantine']);need(not any(dest.iterdir()),'Fresh quarantine required')
-    rows=[]
-    # All old products in any package tree are covered, not merely collects.
+    need(not any(P(arm['compiled']).iterdir()),'Rebuilt root was not initially empty')
+    metadata={str(P(path).relative_to(c)) for path in arm.get('metadata_paths',[])}
     for p in sorted(c.rglob('*')):
         if p.is_symlink():
             need(c in p.resolve(strict=True).parents,'Old product link outside clone')
+            need(not old_product(str(p.relative_to(c)),metadata),'Linked old product refused')
             continue
         if not p.is_file():continue
-        compiled='compiled' in p.relative_to(c).parts
-        if p.suffix in ('.zo','.dep') or str(p) in arm.get('metadata_paths',[]) or (compiled and p.suffix=='.rktd'):
-            inside(p,c);s=p.stat();need(s.st_nlink==1,'Shared old product refused')
-            target=dest/p.relative_to(c);target.parent.mkdir(parents=True,exist_ok=True)
-            rows.append({'path':str(p),'quarantine':str(target),'bytes':s.st_size,'sha256':sha(p),'device':s.st_dev,'inode':s.st_ino})
-            p.rename(target)
+        relative=str(p.relative_to(c));compiled='compiled' in P(relative).parts
+        if old_product(relative,metadata):
+            inside(p,c);st=p.stat();need(st.st_nlink==1,'Shared old product refused')
+            target=dest/p.relative_to(c);inside(target,dest,allow_missing=True)
+            row={'path':str(p),'quarantine':str(target),'bytes':st.st_size,'sha256':sha(p),'device':st.st_dev,'inode':st.st_ino,'before':['file',stat.S_IMODE(st.st_mode),st.st_size,sha(p)],'state':'intent'}
+            state['moves'].append(row);persist({'event':'intent','move':dict(row)})
+            target.parent.mkdir(parents=True,exist_ok=True);p.rename(target)
+            row['state']='moved';persist({'event':'moved','path':row['path']})
         elif compiled and p.suffix in ('.so','.dylib','.dll'):
             raise ValueError('Compiled native-extension product needs explicit source/loader review: '+str(p))
-    need(not any(p.suffix in ('.zo','.dep') for p in c.rglob('*') if p.is_file()),'Reachable old bytecode survived')
-    need(not any(P(arm['compiled']).iterdir()),'Rebuilt root was not initially empty')
-    return rows
+    need(not any(p.suffix in ('.zo','.dep') for p in c.rglob('*') if p.is_file() or p.is_symlink()),'Reachable old bytecode survived')
+    state['phase']='complete';persist({'event':'phase','phase':state['phase']})
+    return state['moves']
 
 def source_unchanged(before,after,arm):
-    c=existing(arm['runtime'])
-    metadata={str(P(p).relative_to(c)) for p in arm.get('metadata_paths',[]) if c in P(p).parents}
+    c=existing(arm['runtime']);dest=existing(arm['quarantine'])
+    need(before['root']==after['root']==str(c),'Clone witness root mismatch')
+    state=arm.get('quarantine_state',{'phase':'pre-quarantine','moves':[]})
+    phase=state['phase'];need(phase in ('pre-quarantine','in-progress','complete'),'Unknown quarantine witness phase')
+    if phase=='pre-quarantine':
+        need(before==after,'Pre-quarantine clone differs from its exact baseline')
+        need(not state['moves'] and not any(dest.iterdir()),'Unexpected pre-quarantine output')
+        need(not any(P(arm['compiled']).iterdir()),'Unexpected pre-build compiled output')
+        return True
+    if phase=='in-progress':need(not any(P(arm['compiled']).iterdir()),'Unexpected partial-quarantine compiled output')
+    metadata={str(inside(P(path),c,allow_missing=True).relative_to(c)) for path in arm.get('metadata_paths',[])}
+    moved=set();recorded=set();targets=set()
+    for row in state['moves']:
+        source=inside(P(row['path']),c,allow_missing=True);target=inside(P(row['quarantine']),dest,allow_missing=True)
+        name=str(source.relative_to(c));need(name not in recorded,'Duplicate quarantine move');recorded.add(name)
+        need(target==dest/name and old_product(name,metadata),'Unexpected quarantine move destination/type')
+        need(row['before']==before['entries'].get(name) and row['before'][0]=='file' and row['bytes']==row['before'][2] and row['sha256']==row['before'][3],'Quarantine move does not match baseline')
+        need(row['state'] in ('intent','moved'),'Unknown quarantine move state')
+        targets.add(name)
+        if target.exists():
+            need(target.is_file() and (not source.exists() or (phase=='complete' and name in metadata and row['state']=='moved')),'Quarantine move has conflicting source/target')
+            st=target.stat();need(st.st_nlink==1 and [st.st_dev,st.st_ino]==[row['device'],row['inode']],'Quarantined inode identity changed')
+            need(['file',stat.S_IMODE(st.st_mode),st.st_size,sha(target)]==row['before'],'Quarantined bytes/mode changed')
+            moved.add(name)
+        else:need(row['state']=='intent' and after['entries'].get(name)==row['before'],'Recorded quarantine move disappeared')
+    quarantine_tree=tree(dest)['entries']
+    for name,row in quarantine_tree.items():
+        if name=='.':continue
+        if row[0]=='directory':need(any(P(name) in P(path).parents for path in targets),'Unrecorded quarantine directory')
+        else:need(name in moved and row==before['entries'][name],'Unrecorded quarantine product')
+    if phase=='complete':
+        required={name for name,row in before['entries'].items() if row[0]=='file' and old_product(name,metadata)}
+        need(recorded==moved==required,'Completed quarantine must account for every baseline product')
     def metadata_file(name,row):
         need(row[0]=='file','Metadata destination must remain a regular file: '+name)
-        p=inside(c/name,c);need(p.stat().st_nlink==1,'Metadata writable inode sharing refused: '+name)
+        path=inside(c/name,c);need(path.stat().st_nlink==1,'Metadata writable inode sharing refused: '+name)
     for name,row in before['entries'].items():
-        if name in metadata:
+        if phase=='complete' and name in metadata:
             if name in after['entries']:metadata_file(name,after['entries'][name])
             continue
-        if row[0]=='file' and (name.endswith(('.zo','.dep')) or ('/compiled/' in '/'+name and name.endswith('.rktd'))):continue
+        if name in moved:need(name not in after['entries'],'Quarantined input reappeared: '+name);continue
         need(after['entries'].get(name)==row,'Installed immutable input changed: '+name)
     for name,row in after['entries'].items():
-        if row[0]=='file' and name.endswith(('.zo','.dep')):raise ValueError('Module bytecode outside sole rebuilt root: '+name)
+        if phase=='complete' and name.endswith(('.zo','.dep')) and row[0]!='directory':raise ValueError('Module bytecode outside sole rebuilt root: '+name)
         if name not in before['entries']:
-            if row[0]=='directory':
-                need(any(P(name) in P(path).parents for path in metadata),'Directory output outside inventory-declared metadata ancestors: '+name)
+            need(phase=='complete','Unexpected output during partial quarantine: '+name)
+            if row[0]=='directory':need(any(P(name) in P(path).parents for path in metadata),'Directory output outside inventory-declared metadata ancestors: '+name)
             else:need(name in metadata,'Output outside inventory-declared metadata path: '+name);metadata_file(name,row)
     return True
 
@@ -200,6 +252,16 @@ def config_path(raw,canonical,roots):
     inside(canonical,root,allow_missing=True)
     return canonical
 
+def config_identity(raw,roots,*,allow_missing=True,directory=False):
+    need(type(raw) is str and bool(raw),'Config path string required')
+    canonical=P(os.path.normpath(raw))
+    result=config_path(raw,canonical,roots)
+    owners=[root for root in roots if result==root or root in result.parents]
+    need(len(owners)==1,'Config path owner mismatch')
+    inside(result,owners[0],allow_missing=allow_missing)
+    if directory:need(result.is_dir(),'Required config directory missing')
+    return result
+
 def validate_config(value,arm,p):
     need(value.get('schema')=='object-hash-config/v1','Effective config schema')
     c=existing(arm['runtime']);q=existing(arm['package']);w=existing(arm['work']);k=existing(arm['compiled']);h=existing(w/'ci');p=existing(p)
@@ -210,12 +272,11 @@ def validate_config(value,arm,p):
     resolved=value.get('resolved_class_source',{});target=c/'collects/racket/private/class-internal.rkt'
     expected=ORIGINAL_CLASS if arm['purpose']=='object-hash-stock' else DIAGNOSTIC_CLASS
     need(resolved.get('path')==str(target) and resolved.get('sha256')==expected and sha(target)==expected,'Actual class resolution/pin mismatch')
-    roots=value.get('collections');need(type(roots) is list and roots and str(c/'collects') in roots,'Complete main/extra collection paths required')
-    for root in roots:inside(P(root),c)
+    roots=value.get('collections');need(type(roots) is list and roots,'Complete main/extra collection paths required')
+    roots=[str(config_identity(root,(c,),allow_missing=False,directory=True)) for root in roots]
+    need(str(c/'collects') in roots,'Complete main/extra collection paths required')
     def owned(path,allow_missing=True):
-        path=P(path)
-        choices=[root for root in (c,p,k) if path==root or root in path.parents]
-        need(len(choices)==1,'Config/source/link/write target outside owned roots: '+str(path));inside(path,choices[0],allow_missing=allow_missing)
+        return config_identity(path,(c,p,k),allow_missing=allow_missing)
     need(type(value.get('paths')) is list and value['paths'],'Effective path inventory required')
     for row in value['paths']:
         need(row.get('role') in ('source','config','link','metadata','library','write'),'Path classification')
@@ -226,12 +287,13 @@ def validate_config(value,arm,p):
         if row['kind']=='file':owned(row['path'])
         elif row['kind']=='table':
             for entry in row['entries']:
-                for path in entry['paths']:inside(P(path),c)
+                for path in entry['paths']:config_identity(path,(c,))
         else:need(row['kind']=='splice','Unknown collection link kind')
     for row in value.get('links',[]):
         owned(row['path'])
-        for link in row['ordinary']:inside(P(link['path']),c)
-        for path in row['roots']:inside(P(path),c)
+        for link in row['ordinary']:config_identity(link['path'],(c,))
+        for path in row['roots']:config_identity(path,(c,))
+        for entry in row.get('all_entries',[]):config_identity(entry['path'],(c,))
     for row in value.get('config_files',[]):owned(row['path'])
     return roots
 

@@ -1,8 +1,8 @@
 # Physical editor object-hash eligibility CI draft
 
 Diagnostic only. No fast path or optimization is implemented, and no timing,
-allocation-byte, RSS or candidate-adoption claim is authorized. Native execution
-is unrun. The exact adapter composition is source-reviewed and its portable
+allocation-byte, RSS or candidate-adoption claim is authorized. This adapter repair has not run natively. The preceding native attempt stopped
+after read-only configuration inventory, before any core rebuild. The exact adapter composition is source-reviewed and its portable
 release gates pass. `OBJECT-HASH-REVIEW-GATE.json` records that bounded review;
 it is not a native success claim or independent authorization to publish/run.
 The eligibility-only scope deliberately leaves arbitrary child-place dynamics
@@ -67,6 +67,25 @@ Every source/config/link/library/metadata/write destination must stay within the
 owned clone or fresh profile/cache. Unknown config keys fail closed. Initial
 inventory does not force PLTCOLLECTS and therefore does not hide extra installed
 collection roots; later processes inherit the complete validated list.
+
+Directory spellings in the raw inventory remain unchanged as evidence. Only
+config collection/link path comparisons normalize trailing separators and safe
+parent components, after checking each original component for links and escape.
+The validated collection order and extra roots are preserved. Root identities,
+sole-cache cardinality and the class source/hash checks remain exact.
+
+Each clone has an initial full-runtime baseline, including the arm that has not
+started preparation. The after-overlay baseline is accepted only after proving
+the exact permitted class-file change and equality of every other entry. Before
+quarantine, final runtime equality is exact, including original bytecode and
+metadata. Quarantine records an fsynced phase/intent/completion JSONL journal;
+partial failures preserve every record plus the final in-memory move state.
+During partial quarantine, only recorded moves may differ, with exact target
+bytes/mode/inode validation; no metadata rewrite is allowed. Once quarantine
+completes, declared metadata rewrites are permitted, while installed bytecode
+outside the sole rebuilt root remains forbidden. Missing, changed or unrecorded
+quarantine products fail the witness. An earlier failed phase remains failed
+even when the corresponding final preservation witness succeeds.
 
 Quarantine moves every copied .zo/.dep and compiled .rktd metadata cache, plus
 info-cache.rktd, from C to W/quarantine. Compiled native-extension products require
@@ -219,3 +238,31 @@ fixtures canonicalize centrally; explicit alias/escape refusal tests remain.
 Case-fold duplicate inventory cases are simulated rather than creating names that
 cannot coexist on a default Mac filesystem. Portable tests do not prove Racket
 syntax, bootstrapping, relocation, live private APIs or native GUI behavior.
+
+## Configuration/witness repair provenance
+
+The prior native configuration receipt is 399,864 exact bytes with SHA-256
+`cec4dee6e99dd034935f1be2b76be7bd5db0adf2367c21250d9f5ab096c2bc1d`.
+It contains 931 path rows, a trailing-separator main collection directory, and
+raw parent-relative link-file paths. A complete relocated fixture replay preserves
+all receipt fields and spellings while replacing only the arm-root prefix; it
+passes the repaired guard. Portable regressions cover those representations,
+link/escape refusals, unprocessed arms, failed inventory, interrupted quarantine,
+metadata timing, completed-quarantine build failure, and preserved final original
+runtime evidence. No frozen source, native helper, timing bound or workflow byte
+changes are part of this adapter-only repair.
+
+The full 931-row native-receipt replay is a separate local provenance check,
+not a required CI fixture or a dependency on a sibling results directory. The
+published portable suite uses self-contained synthetic fixtures preserving the
+observed directory/link representations and refusal cases.
+
+The supplemental `test-object-hash-adapter.py --estimate-quarantine` command adds
+8,192 synthetic quarantine moves per arm to the prior transport model: full
+intent/completion journals, both final-state copies and every removal-witness
+entry. All 79 files (88,376,969 raw bytes) round-trip exactly in 3,105,936 XZ bytes
+and 4,157,640 emitted bytes. These counts are synthetic, not observed native
+product counts or a guarantee that the real run fits. Per-move fsyncs consume the existing local preparation allowance; their native
+filesystem cost is unmeasured. No native bound increases.
+The unchanged 4 MiB compressed cap reports incomplete evidence on overflow and
+never drops journal rows or falls back to unbounded raw output.

@@ -111,12 +111,162 @@ class PathAndCompileTests(TempCase):
         a=self.arm();c=pathlib.Path(a['runtime']);target=c/'collects/info-cache.rktd';a['metadata_paths']=[str(target)];before=C.tree(c);outside=self.root/'outside-data';outside.write_bytes(b'outside');target.symlink_to(outside)
         with self.assertRaises(ValueError):C.source_unchanged(before,C.tree(c),a)
     def test_declared_physical_metadata_update_is_allowed(self):
-        a=self.arm();c=pathlib.Path(a['runtime']);target=c/'collects/info-cache.rktd';a['metadata_paths']=[str(target)];target.write_bytes(b'old');before=C.tree(c);target.write_bytes(b'new');self.assertTrue(C.source_unchanged(before,C.tree(c),a))
+        a=self.arm();c=pathlib.Path(a['runtime']);target=c/'collects/info-cache.rktd';a['metadata_paths']=[str(target)];target.write_bytes(b'old');before=C.tree(c);C.quarantine(a);target.write_bytes(b'new');self.assertTrue(C.source_unchanged(before,C.tree(c),a))
     def test_new_installed_directory_outside_metadata_ancestors_refused(self):
         a=self.arm();c=pathlib.Path(a['runtime']);before=C.tree(c);(c/'bin/unexpected').mkdir()
         with self.assertRaises(ValueError):C.source_unchanged(before,C.tree(c),a)
     def test_original_tree_detects_modes_links_bytes(self):
         (self.root/'f').write_text('x');before=C.tree(self.root);(self.root/'f').chmod(0o600);self.assertNotEqual(before,C.tree(self.root))
+class ConfigRepresentationTests(TempCase):
+    def fixture(self):
+        a=self.arm();c=pathlib.Path(a['runtime']);p=C.profile(a,'profile-inventory');w=pathlib.Path(a['work'])
+        target=c/'collects/racket/private/class-internal.rkt';target.parent.mkdir(parents=True);shutil.copyfile(EXP/'vendor/class-internal.rkt',target)
+        (c/'share/pkgs/base').mkdir(parents=True);(c/'share/links.rktd').write_text('()')
+        raw=str(c/'collects/../share/links.rktd');root=str(c/'share/pkgs/base')
+        v={'schema':'object-hash-config/v1','runtime_root':str(c),'probe_root':a['package'],'helper_root':str(w/'ci'),'compiled_root':a['compiled'],'profile_root':str(p),'compiled_roots':[a['compiled']],'compiled_subdirs':[],'unclassified_config':[],
+           'resolved_class_source':{'path':str(target),'sha256':C.ORIGINAL_CLASS},'collections':[str(c/'collects')+'/'],
+           'paths':[{'label':'find-collects-dir','role':'source','path':str(c/'collects'),'raw_path':str(c/'collects')+'/'},{'label':'links-file','role':'link','path':str(c/'share/links.rktd'),'raw_path':raw}],
+           'collection_links':[{'kind':'splice'},{'kind':'file','path':raw}],
+           'links':[{'path':raw,'ordinary':[{'name':'base','path':root}],'roots':[root],'all_entries':[{'path':str(c/'collects/../share/pkgs/base')}]},{'path':str(p/'addon/9.3/links.rktd'),'ordinary':[],'roots':[],'all_entries':[]}],
+           'config_files':[{'path':str(c/'etc/config.rktd')},{'path':str(p/'addon/etc/config.rktd')}]}
+        return a,p,v
+    def test_observed_trailing_collects_and_parent_relative_links(self):
+        a,p,v=self.fixture();original=copy.deepcopy(v);self.assertEqual(C.validate_config(v,a,p),[str(pathlib.Path(a['runtime'])/'collects')]);self.assertEqual(v,original)
+    def test_canonical_config_shape_still_passes(self):
+        a,p,v=self.fixture();v['collections'][0]=v['collections'][0].rstrip('/');v['collection_links'][1]['path']=str(pathlib.Path(a['runtime'])/'share/links.rktd');v['links'][0]['path']=v['collection_links'][1]['path'];self.assertTrue(C.validate_config(v,a,p))
+    def test_extra_collection_order_preserved(self):
+        a,p,v=self.fixture();extra=pathlib.Path(a['runtime'])/'extra';extra.mkdir();v['collections']=[str(extra)+'/',v['collections'][0]];self.assertEqual(C.validate_config(v,a,p),[str(extra),str(pathlib.Path(a['runtime'])/'collects')])
+    def test_safe_collection_parent_spelling(self):
+        a,p,v=self.fixture();v['collections']=[str(pathlib.Path(a['runtime'])/'share/../collects')+'/'];self.assertTrue(C.validate_config(v,a,p))
+    def test_collection_link_table_safe_spelling(self):
+        a,p,v=self.fixture();v['collection_links'].append({'kind':'table','entries':[{'paths':[str(pathlib.Path(a['runtime'])/'collects/../share/pkgs/base')]}]});self.assertTrue(C.validate_config(v,a,p))
+    def test_collection_escape_then_reentry_refused(self):
+        a,p,v=self.fixture();c=pathlib.Path(a['runtime']);v['collections']=[str(c/'../runtime/collects')]
+        with self.assertRaises(ValueError):C.validate_config(v,a,p)
+    def test_internal_link_parent_cancellation_refused(self):
+        a,p,v=self.fixture();c=pathlib.Path(a['runtime']);(c/'alias').symlink_to(c/'share',target_is_directory=True);v['collection_links'][1]['path']=str(c/'alias/../share/links.rktd')
+        with self.assertRaises(ValueError):C.validate_config(v,a,p)
+    def test_external_alias_into_owned_root_refused(self):
+        a,p,v=self.fixture();alias=self.root/'alias-runtime';alias.symlink_to(a['runtime'],target_is_directory=True);v['collections']=[str(alias/'collects')]
+        with self.assertRaises(ValueError):C.validate_config(v,a,p)
+    def test_dangling_link_destination_refused(self):
+        a,p,v=self.fixture();target=p/'addon/9.3';target.symlink_to(p/'missing',target_is_directory=True)
+        with self.assertRaises(ValueError):C.validate_config(v,a,p)
+    def test_every_raw_link_surface_rejects_outside_root(self):
+        a,p,v=self.fixture()
+        for surface in ('collection-file','table','link-file','ordinary','root','all-entry','config-file'):
+            x=copy.deepcopy(v);outside=str(self.root/'outside')
+            if surface=='collection-file':x['collection_links'][1]['path']=outside
+            elif surface=='table':x['collection_links']=[{'kind':'table','entries':[{'paths':[outside]}]}]
+            elif surface=='link-file':x['links'][0]['path']=outside
+            elif surface=='ordinary':x['links'][0]['ordinary'][0]['path']=outside
+            elif surface=='root':x['links'][0]['roots']=[outside]
+            elif surface=='all-entry':x['links'][0]['all_entries'][0]['path']=outside
+            else:x['config_files'][0]['path']=outside
+            with self.subTest(surface=surface),self.assertRaises(ValueError):C.validate_config(x,a,p)
+    def test_exact_roots_sole_cache_and_class_pin_stay_strict(self):
+        a,p,v=self.fixture()
+        for key in ('runtime_root','compiled_roots','class-sha'):
+            x=copy.deepcopy(v)
+            if key=='runtime_root':x[key]+='/'
+            elif key=='compiled_roots':x[key].append('same')
+            else:x['resolved_class_source']['sha256']='0'*64
+            with self.subTest(key=key),self.assertRaises(ValueError):C.validate_config(x,a,p)
+
+class QuarantinePhaseTests(TempCase):
+    def fixture(self):
+        a=self.arm();c=pathlib.Path(a['runtime']);d=c/'collects/acks/compiled';d.mkdir(parents=True)
+        for name in ('acks_rkt.dep','acks_rkt.zo'):(d/name).write_bytes(name.encode())
+        a['initial_before']=C.tree(c);return a,c,a['initial_before']
+    def test_unprocessed_clone_and_failed_config_keep_exact_old_products(self):
+        a,c,b=self.fixture();self.assertTrue(C.source_unchanged(b,C.tree(c),a));self.assertTrue((c/'collects/acks/compiled/acks_rkt.dep').exists())
+    def test_unprocessed_clone_mutation_is_not_skipped(self):
+        a,c,b=self.fixture();(c/'bin/racket').write_text('changed')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_pre_quarantine_metadata_change_is_refused(self):
+        a,c,b=self.fixture();p=c/'collects/cache.rktd';a['metadata_paths']=[str(p)];p.write_text('new')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_pre_quarantine_removed_bytecode_is_refused(self):
+        a,c,b=self.fixture();(c/'collects/acks/compiled/acks_rkt.dep').unlink()
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_phase_record_failure_before_first_move_retains_baseline(self):
+        a,c,b=self.fixture()
+        with self.assertRaises(OSError):C.quarantine(a,lambda event:(_ for _ in ()).throw(OSError('journal failed')))
+        self.assertEqual(a['quarantine_state']['phase'],'in-progress');self.assertTrue(C.source_unchanged(b,C.tree(c),a))
+    def test_intent_record_failure_does_not_move_source(self):
+        a,c,b=self.fixture()
+        def persist(event):
+            if event['event']=='intent':raise OSError('intent persistence failed')
+        with self.assertRaises(OSError):C.quarantine(a,persist)
+        self.assertEqual(len(a['quarantine_state']['moves']),1);self.assertTrue(C.source_unchanged(b,C.tree(c),a));self.assertEqual(C.tree(c),b)
+    def test_rename_failure_retains_recorded_intent(self):
+        a,c,b=self.fixture()
+        with patch.object(pathlib.Path,'rename',side_effect=OSError('rename failed')),self.assertRaises(OSError):C.quarantine(a)
+        self.assertEqual(a['quarantine_state']['moves'][0]['state'],'intent');self.assertTrue(C.source_unchanged(b,C.tree(c),a))
+    def test_partial_move_then_failure_preserves_remaining_products(self):
+        a,c,b=self.fixture()
+        def persist(event):
+            if event['event']=='moved':raise OSError('completion record failed')
+        with self.assertRaises(OSError):C.quarantine(a,persist)
+        self.assertEqual(a['quarantine_state']['phase'],'in-progress');self.assertTrue(C.source_unchanged(b,C.tree(c),a));self.assertEqual(len(a['quarantine_state']['moves']),1)
+    def test_rename_completed_before_exception_is_reconciled_from_intent(self):
+        a,c,b=self.fixture();rename=pathlib.Path.rename
+        def uncertain(path,target):rename(path,target);raise OSError('rename result uncertain')
+        with patch.object(pathlib.Path,'rename',uncertain),self.assertRaises(OSError):C.quarantine(a)
+        self.assertEqual(a['quarantine_state']['moves'][0]['state'],'intent');self.assertTrue(C.source_unchanged(b,C.tree(c),a))
+    def test_partial_unrecorded_deletion_refused(self):
+        a,c,b=self.fixture()
+        with patch.object(pathlib.Path,'rename',side_effect=OSError('rename failed')),self.assertRaises(OSError):C.quarantine(a)
+        (c/'collects/acks/compiled/acks_rkt.zo').unlink()
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_quarantined_bytes_changed_refused(self):
+        a,c,b=self.fixture();C.quarantine(a);pathlib.Path(a['quarantine_state']['moves'][0]['quarantine']).write_bytes(b'changed')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_unrecorded_quarantine_product_refused(self):
+        a,c,b=self.fixture();C.quarantine(a);(pathlib.Path(a['quarantine'])/'unexpected').write_bytes(b'new')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_partial_unmoved_metadata_mutation_refused(self):
+        a,c,b=self.fixture();target=c/'collects/z-info-cache.rktd';target.write_bytes(b'old');a['metadata_paths']=[str(target)];b=C.tree(c)
+        def persist(event):
+            if event['event']=='moved':raise OSError('stop after first move')
+        with self.assertRaises(OSError):C.quarantine(a,persist)
+        target.write_bytes(b'changed')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_partial_moved_metadata_reappearance_refused(self):
+        a,c,b=self.fixture();target=c/'collects/a-info-cache.rktd';target.write_bytes(b'old');a['metadata_paths']=[str(target)];b=C.tree(c)
+        def persist(event):
+            if event['event']=='moved':raise OSError('stop after first move')
+        with self.assertRaises(OSError):C.quarantine(a,persist)
+        target.write_bytes(b'regenerated')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_partial_new_declared_metadata_refused(self):
+        a,c,b=self.fixture();target=c/'collects/new-cache.rktd';a['metadata_paths']=[str(target)]
+        with patch.object(pathlib.Path,'rename',side_effect=OSError('rename failed')),self.assertRaises(OSError):C.quarantine(a)
+        target.write_bytes(b'new')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_complete_quarantine_and_build_failure_use_post_rule(self):
+        a,c,b=self.fixture();events=[];C.quarantine(a,lambda event:events.append(copy.deepcopy(event)));self.assertTrue(C.source_unchanged(b,C.tree(c),a));self.assertEqual([e['event'] for e in events],['phase','intent','moved','intent','moved','phase']);self.assertEqual(a['quarantine_state']['phase'],'complete')
+        (c/'collects/acks/compiled/acks_rkt.zo').write_bytes(b'reappeared')
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_baseline_metadata_disappearance_before_quarantine_cannot_hide(self):
+        a,c,b=self.fixture();target=c/'collects/info-cache.rktd';target.write_bytes(b'old');a['metadata_paths']=[str(target)];b=C.tree(c);target.unlink();C.quarantine(a)
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_complete_missing_quarantine_product_refused(self):
+        a,c,b=self.fixture();C.quarantine(a);pathlib.Path(a['quarantine_state']['moves'][0]['quarantine']).unlink()
+        with self.assertRaises(ValueError):C.source_unchanged(b,C.tree(c),a)
+    def test_final_phase_persistence_failure_keeps_complete_move_proof(self):
+        a,c,b=self.fixture()
+        def persist(event):
+            if event.get('phase')=='complete':raise OSError('final phase persistence failed')
+        with self.assertRaises(OSError):C.quarantine(a,persist)
+        self.assertEqual(a['quarantine_state']['phase'],'complete');self.assertTrue(C.source_unchanged(b,C.tree(c),a))
+    def test_exact_overlay_checked_before_new_baseline(self):
+        a,c,b=self.fixture();target=c/'collects/racket/private/class-internal.rkt';target.parent.mkdir(parents=True);shutil.copyfile(EXP/'vendor/class-internal.rkt',target);a['initial_before']=C.tree(c);a['purpose']='object-hash-diagnostic';target.write_bytes((EXP/'generated/class-internal.rkt').read_bytes());self.assertTrue(C.accept_overlay(a,C.tree(c)));self.assertTrue(C.source_unchanged(a['immutable_before'],C.tree(c),a))
+    def test_overlay_additional_mutation_refused(self):
+        a,c,b=self.fixture();(c/'bin/racket').write_text('changed')
+        with self.assertRaises(ValueError):C.accept_overlay(a,C.tree(c))
+        self.assertNotIn('immutable_before',a)
+
 class SupervisorTests(TempCase):
     def test_uncertain_spawn_retains_durable_lease(self):
         s=S.Supervisor(self.root/'reports')
@@ -249,6 +399,54 @@ class FinalWitnessTests(TempCase):
         code,reports,calls=self.run_verify(emission_error=True);self.assertEqual(code,1);self.assertGreaterEqual(len(calls),2);self.assertTrue(json.loads((reports/'workflow-final-transport/summary.json').read_text())['transport_errors'])
     def test_successful_final_witness_has_no_native_launch(self):
         code,reports,calls=self.run_verify();self.assertEqual(code,0);self.assertTrue(json.loads((reports/'workflow-final.json').read_text())['passed'])
+class RunFailureStageTests(TempCase):
+    def run_failure(self,stage,mutate_unprocessed=False,transport_failure=False):
+        r=load('object_hash_failure_runner','run-object-hash.py');r.ROOT=self.root/'checkout';r.ROOT.mkdir()
+        runtime=self.root/'install/racket';(runtime/'bin').mkdir(parents=True);(runtime/'etc').mkdir();(runtime/'bin/racket').write_text('fixture')
+        target=runtime/'collects/racket/private/class-internal.rkt';target.parent.mkdir(parents=True);shutil.copyfile(EXP/'vendor/class-internal.rkt',target)
+        compiled=runtime/'collects/acks/compiled';compiled.mkdir(parents=True)
+        for name in ('acks_rkt.dep','acks_rkt.zo'):(compiled/name).write_bytes(name.encode())
+        original=C.tree(runtime);calls=[]
+        def command(sup,name,argv,env,cwd,timeout,host=False):
+            calls.append(name);out=sup.reports/name;out.mkdir();passed=not(stage=='build' and name=='stock-core')
+            row={'passed':passed,'returncode':0 if passed else 1,'cleanup_verified':True};(out/'stdout.bin').write_text(json.dumps({'paths':[]}));(out/'stderr.bin').write_bytes(b'');(out/'process.json').write_text(json.dumps(row))
+            if mutate_unprocessed and name=='stock-config':(self.root/'object-hash-diagnostic/runtime/bin/racket').write_text('unprocessed mutation')
+            return row,out
+        def config(v,a,p):
+            if stage=='config':raise ValueError('simulated config rejection')
+            return [str(pathlib.Path(a['runtime'])/'collects')]
+        quarantine=r.contract.quarantine
+        def partial(arm,persist):
+            def event(row):
+                persist(row)
+                if row['event']=='moved':raise OSError('simulated interrupted quarantine')
+            return quarantine(arm,event)
+        env={'GITHUB_ACTIONS':'true','GITHUB_REPOSITORY':'alikatgh/openracket','GITHUB_REF':'refs/heads/prototype/retained-drracket','RUNNER_TEMP':str(self.root),'OPENRACKET_CI_STOCK_RACKET':str(runtime/'bin/racket')}
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.dict(os.environ,env,clear=True));stack.enter_context(patch.object(sys,'argv',['run-object-hash.py','run']));stack.enter_context(patch.object(r.platform,'system',lambda:'Darwin'));stack.enter_context(patch.object(r.supervisor.Supervisor,'run',command));stack.enter_context(patch.object(r.contract,'validate_config',config));stack.enter_context(patch.object(r.transport_module,'emit_bundle',return_value={'complete':True}));stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
+            if stage=='partial':stack.enter_context(patch.object(r.contract,'quarantine',partial))
+            if transport_failure:stack.enter_context(patch.object(r.transport_module,'build_bundle',side_effect=ValueError('Compressed evidence exceeds unchanged cap')))
+            code=r.main()
+        self.assertEqual(code,1);self.assertEqual(C.tree(runtime),original)
+        reports=r.ROOT/'reports/object-hash-ci';results=json.loads((reports/'results.json').read_text());self.assertFalse(results['passed']);self.assertTrue(next(x for x in results['checks'] if x['name']=='Full original runtime witness')['passed'])
+        self.assertEqual(calls,['portable-source-adapter-transport','stock-config']+(['stock-core'] if stage=='build' else []))
+        for arm in ('stock','diagnostic'):
+            self.assertTrue((reports/(arm+'-after-execution-witness.json')).exists());self.assertTrue((reports/(arm+'-compiled-after-execution-witness.json')).exists())
+        return reports,results
+    def test_config_failure_checks_both_exact_pre_quarantine_baselines(self):
+        reports,results=self.run_failure('config');checks={x['name']:x for x in results['checks']}
+        self.assertTrue(checks['stock immutable source/config/link witness']['passed']);self.assertTrue(checks['diagnostic immutable source/config/link witness']['passed']);self.assertEqual(checks['diagnostic immutable source/config/link witness']['details']['baseline'],'initial-clone')
+        self.assertEqual(json.loads((reports/'stock-quarantine-final.json').read_text())['phase'],'pre-quarantine')
+    def test_unprocessed_arm_mutation_marks_final_gate_red(self):
+        reports,results=self.run_failure('config',True);self.assertTrue(any(x['name']=='Clone/source witness' and not x['passed'] for x in results['checks']));self.assertFalse(any(x['name']=='diagnostic immutable source/config/link witness' and x['passed'] for x in results['checks']))
+    def test_partial_quarantine_failure_keeps_raw_journal_and_moves(self):
+        reports,results=self.run_failure('partial');state=json.loads((reports/'stock-quarantine-final.json').read_text());self.assertEqual(state['phase'],'in-progress');self.assertEqual(len(state['moves']),1);events=[json.loads(line) for line in (reports/'stock-quarantine-events.jsonl').read_text().splitlines()];self.assertEqual([e['event'] for e in events],['phase','intent','moved']);self.assertTrue(next(x for x in results['checks'] if x['name']=='stock immutable source/config/link witness')['passed'])
+    def test_journal_transport_refusal_preserves_evidence_and_incomplete_status(self):
+        reports,results=self.run_failure('partial',transport_failure=True)
+        failure=json.loads((reports/'transport-failure.json').read_text());self.assertTrue(failure['all_original_evidence_retained_locally']);self.assertTrue(failure['interpretation_blocked']);self.assertFalse(json.loads((reports/'final-status.json').read_text())['transport_complete']);self.assertTrue((reports/'stock-quarantine-events.jsonl').is_file());self.assertTrue((reports/'stock-quarantine-final.json').is_file())
+    def test_core_failure_uses_completed_quarantine_witness(self):
+        reports,results=self.run_failure('build');state=json.loads((reports/'stock-quarantine-final.json').read_text());self.assertEqual(state['phase'],'complete');self.assertEqual(len(state['moves']),2);self.assertTrue(next(x for x in results['checks'] if x['name']=='stock immutable source/config/link witness')['passed'])
+
 class AuditAndBudgetTests(unittest.TestCase):
     def test_audit_rejection_cannot_be_swallowed(self):
         raw=b'OBJECT_HASH_LOAD_AUDIT '+json.dumps({'schema':'object-hash-load-audit/v1','event':'rejected','data':{}}).encode()+b'\n'
@@ -272,6 +470,31 @@ class AuditAndBudgetTests(unittest.TestCase):
         for directory in [ROOT.parent,HERE,*[p for p in ROOT.rglob('*') if p.is_dir()]]:
             names=[p.name.casefold() for p in directory.iterdir()];self.assertEqual(len(names),len(set(names)),str(directory))
 
+def estimate_quarantine_transport():
+    # Extend the existing synthetic model without changing the runtime codec.
+    # Counts/hashes are synthetic; 8,192 moves per arm are not native observations.
+    t=load('object_hash_transport_estimate','test-object-hash-transport.py');build=t.T.build_bundle
+    def with_journals(paths,reports,output):
+        def put(name,data):
+            path=reports/name;path.write_bytes(data);paths.append(path)
+        for arm in ('stock','diagnostic'):
+            base='/synthetic/object-hash-'+arm;rows=[];events=[{'event':'phase','phase':'in-progress'}];changed=[]
+            for index in range(8192):
+                relative='share/pkgs/synthetic-'+str(index//2)+'/compiled/module_rkt'+('.zo' if index%2 else '.dep')
+                digest=hashlib.sha256((arm+str(index)).encode()).hexdigest();before=['file',420,1024+index,digest]
+                row={'path':base+'/runtime/'+relative,'quarantine':base+'/quarantine/'+relative,'bytes':before[2],'sha256':digest,'device':1,'inode':index+1,'before':before,'state':'intent'}
+                events.extend([{'event':'intent','move':copy.deepcopy(row)},{'event':'moved','path':row['path']}]);row['state']='moved';rows.append(row);changed.append({'path':relative,'before':before,'after':None})
+            events.append({'event':'phase','phase':'complete'})
+            state={'schema':'object-hash-quarantine/v1','phase':'complete','moves':rows}
+            put(arm+'-quarantine-events.jsonl',b''.join(json.dumps(event,sort_keys=True,separators=(',',':')).encode()+b'\n' for event in events))
+            for ending in ('-quarantine.json','-quarantine-final.json'):put(arm+ending,json.dumps(state,sort_keys=True).encode()+b'\n')
+            put(arm+'-after-build-witness.json',json.dumps({'schema':'object-hash-tree-witness/v1','synthetic_only':True,'changed_count':len(changed),'changed_entries':changed},sort_keys=True).encode()+b'\n')
+        return build(paths,reports,output)
+    captured=io.StringIO()
+    with patch.object(t.T,'build_bundle',with_journals),contextlib.redirect_stdout(captured):t.estimate()
+    result=json.loads(captured.getvalue());result['quarantine_moves_per_arm']=8192;result['includes_complete_intent_completion_journals_and_final_states']=True;result['includes_all_synthetic_removed_product_witness_entries']=True
+    print(json.dumps(result,sort_keys=True))
+
 def run_all():
     commands=[[sys.executable,str(__file__),'-v'],[sys.executable,str(HERE/'test-replay-evidence.py')],[sys.executable,str(HERE/'test-object-hash-transport.py'),'-v']]
     commands += [[sys.executable,str(EXP/'scripts'/name),'--check'] for name in ('generate.py','generate_host.py','generate_native_forms.py','pins.py')]
@@ -284,4 +507,5 @@ def run_all():
     return 0
 if __name__=='__main__':
     if sys.argv[1:]==['--all']:raise SystemExit(run_all())
+    if sys.argv[1:]==['--estimate-quarantine']:estimate_quarantine_transport();raise SystemExit(0)
     unittest.main()

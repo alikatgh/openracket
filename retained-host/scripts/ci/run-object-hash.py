@@ -40,6 +40,17 @@ def main():
         previous={} if prior is None else prior['entries'];current=data['entries']
         changed=[] if prior is None else [{'path':key,'before':previous.get(key),'after':current.get(key)} for key in sorted(set(previous)|set(current)) if previous.get(key)!=current.get(key)]
         write(path.with_name(path.stem+'-witness.json'),{'schema':'object-hash-tree-witness/v1','inventory_relative_path':str(path.relative_to(reports)),'raw_bytes':path.stat().st_size,'raw_sha256':contract.sha(path),'root':data['root'],'entries':len(current),'tree_sha256':data['tree_sha256'],'comparison_tree_sha256':None if prior is None else prior['tree_sha256'],'changed_entries':changed,'changed_count':len(changed),'full_inventory_retained_locally':True})
+    def quarantine(arm,name):
+        path=reports/(name+'-quarantine-events.jsonl')
+        with path.open('xb') as journal:
+            directory_fd=os.open(path.parent,os.O_RDONLY)
+            try:os.fsync(directory_fd)
+            finally:os.close(directory_fd)
+            def persist(event):
+                journal.write((json.dumps(event,sort_keys=True,separators=(',',':'))+'\n').encode())
+                journal.flush();os.fsync(journal.fileno())
+            try:contract.quarantine(arm,persist)
+            finally:write(reports/(name+'-quarantine.json'),arm.get('quarantine_state',{'phase':'pre-quarantine','moves':[]}))
     def result(name,passed,details):
         value={'name':name,'passed':bool(passed),'details':details};rows.append(value)
         print('OPENRACKET_OBJECT_HASH_CI_RESULT '+json.dumps(value,sort_keys=True),flush=True)
@@ -89,7 +100,9 @@ def main():
         command('portable-source-adapter-transport',[sys.executable,CI/'test-object-hash-adapter.py','--all'],testenv,ROOT,120)
         for purpose in contract.PURPOSES:
             arm=contract.copy_arm(original,EXP,temp,purpose);arms.append(arm)
-            shutil.copytree(CI/'object-hash-native',pathlib.Path(arm['work'])/'ci');contract.verify_helpers(pathlib.Path(arm['work'])/'ci')
+            name='stock' if purpose=='object-hash-stock' else 'diagnostic';original_before=evidence.decode(baseline.read_bytes());write_inventory(reports/(name+'-initial.json'),arm['initial_before'],original_before)
+            contract.need(arm['initial_before']['entries']==original_before['entries'],'Initial clone differs from original baseline')
+            shutil.copytree(CI/'object-hash-native',pathlib.Path(arm['work'])/'ci');contract.verify_helpers(pathlib.Path(arm['work'])/'ci');arm['helper_before']=contract.tree(pathlib.Path(arm['work'])/'ci')
         roots=[original]
         for arm in arms:roots.extend(pathlib.Path(arm[key]) for key in ('runtime','package','compiled','profile')) ; roots.append(pathlib.Path(arm['work'])/'ci')
         write(reports/'independent-before.json',contract.independent(roots))
@@ -110,14 +123,14 @@ def main():
                 contract.need(contract.sha(target)==contract.DIAGNOSTIC_CLASS,'Exact staged diagnostic core')
                 write(reports/'diagnostic-overlay.json',{'manifest':json.loads((stage/'MANIFEST.json').read_text()),'reversal_sha256':contract.sha(stage/'original/class-internal.rkt')})
             else:contract.need(contract.sha(c/'collects/racket/private/class-internal.rkt')==contract.ORIGINAL_CLASS,'Unmodified stock class')
-            arm['immutable_before']=contract.tree(c);write_inventory(reports/(name+'-after-overlay.json'),arm['immutable_before'],before_overlay)
-            arm['helper_before']=contract.tree(h)
+            contract.accept_overlay(arm,contract.tree(c));write_inventory(reports/(name+'-after-overlay.json'),arm['immutable_before'],before_overlay)
+            contract.need(contract.tree(h)==arm['helper_before'],'Helper mutation before config inventory')
             p=contract.profile(arm,'profile-inventory');env=contract.environment(os.environ,arm,p,flag=flag)
             row,out=command(name+'-config',contract.prefix(arm,p)+['-c','-I','racket/base','-t',str(h/'config-inventory.rkt')],env,q,90)
             value=output_json(out);collections=contract.validate_config(value,arm,p);arm['collections']=collections
             arm['metadata_paths']=[row['path'] for row in value['paths'] if row['label'] in ('collection-info-domain-cache','share-info-cache')]
             write(reports/(name+'-validated-config.json'),value)
-            write(reports/(name+'-quarantine.json'),contract.quarantine(arm))
+            quarantine(arm,name)
             p=contract.profile(arm,'profile-build');arm['build_profile']=str(p)
             env=contract.environment(os.environ,arm,p,flag=flag,collections=collections)
             commands=contract.compile_commands(arm,p,h)
@@ -165,10 +178,11 @@ def main():
         # they do not start native processes or clear an uncertain launch lease.
         for arm in arms:
             try:
-                name='stock' if arm['purpose']=='object-hash-stock' else 'diagnostic';after=contract.tree(arm['runtime']);write_inventory(reports/(name+'-after-execution.json'),after,arm.get('after_build',arm.get('immutable_before')))
-                if 'immutable_before' in arm:contract.source_unchanged(arm['immutable_before'],after,arm)
-                contract.verify_frozen(arm['package'])
+                name='stock' if arm['purpose']=='object-hash-stock' else 'diagnostic';after=contract.tree(arm['runtime']);write_inventory(reports/(name+'-after-execution.json'),after,arm.get('after_build',arm.get('immutable_before',arm['initial_before'])))
+                write(reports/(name+'-quarantine-final.json'),arm.get('quarantine_state',{'phase':'pre-quarantine','moves':[]}))
                 compiled_after=contract.tree(arm['compiled']);write_inventory(reports/(name+'-compiled-after-execution.json'),compiled_after,arm.get('compiled_after_build'))
+                contract.source_unchanged(arm.get('immutable_before',arm['initial_before']),after,arm)
+                contract.verify_frozen(arm['package'])
                 for product in pathlib.Path(arm['compiled']).rglob('*'):
                     contract.inside(product,pathlib.Path(arm['compiled']))
                     if product.is_file():contract.need(product.stat().st_nlink==1,'Shared compiled output inode refused')
@@ -177,7 +191,7 @@ def main():
                     rp=pathlib.Path(arm['work'])/'prebuild-receipts.json';contract.inside(rp,pathlib.Path(arm['work']));contract.need(rp.stat().st_nlink==1 and contract.sha(rp)==arm['receipt_sha256'],'Prebuild receipt input changed')
                     contract.validate_receipts(evidence.decode(rp.read_bytes()),arm,'full')
                     write(reports/(name+'-prebuild-after.json'),{'path':str(rp),'raw_sha256':contract.sha(rp),'unchanged':True})
-                result(name+' immutable source/config/link witness',True,'Only staged diagnostic class and predeclared compiled/metadata locations may differ')
+                result(name+' immutable source/config/link witness',True,{'baseline':'after-exact-overlay' if 'immutable_before' in arm else 'initial-clone','quarantine_phase':arm.get('quarantine_state',{}).get('phase','pre-quarantine'),'recorded_moves':len(arm.get('quarantine_state',{}).get('moves',[]))})
             except BaseException:result('Clone/source witness',False,traceback.format_exc())
         try:
             final_roots=[original]

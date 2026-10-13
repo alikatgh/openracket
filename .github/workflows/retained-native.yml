@@ -1,4 +1,4 @@
-name: Light collapsed-caret contrast pair (public free runner)
+name: Physical editor object-hash eligibility diagnostic (public free runner)
 
 'on':
   push:
@@ -24,11 +24,9 @@ jobs:
       github.event.repository.visibility == 'public' &&
       github.ref == 'refs/heads/prototype/retained-drracket'
     runs-on: macos-15 # Standard free public runner only. No larger runner.
-    # Bounded worst-case stage ceilings total131min; job adds1min margin.
-    timeout-minutes: 132
+    timeout-minutes: 200
     env:
       PYTHONOPTIMIZE: ''
-      PYTHONDONTWRITEBYTECODE: '1'
     defaults:
       run:
         shell: bash
@@ -63,28 +61,22 @@ jobs:
           fetch-depth: 1
           lfs: false
           submodules: false
-      - name: Complete source and adapter suite, ordinary and real aliased TMPDIR
-        timeout-minutes: 5
-        run: python3 -B retained-host/scripts/ci/check-light-caret-release.py
       - name: Install checksum-pinned full official Racket 9.3
         id: runtime
-        timeout-minutes: 15
-        run: bash retained-host/scripts/ci/light-caret-support/install-full-racket.sh
-      - name: Original witnesses and independent exact source preparations
-        if: success() && steps.runtime.outcome == 'success'
-        timeout-minutes: 70
-        run: python3 -B retained-host/scripts/ci/run-light-caret.py prepare
-      - name: Independent original and patched Macro Stepper captures
+        timeout-minutes: 20
+        run: bash retained-host/scripts/ci/install-full-racket.sh
+      - name: Independently rebuild and check the exact object-hash diagnostic
+        id: object_hash
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 25
-        run: python3 -B retained-host/scripts/ci/run-light-caret.py cases
-      - name: Unconditional final witnesses and complete independent evidence
+        timeout-minutes: 165
+        run: python3 retained-host/scripts/ci/run-object-hash.py run
+      - name: Always verify the complete original runtime
         if: always() && steps.runtime.outcome == 'success'
-        timeout-minutes: 10
-        run: python3 -B retained-host/scripts/ci/run-light-caret.py verify
-      - name: Report conditional programmatic acceptance
+        timeout-minutes: 5
+        run: python3 retained-host/scripts/ci/run-object-hash.py verify
+      - name: Report source and native gates
         if: always()
         timeout-minutes: 1
         run: |
-          if test -f retained-host/reports/light-caret-ci/summary.md; then cat retained-host/reports/light-caret-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
-          echo 'Exact original/patched modern-light Macro Stepper pair only. Outer60-second process deadline and all inherited host waits unchanged. Reader22/compiler22 and12 separate direct typed controls per arm. Actual original PNGs require independent visual inspection for the fully visible line3 marker before rendered-state acceptance. No paid services, artifact uploads, caches, deployment, memory-limit overrides in measured profiles, or security bypass.' >> "$GITHUB_STEP_SUMMARY"
+          if test -f retained-host/reports/object-hash-ci/summary.md; then cat retained-host/reports/object-hash-ci/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'Diagnostic only: one disposable class-source overlay, independently rebuilt stock/diagnostic clones,16 synthetic cases,three genuine small Check Syntax hosts. No optimization,timing experiment,artifacts,caches,paid services or adoption.' >> "$GITHUB_STEP_SUMMARY"
