@@ -1,0 +1,70 @@
+name: Cocoa compile and native smoke (public free runner)
+'on':
+  push:
+    branches: ['prototype/retained-drracket']
+    paths: ['cocoa-native-ci/**', '.github/workflows/cocoa-native.yml']
+permissions:
+  contents: read
+concurrency:
+  group: cocoa-native-v8
+  cancel-in-progress: false
+jobs:
+  cocoa:
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'alikatgh/openracket' &&
+      github.event.repository.private == false &&
+      github.event.repository.visibility == 'public' &&
+      github.ref == 'refs/heads/prototype/retained-drracket'
+    runs-on: macos-15
+    timeout-minutes: 190
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      PYTHONOPTIMIZE: ''
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Recheck repository is public
+        timeout-minutes: 2
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        with:
+          retries: 0
+          script: |
+            const { data: repo } = await github.rest.repos.get({owner: 'alikatgh', repo: 'openracket'});
+            if (repo.full_name !== 'alikatgh/openracket' || repo.private !== false || repo.visibility !== 'public') {
+              core.setFailed('Public repository required before allocating native work.');
+            }
+      - name: Check out exact tested commit
+        timeout-minutes: 3
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Require preinstalled native Python APIs
+        timeout-minutes: 1
+        run: |
+          python3 -B -c 'import os,sys; assert sys.platform == "darwin" and sys.version_info >= (3,13); assert all(hasattr(os,x) for x in ("waitid","WNOWAIT","WEXITED")); print(sys.version)'
+      - name: Reuse reviewed checksum-pinned full official runtime installer
+        id: runtime
+        timeout-minutes: 20
+        run: |
+          printf '%s\n' 'ee69a75a01d0ca4a9523fb824f770a8b5a385b78a87d1cc0e48d26c44d9199a6  retained-host/scripts/ci/install-full-racket.sh' | shasum -a 256 -c -
+          bash retained-host/scripts/ci/install-full-racket.sh
+      - name: Compile-first then unchanged mandatory native gate
+        id: native
+        timeout-minutes: 150
+        run: python3 -B cocoa-native-ci/adapter/run_native_ci.py run --root "$RUNNER_TEMP/cocoa-native-v8"
+      - name: Always independently witness original runtime and retain exact evidence in logs
+        if: always() && steps.runtime.outcome == 'success'
+        timeout-minutes: 7
+        run: python3 -B cocoa-native-ci/adapter/run_native_ci.py finalize --root "$RUNNER_TEMP/cocoa-native-v8"
+      - name: Report exact acceptance scope
+        if: always()
+        timeout-minutes: 1
+        run: |
+          echo 'Pinned Cocoa public source inputs, separately SDK-built inventory helper. Compile/basic smoke and unchanged full native gate have distinct receipts. Any pending/failed stage stays pending/failed. Screenshot observation is deferred in this first compile-first adapter. VoiceOver, system IME, performance and DrRacket parity remain pending.' >> "$GITHUB_STEP_SUMMARY"
