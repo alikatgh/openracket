@@ -16,9 +16,12 @@ requires exact member closure, paths, modes, sizes and hashes; duplicate or
 case-folding paths, links, special files, trailing streams and extra data fail.
 All data is validated before any member is written.
 
-Application, engine, runtime helper, build and test source bytes are unchanged
-from the reviewed source baseline. One benchmark helper's purpose docstring
-has been made self-contained; its executable body is unchanged. Development
+Application, engine and runtime helper source bytes are unchanged from the
+reviewed source baseline. The process supervisor now handles Darwin session
+lookup failure for a proved owned, unreaped zombie, with focused regression
+tests and updated dependent hash pins. Its live-child and cleanup ownership
+checks remain required. One benchmark helper's purpose docstring has been made
+self-contained; its executable body is unchanged. Development
 history, prior results and local provenance are not distributed. The public
 source admission does not require or disclose an inventory of excluded files.
 

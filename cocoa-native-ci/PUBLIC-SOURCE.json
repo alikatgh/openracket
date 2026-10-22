@@ -52,7 +52,7 @@
     {
       "path": "ci/bounded.py",
       "bytes": 6090,
-      "sha256": "155c2a67088f4c58082af68379dfe66e398378c477e8885d017db89c952ed3c4",
+      "sha256": "c304fc6911fc56cd344290e49ea0d88988d708dd5db88ae707105c0eee3d1af0",
       "mode": 365
     },
     {
@@ -93,8 +93,8 @@
     },
     {
       "path": "ci/supervisor/owned_process_supervisor.py",
-      "bytes": 40110,
-      "sha256": "ab22ef55962b4e92f914ccd2b53b1df33f274a5bac944b87a7d9cd106f67c20a",
+      "bytes": 41161,
+      "sha256": "51bb09414d683f5d31b626a13643cf21805236ca94c380382992ae7e8e70287f",
       "mode": 292
     },
     {
@@ -147,8 +147,8 @@
     },
     {
       "path": "ci/supervisor/tests/test_owned_process_supervisor.py",
-      "bytes": 29229,
-      "sha256": "b946803a465c57973032232b73fbe4f228f0ae8beebf51363dbf9c6bb866bb03",
+      "bytes": 38078,
+      "sha256": "28f6b800b61f5698a060d87c426529023a9cd8848f82d9f39fb0a108a6c6da93",
       "mode": 292
     },
     {
@@ -610,7 +610,7 @@
     {
       "path": "tests/test_editor_service_overlap.py",
       "bytes": 51123,
-      "sha256": "0f9432cfdb2c24d1915b5f9c4412125894b9f038b21b1033dc3bd800a57e0009",
+      "sha256": "006431524e6434049c2c7a1f3b2ed5ceeec50f2767e8c2dff424159d276ea014",
       "mode": 292
     },
     {
@@ -700,7 +700,7 @@
     {
       "path": "tests/test_source_contract.py",
       "bytes": 2610,
-      "sha256": "f974cb849e7bd3d3a6696a26ffda1cfd97e0a2cf3c1bcb176a96fea24a34ae43",
+      "sha256": "a6ef3bdd387b31840733bab9feee53bebc3e9e79dd7c8076b2f46f72676188ca",
       "mode": 292
     },
     {
