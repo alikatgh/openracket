@@ -12,8 +12,8 @@ BASE=HERE.parent
 SOURCE=BASE/'source'
 sys.path.insert(0,str(HERE))
 from bootstrap import bootstrap, durable, sha, physical
-SUPERVISOR_SHA='51bb09414d683f5d31b626a13643cf21805236ca94c380382992ae7e8e70287f'
-PUBLIC_INPUT_PINS={'PUBLIC-SOURCE.json': '10a0b5f98bf766fc459339c8a11bd8ef44019c0d165b4a60098ec6bc161d32f3', 'SOURCE-BUNDLE.json': '2865996d2cd911edc8842dc15e67c1745cf8fcd49a954d5c5c75b690c73d438a', 'SOURCE-PARTS.json': 'bc9764987119243896c7822eb37209ccf5d8b48d1808be24600f3b1c17744c83'}
+SUPERVISOR_SHA='d8fe825d66cc2d710f5e6759cec355c941627cd4cb93995ab7a479292e2fbc81'
+PUBLIC_INPUT_PINS={'PUBLIC-SOURCE.json': '3504ad66c86bf1bab94b640a71bd6ccf317151eda429007a3042cba788580410', 'SOURCE-BUNDLE.json': 'ae8e10ee61f4a5bdefeef38dd2730fc0cc560ed590c303ca84c4b08cfe05a4ec', 'SOURCE-PARTS.json': '3941d99d0a48cdfceb0de0a99000090b9d4458cce98aea65ea6517b07d028996'}
 MANIFEST_SHA=PUBLIC_INPUT_PINS['PUBLIC-SOURCE.json']
 SMOKE_MARKER='native shell, real Run/interaction, diagnostic navigation, Racket coloring, language bracket and indentation actions smoke passed (AX/IME/performance/parity pending)'
 GATE_MARKER='Mandatory bounded build + engine protocol + native shell smoke passed.'

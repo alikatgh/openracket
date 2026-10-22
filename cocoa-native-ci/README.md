@@ -18,9 +18,11 @@ All data is validated before any member is written.
 
 Application, engine and runtime helper source bytes are unchanged from the
 reviewed source baseline. The process supervisor now handles Darwin session
-lookup failure for a proved owned, unreaped zombie, with focused regression
-tests and updated dependent hash pins. Its live-child and cleanup ownership
-checks remain required. One benchmark helper's purpose docstring has been made
+lookup failure for a proved owned, unreaped zombie. It also handles a rejected
+group signal only when a fresh strict inventory proves that the owned group is
+already quiescent; a denied signal is never recorded as delivered. Focused
+regression tests and dependent hash pins cover these fixes. Live-child identity,
+permission failures without that proof, and cleanup ownership remain fail-closed. One benchmark helper's purpose docstring has been made
 self-contained; its executable body is unchanged. Development
 history, prior results and local provenance are not distributed. The public
 source admission does not require or disclose an inventory of excluded files.
