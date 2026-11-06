@@ -40,11 +40,28 @@ def public_inputs():
     from source_bundle import members
     rows=members(manifest)
     pin=values['SOURCE-BUNDLE.json'];parts=values['SOURCE-PARTS.json']
+    if (set(pin)!={'schema','format','sha256','bytes','members','raw_file_bytes'}
+        or pin['schema']!='openracket-source-only-bundle/v1' or pin['format']!='ORCOCOASOURCE-v1+xz'):
+        raise ValueError('Public source bundle schema/format')
+    if type(pin['bytes']) is not int or type(pin['members']) is not int or type(pin['raw_file_bytes']) is not int:
+        raise ValueError('Public source bundle accounting types')
     if pin['members']!=len(rows) or pin['raw_file_bytes']!=sum(r['bytes'] for r in rows):
         raise ValueError('Public source member accounting')
     if pin['sha256']!=parts['sha256'] or pin['bytes']!=parts['bytes']:
         raise ValueError('Public source envelope binding')
     return manifest,pin,parts
+
+def validate_package():
+    """Read-only admission of checked-in parts, descriptors and decoded members."""
+    from source_bundle import read_parts, validate_payload
+    manifest,pin,parts=public_inputs()
+    raw=read_parts(BASE/'source-parts',parts)
+    validate_payload(raw,manifest,pin)
+    return {'schema':'openracket-source-hygiene/v1','parts':len(parts['parts']),
+            'members':pin['members'],'raw_file_bytes':pin['raw_file_bytes'],
+            'bundle_bytes':len(raw),'bundle_sha256':pin['sha256'],
+            'public_source_manifest_sha256':MANIFEST_SHA,'decoded_members_verified':True,
+            'materialized':False,'native_checks_run':False}
 
 def projection():
     manifest,_,_=public_inputs()
@@ -333,7 +350,8 @@ def transport(root):
 
 def main():
     global SOURCE
-    parser=argparse.ArgumentParser();parser.add_argument('mode',choices=['run','finalize','validate-projection']);parser.add_argument('--root',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('mode',choices=['run','finalize','validate-package','validate-projection'],help='validate-package reads checked-in parts without extraction; validate-projection requires materialized source');parser.add_argument('--root',type=Path);args=parser.parse_args()
+    if args.mode=='validate-package':print(json.dumps(validate_package(),sort_keys=True));return 0
     if args.mode=='validate-projection':m=projection();print(json.dumps({'members':len(m['files']),'public_source_manifest_sha256':MANIFEST_SHA}));return 0
     if args.root is None:parser.error('--root required')
     root=args.root.parent.resolve(strict=True)/args.root.name

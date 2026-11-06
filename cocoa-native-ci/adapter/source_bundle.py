@@ -44,10 +44,13 @@ def build(source,manifest,output):
     if output.stat().st_size>MAX_COMPRESSED:raise ValueError('Compressed source bound')
     return {'schema':'openracket-source-only-bundle/v1','format':'ORCOCOASOURCE-v1+xz','sha256':sha(output.read_bytes()),'bytes':output.stat().st_size,'members':len(rows),'raw_file_bytes':sum(r['bytes'] for r in rows)}
 
-def extract(bundle,manifest,pin,destination):
-    rows=members(manifest);bundle=Path(bundle);destination=Path(destination)
-    if bundle.is_symlink() or not bundle.is_file() or bundle.stat().st_size!=pin['bytes'] or not 0<pin['bytes']<=MAX_COMPRESSED:raise ValueError('Pinned bundle size/type')
-    raw=bundle.read_bytes()
+def validate_payload(raw,manifest,pin):
+    """Validate the complete frame in memory, without writing or loading members.
+
+    Return the admitted rows, decoded frame and payload offset for extraction.
+    """
+    rows=members(manifest)
+    if type(pin['bytes']) is not int or not 0<pin['bytes']<=MAX_COMPRESSED or len(raw)!=pin['bytes']:raise ValueError('Pinned bundle size/type')
     if sha(raw)!=pin['sha256']:raise ValueError('Bundle SHA mismatch')
     decoder=lzma.LZMADecompressor(format=lzma.FORMAT_XZ,memlimit=64*1024*1024)
     limit=len(MAGIC)+4+MAX_MANIFEST+MAX_TOTAL
@@ -62,12 +65,18 @@ def extract(bundle,manifest,pin,destination):
     if data[offset:offset+count]!=expected:raise ValueError('Exact source member map/mode mismatch')
     offset+=count
     if len(data)!=offset+sum(r['bytes'] for r in rows):raise ValueError('Source payload closure/size mismatch')
-    # Validate all bytes before writing the first member.
+    # Validate every member before extraction can write the first byte.
     start=offset
     for row in rows:
         end=offset+row['bytes']
         if sha(data[offset:end])!=row['sha256']:raise ValueError('Source payload member hash mismatch')
         offset=end
+    return rows,data,start
+
+def extract(bundle,manifest,pin,destination):
+    bundle=Path(bundle);destination=Path(destination)
+    if bundle.is_symlink() or not bundle.is_file() or bundle.stat().st_size!=pin['bytes'] or not 0<pin['bytes']<=MAX_COMPRESSED:raise ValueError('Pinned bundle size/type')
+    rows,data,start=validate_payload(bundle.read_bytes(),manifest,pin)
     if not destination.is_absolute() or destination.parent.resolve(strict=True)!=destination.parent or destination.exists() or destination.is_symlink():raise ValueError('Fresh physical destination required')
     destination.mkdir(mode=0o700);offset=start
     for row in rows:

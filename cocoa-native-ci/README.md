@@ -52,16 +52,43 @@ and public compiler/runner references are retained. Third-party code remains
 unaltered. The archive is an inert test input, not a downloaded executable.
 No compiled runtime, helper library or application binary is included.
 
+## Lightweight source check
+
+From the repository root, with Python 3.11 or later and its standard-library XZ
+support:
+
+```sh
+python3 -B cocoa-native-ci/adapter/run_native_ci.py validate-package
+python3 -B -m unittest discover -s cocoa-native-ci/adapter -p 'test_source_hygiene.py' -v
+```
+
+The first command verifies the adapter's descriptor hash pins, manifest schema,
+member accounting, all nine parts and their exact directory closure, and every
+decoded member's path, mode, size and SHA-256. It uses the extraction validator
+in memory; it writes no source tree, launches no subprocess, and requires no
+Racket, Rust or Xcode installation. The focused tests use in-memory fixtures.
+Use `-B` to suppress Python bytecode output. A failure exits nonzero.
+
+`validate-projection` checks an already materialized source tree; it cannot
+validate a fresh checkout that contains only source parts. The broader
+`test_adapter.py` suite also requires materialized source and creates temporary
+fixtures, so it is separate from these read-only checks. Passing source hygiene
+does not establish compilation or native acceptance. See the
+[compile-first gaps and local evidence](../docs/COCOA-SOURCE-HYGIENE-20261106.md).
+
 ## Workflow
 
-The explicit distribution map places these files under `cocoa-native-ci/`,
-except `cocoa-native.yml`, which belongs at `.github/workflows/cocoa-native.yml`.
-A local prepared directory is not permission to publish or run the workflow.
+The source descriptors, parts and adapters live under `cocoa-native-ci/`; the
+workflow is checked in at `.github/workflows/cocoa-native.yml`. It also depends
+on the separately pinned installer at
+`retained-host/scripts/ci/install-full-racket.sh`. Source hygiene checks do not
+authorize publishing or activating that workflow.
 
 1. Require the intended public repository and exact commit checkout with a
    read-only token. Require preinstalled Darwin Python 3.13 or later and its
-   supported process-observation APIs. Reuse the separately hash-pinned official
-   Racket installer already present in the repository.
+   supported process-observation APIs. Reuse the separately hash-pinned installer
+   script already present in the repository; its runtime download and installation
+   are separate native CI work.
 2. Record the complete original runtime's filesystem state and root identity.
    Reconstruct and verify immutable source inputs before loading source helpers.
 3. Build one inventory helper with the selected physical Xcode compiler and
