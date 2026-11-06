@@ -1,5 +1,24 @@
 # OpenRacket Cocoa source and native checks
 
+## Repository status — 2026-11-06
+
+The newest public engineering branch is `prototype/retained-drracket` at
+`0aa912f` (2026-10-22), as recorded in the
+[recovery inventory](../docs/RECOVERY-AND-GAP-2026-11-06.md). `main` is the older
+`64c0f45` tip (2026-10-11), a documentation/website update. October 27–30
+engineering work is not present in the recovered repository history.
+
+This Cocoa package is separate from both the original Rust/Iced preview and the
+retained-DrRacket host. The retained host's historical macOS passes do not
+validate this package. The retained host's stock Stop completion timeout and
+large-file readiness/analysis blockers remain open; later partial passes and capacity
+improvements do not establish full acceptance. See the
+[retained-host status snapshot](../retained-host/reports/status.json) and the
+[later evidence summary](../docs/RECOVERY-AND-GAP-2026-11-06.md#open-blockers-with-the-age-of-the-evidence-preserved).
+There is no notarized macOS app.
+
+## Package scope
+
 This distribution contains the Cocoa editor, Rust/Racket engine, build inputs,
 licenses, tests, and a bounded macOS CI workflow. The application has not yet
 passed this native workflow. Compilation, ordinary macOS behavior, VoiceOver,

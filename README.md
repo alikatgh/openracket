@@ -1,5 +1,17 @@
 # OpenRacket
 
+## Repository and macOS status — 2026-11-06
+
+The newest public engineering branch recorded in the [recovery inventory](docs/RECOVERY-AND-GAP-2026-11-06.md) is **`prototype/retained-drracket` at `0aa912f` (2026-10-22)**. `main` remains at the older `64c0f45` tip (2026-10-11), a documentation/website update; it is not the latest application source. No October 27–30 engineering work is present in the recovered repository history. November changes on the local `codex-burn/20261106` branch are separate work.
+
+The [retained-DrRacket prototype](retained-host/README.md) reuses the real DrRacket 9.3 host. Its checked-in reports record macOS core and bounded native workflow passes, but **stock Stop completion timeouts and large-file readiness/analysis stalls remain open blockers**. [Later Stop tests](retained-host/reports/NATIVE-REPAIR-38054215191.md) passed both Mac arms without resolving intermittent completion. The [capacity improvement](retained-host/reports/PORTABLE-INSTALLATION-38114573816.md) allowed the tested 1 MiB workload to complete at 256 MiB, still taking about 33–39 seconds. The earlier [status snapshot](retained-host/reports/status.json) is not a complete acceptance result.
+
+**There is no notarized macOS app.** The [retained app-launch report](retained-host/reports/MAC-APP-LAUNCH-38127332821.md) describes an unsigned, destination-built app and delivers no app binary. The separate [Cocoa source package](cocoa-native-ci/README.md) has not passed its native workflow. These historical reports are not fresh validation of the current checkout.
+
+## Original Rust/Iced preview
+
+The build, editing and verification instructions below describe the original Rust/Iced preview. The [macOS packaging plan](docs/macos/BUILD-PLAN.md) also belongs to this older track; it does not build or certify the retained-DrRacket or Cocoa prototypes.
+
 A focused native Racket editor, written in Rust. Familiar Definitions above, Interactions below, with quieter chrome and the **real Racket runtime** underneath.
 
 This is an early working preview, not a full DrRacket replacement. It uses Iced 0.14, native text editing, and a separate Racket process. There is no webview, AI service, or interpreter reimplementation.
@@ -43,7 +55,7 @@ cargo build --release --locked
 RACKET_BIN="/Applications/Racket v9.3/bin/racket" ./target/release/openracket
 ```
 
-The source uses cross-platform Iced and native file dialogs. **macOS compilation, native window behavior, signing, notarization and app-bundle packaging have not been tested.** This repository contains source only; no downloadable Mac app or release is included. A [manual build-only workflow](docs/macos/BUILD-PLAN.md) is prepared for Apple Silicon macOS, but it has not been run and does not retain a downloadable app.
+This Rust preview uses cross-platform Iced and native file dialogs. Its original packaging notes do not establish macOS compilation, native window behavior, signing, notarization or app-bundle acceptance. The [historical manual build-only plan](docs/macos/BUILD-PLAN.md) targets Apple Silicon and retains no downloadable app. Retained-DrRacket results and open macOS blockers are described above; they do not validate this separate Rust preview.
 
 ## The workflow
 
@@ -126,6 +138,8 @@ Performance records distinguish process-level timing, native widget/model work, 
 
 ## Source layout
 
+- `retained-host/`: retained-DrRacket prototype, isolated setup/launch helpers and historical native reports
+- `cocoa-native-ci/`: separate source-only Cocoa package and unpassed native workflow
 - `src/app.rs`: Iced application, UI and session state
 - `src/document.rs`: editing, changed-line history, search, source locations
 - `src/files.rs`: UTF-8 validation, atomic saves, external-change protection
@@ -135,4 +149,4 @@ Performance records distinguish process-level timing, native widget/model work, 
 
 ## License
 
-Original OpenRacket code is MIT licensed. Font licenses are included in `assets/FONTS-LICENSE.txt`. See `THIRD_PARTY_NOTICES.md` for the main dependencies. This project is independent of the official Racket/DrRacket project and does not reuse DrRacket or OpenCode UI source.
+Original OpenRacket code is MIT licensed. Font licenses are included in `assets/FONTS-LICENSE.txt`. See `THIRD_PARTY_NOTICES.md` for the main dependencies. This project is independent of the official Racket/DrRacket project. The original Rust/Iced preview does not reuse DrRacket or OpenCode UI source; the retained-host prototype explicitly reuses DrRacket, with provenance in [`retained-host/vendor/PROVENANCE.md`](retained-host/vendor/PROVENANCE.md). The Cocoa package retains its own vendored licenses and provenance.

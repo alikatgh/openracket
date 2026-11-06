@@ -1,4 +1,23 @@
-OpenRacket 0.1.0 - Apple Silicon development preview
+OpenRacket macOS status - 2026-11-06
+
+The newest public engineering branch is prototype/retained-drracket at 0aa912f
+(2026-10-22). main is the older 64c0f45 tip (2026-10-11), a documentation/website
+update. No October 27-30 engineering work is present in the recovered repository
+history. See ../RECOVERY-AND-GAP-2026-11-06.md for provenance and later reports.
+
+The retained-DrRacket prototype has historical macOS core/native passes, but
+stock Stop completion timeouts and large-file readiness/analysis stalls remain
+open. Later Mac Stop passes and a 256 MiB capacity improvement do not close those
+blockers. The separate Cocoa source package has not passed its native workflow.
+There is no notarized macOS app.
+
+HISTORICAL RUST/ICED PACKAGE README TEMPLATE
+The text below describes the proposed OpenRacket 0.1.0 Apple Silicon package.
+It is not evidence that a ZIP, app binary or MACOS-TEST-REPORT.md was delivered.
+Its runtime, signing and coverage statements apply only to that proposed package,
+not the retained-DrRacket or Cocoa prototypes.
+
+OpenRacket 0.1.0 - proposed Apple Silicon development preview
 
 This is an early plain-text Racket editor. It is not a full DrRacket replacement.
 Requires Apple Silicon and macOS 15 or later for this preview build.

@@ -3,6 +3,10 @@ name: Publish macOS preview (manual, public only)
 # DISABLED EXAMPLE. Publish/install only after explicit approval of source,
 # public binary delivery and the bounded contents:write job permission.
 # Replace the build-only workflow; do not run both for one requested build.
+# Historical Rust/Iced plan targeting older main, not the retained prototype.
+# Newest public engineering: prototype/retained-drracket @ 0aa912f (2026-10-22).
+# Open macOS blockers: stock Stop timeout and large-file readiness/analysis stalls.
+# No notarized app exists; see BUILD-PLAN.md for scope and current status.
 'on':
   workflow_dispatch:
 

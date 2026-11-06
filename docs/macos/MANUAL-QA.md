@@ -1,4 +1,31 @@
-# macOS release checks still required
+# macOS prototype status and remaining release checks
+
+Status on 2026-11-06: the newest public engineering branch is
+`prototype/retained-drracket` at `0aa912f` (2026-10-22). `main` is the older
+`64c0f45` tip (2026-10-11), a documentation/website update. No October 27–30
+engineering work is present in the recovered repository history.
+**There is no notarized macOS app.** See the
+[repository overview](../../README.md#repository-and-macos-status--2026-11-06)
+for the separate Rust/Iced, retained-DrRacket and Cocoa tracks.
+
+## Open retained-DrRacket blockers
+
+- Stock Stop completion timeouts remain unresolved. Later strict Stop tests
+  passed both Mac arms, but intermittent completion and full parity remain open.
+- Large-file readiness and analysis stalls remain unresolved. The tested 1 MiB
+  workload completed at 256 MiB after failing at 128 MiB, still taking about
+  33–39 seconds; this capacity improvement does not establish responsive editing.
+
+The [earlier status snapshot](../../retained-host/reports/status.json) records
+macOS core passes alongside these failures. See the
+[later evidence summary](../RECOVERY-AND-GAP-2026-11-06.md#open-blockers-with-the-age-of-the-evidence-preserved)
+for the scope of subsequent results. Those historical results are not fresh
+validation of this checkout or a complete release pass.
+
+## Historical Rust/Iced preview checklist
+
+The checklist below belongs to the original Rust preview. It is not a list of
+missing features in the retained DrRacket host, nor evidence of an existing ZIP.
 
 Do not mark these passed from a headless test, offscreen screenshot or a running process alone.
 Do not grant Accessibility, Automation, screen-recording, camera, microphone or other TCC
@@ -16,5 +43,5 @@ permissions or change Gatekeeper/quarantine settings to get a pass.
 - Check first-launch and reopened launch on a clean macOS 15 Apple Silicon account. Do not claim Intel or earlier macOS support from this build.
 - Record observed launch time, editing delay and memory with reproducible workloads before making performance claims. CI rendering benchmarks alone do not establish perceived UI speed.
 
-Full DrRacket compatibility remains outside this frozen core: teaching-language tooling,
+Full DrRacket compatibility remains outside this Rust/Iced core: teaching-language tooling,
 Check Syntax, debugger, macro stepper, WXME/snips and plugin integration are not included.

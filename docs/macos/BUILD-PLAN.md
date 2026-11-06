@@ -1,13 +1,38 @@
-# macOS build and packaging route
+# Historical Rust/Iced macOS build and packaging plan
 
-Status on 2026-10-10: prepared and locally linted in Linux only. No Mac build,
-workflow dispatch, repository push, upload or release has been performed by this preparation.
-Original core Rust/Racket files are byte-identical to the reviewed snapshot.
+## Repository status — 2026-11-06
 
-## Build-only default
+The newest public engineering branch is **`prototype/retained-drracket` at
+`0aa912f` (2026-10-22)**. `main` remains at the older `64c0f45` tip
+(2026-10-11), a documentation/website update. No October 27–30 engineering work
+is present in the recovered repository history. See the
+[recovery inventory](../RECOVERY-AND-GAP-2026-11-06.md) for provenance.
 
-The proposed repository is **public `alikatgh/openracket`**. It must remain public
-throughout a run. Source publication and workflow execution need authorization first.
+The retained-DrRacket prototype has historical macOS core/native passes, but
+stock Stop completion timeouts and large-file readiness/analysis stalls remain
+open blockers. Later reports include Mac Stop passes and a capacity improvement;
+neither closes those blockers. The separate Cocoa package has not passed its
+native workflow. **There is no notarized macOS app.** See the
+[current repository overview](../../README.md#repository-and-macos-status--2026-11-06).
+
+## Historical scope
+
+The plan below was prepared and locally linted in Linux on 2026-10-10 for the
+original Rust/Iced preview. At that preparation stage, no Mac build, workflow
+dispatch, repository push, upload or release had been performed by the
+preparation, and core Rust/Racket files matched its reviewed snapshot.
+These are historical statements, not the current repository's full results.
+
+The `main` dispatch instructions and disabled publish example below belong to
+that older Rust track. They do not build or certify the newer retained-DrRacket
+or Cocoa prototypes. This document records a proposal, not an executed release.
+
+## Proposed build-only route for the Rust preview
+
+The original proposal targets **public `alikatgh/openracket`** on `main`.
+It requires public visibility throughout a run. The steps below are historical
+setup instructions; they do not indicate missing publication of the prototype.
+Any future workflow execution requires its own verified prerequisites and authorization.
 
 1. Review the source overlay and verify the public repository's exact owner/name,
    visibility and default branch. This draft expects `main`.
@@ -122,6 +147,8 @@ consumer release. Gatekeeper may block a downloaded ZIP's application. Do not
 remove quarantine, alter security settings, grant TCC permissions or override
 warnings. A blocked launch is recorded as an outstanding release blocker.
 
-Actual native compilation, dylib/signing behavior, normal Finder launch and all
-items in `MANUAL-QA.md` remain unverified until a Mac runner/desktop performs them.
-The current default-DrRacket feature gaps are unchanged by packaging.
+This plan alone establishes no Rust-preview native compilation, dylib/signing
+behavior, normal Finder launch or completion of `MANUAL-QA.md`. Retained-host
+reports record separate native checks; they do not certify the Rust preview.
+Packaging does not resolve the Rust preview's DrRacket feature gaps or the
+retained prototype's open Stop and large-file blockers.
