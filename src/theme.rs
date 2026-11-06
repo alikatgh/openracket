@@ -1,3 +1,8 @@
+//! Workbench light/dark palettes and Iced widget styles.
+//!
+//! Syntax colors are adjusted against the editor background for contrast while
+//! retaining the highlighter's font styling and the workbench monospace family.
+
 use iced::widget::{button, container, text_editor};
 use iced::{Background, Border, Color, Theme};
 #[derive(Clone, Copy)]

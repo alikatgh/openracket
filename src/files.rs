@@ -1,3 +1,9 @@
+//! Plain-text document loading, atomic saves, and workspace file discovery.
+//!
+//! Loads canonicalize file identities, check file size, and reject unsupported input.
+//! Saves can compare an expected disk snapshot before replacing the destination.
+//! Workspace discovery is nonrecursive and returns a sorted, bounded file list.
+
 use crate::document::decode_file;
 use std::{
     fs,

@@ -6,6 +6,8 @@
 //! Input, output and individual protocol lines have independent memory limits.
 //! On Unix each session has its own process group, including subprocesses made
 //! by user programs; Stop and Drop terminate that group and reap the bridge.
+//! Unit tests use mock bridge processes; real-Racket smoke tests are ignored by
+//! default and require an installed interpreter when explicitly selected.
 
 use serde_json::{Value, json};
 use std::collections::{BTreeSet, VecDeque};

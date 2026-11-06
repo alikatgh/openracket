@@ -1,4 +1,8 @@
-//! Small, explicit settings saves. Source buffers and session paths never enter this file.
+//! Validated appearance settings and Racket executable selection.
+//!
+//! Missing files use defaults; corrupt or invalid files are reported unchanged.
+//! Reads are bounded and explicit saves replace the file atomically. Source
+//! buffers and session document paths are never stored in these preferences.
 
 use serde::{Deserialize, Serialize};
 use std::{
@@ -253,6 +257,18 @@ mod tests {
         let json = serde_json::json!({"racket_path": "a".repeat(MAX_RACKET_PATH_BYTES + 1)});
         fs::write(&path, json.to_string()).unwrap();
         assert!(load_from(&path).is_err());
+    }
+
+    #[test]
+    fn executable_path_limit_counts_utf8_bytes() {
+        let mut preferences = Preferences {
+            racket_path: Some("λ".repeat(MAX_RACKET_PATH_BYTES / "λ".len())),
+            ..Preferences::default()
+        };
+        assert!(preferences.validate().is_ok());
+
+        preferences.racket_path.as_mut().unwrap().push('a');
+        assert!(preferences.validate().is_err());
     }
 
     #[test]

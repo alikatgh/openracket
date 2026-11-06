@@ -1,3 +1,9 @@
+//! Iced workbench state, message handling, and views.
+//!
+//! Save completions carry document identities and revisions so edits made while
+//! saving remain dirty. Runtime spawn generations reject stale completions;
+//! process supervision and pipe I/O belong to the library's runtime module.
+
 use crate::{
     document::Document,
     files::{self, LoadedFile},

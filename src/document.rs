@@ -1,4 +1,10 @@
-//! File model and bounded, changed-line undo history. No full-buffer snapshots on typing.
+//! Editor document state, Unicode navigation, and changed-line undo history.
+//!
+//! Edits snapshot affected lines, including adjacent lines, and coalesce typing.
+//! Undo history retains at most 1,000 changes and targets an 8 MiB text budget;
+//! the newest change is retained even when it alone exceeds that byte budget.
+//! Undo moves changes to a separate redo stack, outside the undo byte accounting.
+
 use iced::widget::text_editor::{self, Action, Cursor, Edit, Position};
 use std::{
     collections::VecDeque,
@@ -494,6 +500,24 @@ mod tests {
         assert!(!d.dirty());
     }
     #[test]
+    fn no_op_edit_preserves_redo_and_revision() {
+        let mut d = Document::new(1, "", None);
+        d.edit(Action::Edit(Edit::Insert('λ')));
+        let edited_revision = d.revision;
+        d.undo();
+
+        d.edit(Action::Edit(Edit::Backspace));
+        assert_eq!(d.text(), "");
+        assert_eq!(d.revision, 0);
+        assert_eq!(d.history_bytes(), 0);
+        assert!(!d.dirty());
+
+        d.redo();
+        assert_eq!(d.text(), "λ");
+        assert_eq!(d.revision, edited_revision);
+        assert!(d.dirty());
+    }
+    #[test]
     fn typing_deltas_do_not_copy_large_buffer() {
         let mut d = Document::new(1, &"(define x 1)\n".repeat(80000), None);
         for c in "hello".chars() {
@@ -524,6 +548,20 @@ mod tests {
         let mut d = Document::new(1, "λx 你好 λx", None);
         assert!(d.find("你好", false).is_some());
         assert_eq!(d.content.selection().as_deref(), Some("你好"));
+    }
+    #[test]
+    fn unicode_search_wraps_in_both_directions() {
+        let mut d = Document::new(1, "λx\n你好 λx", None);
+        for expected in [Some((1, 1)), Some((2, 2)), Some((1, 1))] {
+            assert_eq!(d.find("λx", false), expected);
+            assert_eq!(d.content.selection().as_deref(), Some("λx"));
+        }
+        for expected in [Some((2, 2)), Some((1, 1)), Some((2, 2))] {
+            assert_eq!(d.find("λx", true), expected);
+            assert_eq!(d.content.selection().as_deref(), Some("λx"));
+        }
+        assert_eq!(d.text(), "λx\n你好 λx");
+        assert!(!d.dirty());
     }
     #[test]
     fn rejects_rich_and_invalid_input() {
