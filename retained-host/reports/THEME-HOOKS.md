@@ -1,5 +1,11 @@
 # Retained DrRacket 9.3 appearance: implementation and verified hooks
 
+This report preserves the original validation environment and results. Its
+`/workspace/shared/...` paths and 28-test freeze count are historical; later test
+additions are not covered by that count. See the [current headless check
+instructions](../tool/README.md#headless-checks) for prerequisites and the split
+between Python-only, GUI-free Racket, and native GUI execution.
+
 ## Result and status
 
 Implemented the package in `tool/` using the real DrRacket extension points.

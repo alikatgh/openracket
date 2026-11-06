@@ -1,9 +1,10 @@
 # Retained-host appearance tool
 
 A bounded appearance extension for the real DrRacket 9.3 frame, editor canvases,
-and tools. This is **source and headless-tested work, not a native-GUI-validated
-release**. The current isolated profile lacks the installed GUI dependencies;
-no display is available. See `../reports/THEME-HOOKS.md` and `validation.log`.
+and tools. This directory includes **source and historical headless validation,
+which do not establish a native-GUI-validated release**. The original isolated
+profile lacked the installed GUI dependencies and a display. See
+`../reports/THEME-HOOKS.md` and `validation.log` for that validation history.
 
 The separate polish candidate additionally includes an opt-in app-native
 appearance prototype. See [native capability, restoration and verification
@@ -54,18 +55,48 @@ preferences. Do not discard or reset a real user profile.
 
 ## Headless checks
 
-With a complete suitable Racket installation:
+Run these commands from the repository root. Check the available runtime first;
+the historical `/workspace/shared/...` paths in the report are not a current
+local toolchain configuration.
 
-    raco make tool/tool.rkt
-    raco test tool/tests.rkt tool/frame-chrome-tests.rkt
+### Python-only regression checks
 
-In this workspace, use the installed 9.3 runtime and explicit isolated add-on path
-shown in `validation.log` / the report. `info.rkt`, `layout.rkt`, `appearance-state.rkt`, `frame-chrome.rkt`, and the two
-test modules compile; all 28 focused tests pass (13 theme/state and 15 chrome). Full `tool.rkt` compilation is blocked at
-the missing `racket/gui/base` dependency, before GUI startup.
+The evidence transport tests use Python's standard library and synthetic local
+fixtures. They do not start an application, CI job, or Racket process:
 
-The tests cover palette validity/contrast, opt-in gating, installed-font choice,
-mixin preservation contracts with test doubles, strict snapshot value validation,
-preference rollback when a scheme is missing or a callback fails, and the
-production margin painter's pixel bounds/DC recovery/focus behavior. They are not a substitute
-for testing the real stock editor, snips, tools, or tool host on a display.
+    python3 -B retained-host/scripts/ci/test-replay-evidence.py
+
+This suite checks bounded, lossless evidence reconstruction, hashes, chunk
+ordering, and missing/duplicate document payload rejection. A valid JSON `null`
+payload is distinct from a missing payload. `-B` avoids bytecode cache output;
+temporary fixtures are cleaned by the tests. These are transport checks, not
+appearance or native acceptance tests.
+
+### Racket checks with existing dependencies
+
+| Test module under `retained-host/tool/` | Existing requirements and boundary |
+| --- | --- |
+| `tests.rkt` | Racket, RackUnit and `setup/getinfo`; theme/state contracts and canvas/frame doubles. Reads `tool.rkt` as syntax without loading its GUI imports. |
+| `frame-chrome-tests.rkt` | Racket, RackUnit and `racket/draw`; off-screen pixel bounds, drawing-context recovery, focus and status-row doubles. No display or `racket/gui/base` is needed. |
+| `native-appearance-tests.rkt` | Racket, RackUnit and `racket/gui/dynamic`; injectable controller/policy contracts. Verifies that the platform factory leaves the GUI unstarted. |
+| `native-appearance-native-tests.rkt` | **Exclude from headless execution.** Its program entry point dynamically loads `racket/gui/base` and shows native windows. |
+
+If `racket` and `raco` are already available with the listed libraries:
+
+    raco test --direct retained-host/tool/tests.rkt \
+      retained-host/tool/frame-chrome-tests.rkt \
+      retained-host/tool/native-appearance-tests.rkt
+
+With an explicitly configured `racket -A ... -l raco --` invocation, retain
+`test --direct`: child test processes otherwise do not inherit that add-on path.
+If the runtime or a required library is absent, record these checks as blocked
+and continue with the Python-only checks. Do not install packages or attempt
+full `tool.rkt` compilation as part of headless validation; that GUI entry point
+requires `racket/gui/base`.
+
+`validation.log` preserves the original freeze result of 28 passing tests
+(13 theme/state and 15 chrome) and the separate missing-GUI compilation failure.
+Later source adds tests, including native-controller contracts; the preserved
+counts are historical evidence, not a fresh result for the current checkout.
+The Racket doubles and off-screen drawing checks do not establish behavior of
+the real stock editor, snips, tools, or tool host on a display.

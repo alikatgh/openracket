@@ -62,6 +62,19 @@ class EvidenceTests(unittest.TestCase):
   with self.assertRaisesRegex(AssertionError,'Whole-document hash'):self.roundtrip({'small':'correct'},change)
  def test_truncated_document_rejected(self):
   with self.assertRaisesRegex(AssertionError,'Truncated'):self.roundtrip({'small':'correct'},lambda lines:lines[:-1])
+ def test_null_document_roundtrips(self):
+  self.roundtrip(None)
+ def test_missing_null_payload_rejected(self):
+  def change(lines):return [line for line in lines if 'DOCUMENT_JSON ' not in line]
+  with self.assertRaisesRegex(AssertionError,'Missing evidence document payload'):
+   self.roundtrip(None,change)
+ def test_duplicate_payload_rejected_including_null(self):
+  def change(lines):
+   index=next(i for i,line in enumerate(lines) if 'DOCUMENT_JSON ' in line)
+   return lines[:index]+[lines[index]]+lines[index:]
+  for value in (None,{'small':'correct'}):
+   with self.subTest(value=value),self.assertRaisesRegex(AssertionError,'Repeated evidence document payload'):
+    self.roundtrip(value,change)
  def test_oversized_single_line_refused(self):
   with self.assertRaises(AssertionError):mod.encode({'unexpected':'x'*60001})
  def test_oversized_single_item_refused(self):

@@ -12,13 +12,16 @@ def decode(log,output):
         kind,data=match.group(1),json.loads(match.group(2));label=data['label']
         assert re.fullmatch(r'[a-z0-9_-]+',label),label
         if kind=='DOCUMENT_BEGIN':
-            assert label not in active,'Repeated begin without end';active[label]={'header':data,'arrays':{},'data':None}
+            assert label not in active,'Repeated begin without end';active[label]={'header':data,'arrays':{},'data':None,'has_data':False}
         else:
             state=active[label]
-            if kind=='DOCUMENT_JSON':assert state['data'] is None;state['data']=data['data']
+            if kind=='DOCUMENT_JSON':
+                assert not state['has_data'],'Repeated evidence document payload'
+                state['data']=data['data'];state['has_data']=True
             elif kind=='ARRAY_JSON':
                 rows=state['arrays'].setdefault(data['id'],[]);assert data['index']==len(rows),'Missing/reordered array chunk';rows.extend(data['items'])
             else:
+                assert state['has_data'],'Missing evidence document payload'
                 seen=set()
                 def restore(value):
                     if isinstance(value,dict):
