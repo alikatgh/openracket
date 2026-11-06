@@ -1,5 +1,5 @@
-import contextlib,io,copy,hashlib,importlib.util,json,lzma,os,pathlib,signal,struct,sys,tempfile,types,unittest
-from unittest.mock import patch
+import contextlib,io,copy,errno,hashlib,importlib.util,json,lzma,os,pathlib,signal,struct,sys,tempfile,types,unittest
+from unittest.mock import Mock, call, patch
 HERE=pathlib.Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 import source_bundle as bundle
@@ -180,6 +180,248 @@ class BootstrapTests(unittest.TestCase):
  def test_native_preflight_refuses_linux_before_lease(self):
   with patch.object(boot.sys,'platform','linux'),self.assertRaises(ValueError):boot.bootstrap(None,self.source,self.compiler,self.sdk,None,self.report,{})
   self.assertEqual(list(self.report.iterdir()),[])
+
+class OwnedSupervisorTests(unittest.TestCase):
+    """Exercise the pinned supervisor with fake identities and no native helper."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ops = runner.load_supervisor()
+
+    def setUp(self):
+        # Bypass native inventory initialization, never the ownership/proof code.
+        self.supervisor = object.__new__(self.ops.Supervisor)
+        self.supervisor.terminate_grace = .1
+        self.supervisor.kill_grace = .2
+        self.supervisor.poll_interval = .01
+        self.supervisor.uncertain = False
+        self.supervisor._backend = Mock(spec=['identity', 'pids'])
+        self.child = self.ops._Child(42424, start='owned-birth', pgid=42424)
+        self.supervisor._owned = {self.child.pid: self.child}
+        self.dead = self.ops.ProcessIdentity(42424, 'owned-birth', 42424, 'Z')
+        self.supervisor._backend.identity.return_value = self.dead
+        self.supervisor._backend.pids.return_value = {self.child.pid}
+        self.terminal = object()
+        self.trace = Mock()
+        # Every numeric process API is mocked, including failure-only paths.
+        for name in ('waitid', 'getsid', 'kill', 'killpg', 'waitpid'):
+            mock = self.enterContext(patch.object(self.ops.os, name))
+            setattr(self, name, mock)
+            self.trace.attach_mock(mock, name)
+        self.trace.attach_mock(self.supervisor._backend.identity, 'identity')
+        self.trace.attach_mock(self.supervisor._backend.pids, 'pids')
+        self.waitid.return_value = self.terminal
+        self.getsid.return_value = self.child.pid
+        self.waitpid.side_effect = self.reap
+        self.clock = self.enterContext(patch.object(self.ops.time, 'monotonic', return_value=0))
+        self.enterContext(patch.object(self.ops.time, 'sleep',
+            side_effect=AssertionError('Unexpected cleanup retry after signal denial')))
+
+    def reap(self, pid, options):
+        self.assertEqual((pid, options), (self.child.pid, os.WNOHANG))
+        self.assertTrue(self.child.quiescent)
+        self.assertFalse(self.child.reaped)
+        return pid, 0
+
+    def assert_unreaped(self):
+        self.waitpid.assert_not_called()
+        self.assertFalse(self.child.reaped)
+        self.assertIs(self.supervisor._owned[self.child.pid], self.child)
+
+    def assert_unsignalled(self):
+        self.kill.assert_not_called()
+        self.killpg.assert_not_called()
+        self.assertEqual(self.child.signals, [])
+        self.assert_unreaped()
+
+    def live_group(self, *, exits_on_denial=False):
+        descendant = self.child.pid + 1
+        self.supervisor._backend.pids.return_value = {self.child.pid, descendant}
+        def identity(pid):
+            if pid == self.child.pid:
+                return self.dead
+            return self.ops.ProcessIdentity(descendant, 'descendant-birth', self.child.pgid,
+                'Z' if exits_on_denial and self.killpg.called else 'L')
+        self.supervisor._backend.identity.side_effect = identity
+        self.getsid.side_effect = ProcessLookupError(errno.ESRCH, 'owned zombie')
+        self.killpg.side_effect = PermissionError(errno.EPERM, 'group signal denied')
+
+    def test_zombie_lookup_failure_requires_fresh_terminal_and_identity_before_signal(self):
+        self.getsid.side_effect = ProcessLookupError(errno.ESRCH, 'owned zombie')
+        self.supervisor._signal(self.child, signal.SIGTERM)
+        observe = call.waitid(os.P_PID, self.child.pid,
+            os.WEXITED | os.WNOHANG | os.WNOWAIT)
+        self.assertEqual(self.trace.mock_calls, [observe, call.identity(self.child.pid),
+            call.getsid(self.child.pid), observe, call.identity(self.child.pid),
+            call.killpg(self.child.pgid, signal.SIGTERM)])
+        self.assertEqual(self.child.signals, [{'signal': 'SIGTERM', 'target': 'group'}])
+        self.assert_unreaped()
+
+    def test_zombie_lookup_failure_refuses_lost_or_nonterminal_fresh_observation(self):
+        for observation, error in ((None, ProcessLookupError),
+                (ChildProcessError('externally reaped'), self.ops.SupervisorError),
+                (PermissionError(errno.EPERM, 'observation denied'), PermissionError)):
+            with self.subTest(observation=observation):
+                self.waitid.reset_mock()
+                self.supervisor._backend.identity.reset_mock()
+                self.waitid.side_effect = [self.terminal, observation]
+                self.getsid.side_effect = ProcessLookupError(errno.ESRCH, 'owned zombie')
+                with self.assertRaises(error):
+                    self.supervisor._signal(self.child, signal.SIGKILL)
+                self.assertEqual(self.waitid.call_count, 2)
+                self.supervisor._backend.identity.assert_called_once_with(self.child.pid)
+                self.assert_unsignalled()
+
+    def test_zombie_lookup_failure_refuses_unverified_fresh_identity(self):
+        for identity, error in (
+                (self.ops.ProcessIdentity(42424, 'owned-birth', 42424, 'L'), self.ops.SupervisorError),
+                (self.ops.ProcessIdentity(42424, 'changed-birth', 42424, 'Z'), self.ops.SupervisorError),
+                (self.ops.ProcessIdentity(42424, 'owned-birth', 42425, 'Z'), self.ops.SupervisorError),
+                (ProcessLookupError(errno.ESRCH, 'missing identity'), ProcessLookupError),
+                (PermissionError(errno.EPERM, 'identity denied'), PermissionError)):
+            with self.subTest(identity=identity):
+                self.waitid.reset_mock()
+                self.supervisor._backend.identity.reset_mock()
+                self.supervisor._backend.identity.side_effect = [self.dead, identity]
+                self.getsid.side_effect = ProcessLookupError(errno.ESRCH, 'owned zombie')
+                with self.assertRaises(error):
+                    self.supervisor._signal(self.child, signal.SIGKILL)
+                self.assertEqual(self.waitid.call_count, 2)
+                self.assertEqual(self.supervisor._backend.identity.call_count, 2)
+                self.assert_unsignalled()
+
+    def test_non_esrch_session_failure_never_uses_zombie_fallback(self):
+        for error in (PermissionError(errno.EPERM, 'session denied'),
+                ProcessLookupError(errno.EIO, 'unexpected lookup error')):
+            with self.subTest(errno=error.errno):
+                self.waitid.reset_mock()
+                self.supervisor._backend.identity.reset_mock()
+                self.getsid.side_effect = error
+                with self.assertRaises(type(error)) as raised:
+                    self.supervisor._signal(self.child, signal.SIGTERM)
+                self.assertIs(raised.exception, error)
+                self.assertEqual(self.waitid.call_count, 1)
+                self.supervisor._backend.identity.assert_called_once_with(self.child.pid)
+                self.assert_unsignalled()
+
+    def test_denied_signal_preserves_prior_deliveries_without_recording_attempt(self):
+        previous = {'signal': 'SIGTERM', 'target': 'group'}
+        for grouped in (True, False):
+            with self.subTest(grouped=grouped):
+                self.child.pgid = self.child.pid if grouped else None
+                self.child.signals = [previous.copy()]
+                denied = PermissionError(errno.EPERM, 'signal denied')
+                target = self.killpg if grouped else self.kill
+                target.side_effect = denied
+                with self.assertRaises(self.ops._SignalRejected) as raised:
+                    self.supervisor._signal(self.child, signal.SIGKILL)
+                self.assertEqual(raised.exception.operation, 'killpg' if grouped else 'kill')
+                self.assertEqual(raised.exception.errno, errno.EPERM)
+                self.assertIs(raised.exception.__cause__, denied)
+                self.assertEqual(self.child.signals, [previous])
+                target.assert_called_once_with(self.child.pid, signal.SIGKILL)
+                self.assert_unreaped()
+                target.reset_mock(side_effect=True)
+
+    def test_group_denial_reaps_only_after_fresh_full_quiescence_proof(self):
+        self.live_group(exits_on_denial=True)
+        with patch.object(self.supervisor, '_group_quiet',
+                wraps=self.supervisor._group_quiet) as proof:
+            self.supervisor._cleanup(self.child)
+        self.assertEqual(proof.call_count, 2)
+        deadline = self.supervisor.terminate_grace + self.supervisor.kill_grace
+        self.assertEqual([c.kwargs['deadline'] for c in proof.call_args_list], [deadline, deadline])
+        self.assertEqual([c[0] for c in self.trace.mock_calls
+            if c[0] in ('pids', 'killpg', 'waitpid')],
+            ['pids', 'pids', 'killpg', 'pids', 'pids', 'waitpid'])
+        self.killpg.assert_called_once_with(self.child.pgid, signal.SIGTERM)
+        self.kill.assert_not_called()
+        self.assertEqual(self.child.signals, [])
+        self.assertTrue(self.child.quiescent)
+        self.assertTrue(self.child.reaped)
+        self.assertEqual(self.child.returncode, 0)
+        self.assertNotIn(self.child.pid, self.supervisor._owned)
+
+    def test_stale_quiescence_flag_cannot_excuse_denial_with_live_member(self):
+        self.live_group()
+        self.child.quiescent = True
+        with self.assertRaises(self.ops._SignalRejected) as raised:
+            self.supervisor._cleanup(self.child)
+        self.assertEqual(raised.exception.errno, errno.EPERM)
+        self.assertEqual(self.supervisor._backend.pids.call_count, 4)
+        self.killpg.assert_called_once_with(self.child.pgid, signal.SIGTERM)
+        self.kill.assert_not_called()
+        self.assertEqual(self.child.signals, [])
+        self.assert_unreaped()
+
+    def test_inventory_permission_failure_after_denial_preserves_rejection(self):
+        self.live_group()
+        denied = PermissionError(errno.EACCES, 'fresh inventory denied')
+        members = self.supervisor._backend.pids.return_value
+        self.supervisor._backend.pids.side_effect = [members, members, denied]
+        with self.assertRaises(self.ops._SignalRejected) as raised:
+            self.supervisor._cleanup(self.child)
+        self.assertEqual(raised.exception.errno, errno.EPERM)
+        self.assertIs(raised.exception.__cause__, denied)
+        self.killpg.assert_called_once_with(self.child.pgid, signal.SIGTERM)
+        self.kill.assert_not_called()
+        self.assertEqual(self.child.signals, [])
+        self.assert_unreaped()
+
+    def test_rejected_group_signal_cannot_extend_proof_deadline(self):
+        self.live_group(exits_on_denial=True)
+        def reject(*args):
+            self.clock.return_value = 1
+            raise PermissionError(errno.EPERM, 'group signal denied')
+        self.killpg.side_effect = reject
+        with patch.object(self.supervisor, '_group_quiet',
+                wraps=self.supervisor._group_quiet) as proof:
+            with self.assertRaises(self.ops._SignalRejected) as raised:
+                self.supervisor._cleanup(self.child)
+        self.assertEqual(proof.call_count, 2)
+        self.assertEqual(proof.call_args_list[0].kwargs, proof.call_args_list[1].kwargs)
+        self.assertIsInstance(raised.exception.__cause__, self.ops.SupervisorError)
+        self.killpg.assert_called_once_with(self.child.pgid, signal.SIGTERM)
+        self.assertEqual(self.child.signals, [])
+        self.assert_unreaped()
+
+    def test_anchor_permission_failure_latches_close_without_signalling_or_reaping(self):
+        self.getsid.side_effect = PermissionError(errno.EPERM, 'session denied')
+        self.assertFalse(self.supervisor.close())
+        self.assertTrue(self.supervisor.uncertain)
+        self.assertFalse(self.child.quiescent)
+        self.assert_unsignalled()
+
+    def test_non_eperm_group_denial_never_enters_quiescence_recovery(self):
+        self.live_group(exits_on_denial=True)
+        for number in (errno.EACCES, errno.ESRCH, errno.EIO):
+            with self.subTest(errno=number):
+                self.killpg.reset_mock()
+                self.killpg.side_effect = OSError(number, 'group signal denied')
+                with patch.object(self.supervisor, '_group_quiet',
+                        wraps=self.supervisor._group_quiet) as proof:
+                    with self.assertRaises(self.ops._SignalRejected) as raised:
+                        self.supervisor._cleanup(self.child)
+                self.assertEqual(raised.exception.errno, number)
+                self.assertEqual(proof.call_count, 1)
+                self.killpg.assert_called_once_with(self.child.pgid, signal.SIGTERM)
+                self.assertEqual(self.child.signals, [])
+                self.assert_unreaped()
+
+    def test_leader_eperm_never_enters_group_quiescence_recovery(self):
+        self.child.pgid = self.child.start = None
+        self.waitid.side_effect = [None, None, self.terminal]
+        self.kill.side_effect = PermissionError(errno.EPERM, 'leader signal denied')
+        with patch.object(self.supervisor, '_group_quiet',
+                wraps=self.supervisor._group_quiet) as proof:
+            with self.assertRaises(self.ops._SignalRejected) as raised:
+                self.supervisor._cleanup(self.child)
+        self.assertEqual((raised.exception.operation, raised.exception.errno), ('kill', errno.EPERM))
+        self.assertEqual(proof.call_count, 1)
+        self.kill.assert_called_once_with(self.child.pid, signal.SIGTERM)
+        self.killpg.assert_not_called()
+        self.assertEqual(self.child.signals, [])
+        self.assert_unreaped()
 
 class PublicInputTests(unittest.TestCase):
  def test_public_map_contains_only_distributed_files(self):
