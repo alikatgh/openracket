@@ -12,7 +12,10 @@ are **not a security sandbox**. Do not run untrusted programs here.
 ## Framing and ownership
 
 Each request and event is one UTF-8 JSON object followed by LF. JSON escapes
-embedded newlines. Only the bridge's dedicated writer uses protocol stdout.
+embedded newlines. Surrounding JSON whitespace is allowed. Trailing garbage or
+a second JSON value rejects the entire frame before dispatch, with a `protocol`
+error and `done.status = error`, both with a null ID. Only the bridge's dedicated
+writer uses protocol stdout.
 The user's current stdout, stderr, and printer use separately captured ports.
 Raw process stderr is for engine startup/internal failures and must still be
 read by the host. Code that deliberately opens OS file descriptor 1 or writes
@@ -170,10 +173,24 @@ Racket distribution need it installed separately.
 
 ## Verification
 
+Pure Python transport tests need no Racket executable:
+
+```sh
+python3 -B runtime-tests/test_bridge.py BridgeHarnessTests
+python3 -B qa/test_runtime_adversarial.py ProtocolHarnessTests
+```
+
+Run the full headless suites with a locally installed Racket:
+
 ```sh
 RACKET_BIN=/path/to/racket python3 runtime-tests/test_bridge.py
+RACKET_BIN=/path/to/racket python3 qa/test_runtime_adversarial.py
 RACKET_BIN=/path/to/racket python3 runtime-tests/benchmark_bridge.py
 ```
 
-The integration suite starts real Racket processes; it does not substitute a
-mock interpreter. Additional independent adversarial tests live under `qa/`.
+Without a discoverable Racket executable, the full suites still run the pure
+tests and explicitly skip integration tests. Integration tests start real Racket
+processes; they do not substitute a mock interpreter. They cover Break request
+and active-operation terminal events separately, custodian cancellation, process
+EOF after an explicit kill, and session recovery. The explicit-kill check does
+not establish the Rust host's hard-kill deadline or GUI Stop behavior.

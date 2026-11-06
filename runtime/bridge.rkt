@@ -411,5 +411,11 @@
         [(eq? line 'oversized) (protocol-error 'null "Protocol line exceeds 8 MiB.") (loop)]
         [else
          (with-handlers ([exn? (lambda (e) (protocol-error 'null (string-append "Invalid JSON: " (clip (exn-message e)))))])
-           (dispatch (read-json (open-input-bytes line))))
+           (define in (open-input-bytes line))
+           (define req (read-json in))
+           ;; Validate the whole frame before dispatch: a valid prefix followed
+           ;; by garbage or another JSON value must never execute user code.
+           (unless (eof-object? (read-json in))
+             (error 'protocol "Expected exactly one JSON object per line."))
+           (dispatch req))
          (loop)]))

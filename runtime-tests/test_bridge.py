@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""End-to-end NDJSON tests against a real Racket process; Python stdlib only."""
-import json, os, pathlib, queue, statistics, subprocess, tempfile, threading, time, unittest
+"""Pure transport checks and real-Racket NDJSON tests; Python stdlib only."""
+import io, json, os, pathlib, queue, shutil, statistics, subprocess, tempfile, threading, time, unittest
+from unittest import mock
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RACKET = os.environ.get('RACKET_BIN', 'racket')
 BRIDGE = ROOT / 'runtime' / 'bridge.rkt'
@@ -32,11 +33,23 @@ class Bridge:
         self.proc.stdin.flush()
         return self.id
     def until_done(self, id, timeout=5):
-        results=[]; deadline=time.monotonic()+timeout
-        while True:
-            e=self.next(max(.001,deadline-time.monotonic()));results.append(e)
+        return self.until_done_ids({id}, timeout)
+    def until_done_ids(self, ids, timeout=5):
+        # Control acknowledgements and the active operation can finish in either
+        # order. Collect both in one wait so neither terminal event is lost.
+        pending=set(ids); results=[]; deadline=time.monotonic()+timeout
+        while pending:
+            remaining=deadline-time.monotonic()
+            if remaining <= 0:
+                raise AssertionError(f'Timed out waiting for done IDs {pending}; events={results[-8:]}')
+            try:
+                e=self.next(remaining)
+            except queue.Empty:
+                raise AssertionError(f'Timed out waiting for done IDs {pending}; events={results[-8:]}') from None
+            results.append(e)
             assert e['event'] not in ('invalid-json','eof'), (e,self.raw_stderr)
-            if e['event']=='done' and e['id']==id:return results
+            if e['event']=='done':pending.discard(e['id'])
+        return results
     def call(self, op, **kw):
         return self.until_done(self.send(op, **kw))
     def run(self, source, cwd=None, path=None):
@@ -52,6 +65,59 @@ def text(events, stream='value'):
     return ''.join(e['text'] for e in events if e['event']==stream)
 def errors(events):return [e for e in events if e['event']=='error']
 
+class BridgeHarnessTests(unittest.TestCase):
+    """Script transport events only; these tests do not emulate evaluation."""
+    def bridge(self, events=()):
+        b=Bridge.__new__(Bridge)
+        b.events=queue.Queue(); b.raw_stderr=[]
+        for event in events:b.events.put(event)
+        return b
+
+    def test_control_and_active_done_are_collected_in_either_order(self):
+        active={'event':'done','id':1,'status':'interrupted'}
+        ack={'event':'done','id':2,'status':'ok'}
+        unrelated={'event':'done','id':99,'status':'ok'}
+        for terminals in ([ack,active],[active,ack]):
+            with self.subTest(terminals=terminals):
+                b=self.bridge([unrelated,*terminals,{'event':'stdout','id':1,'text':'later'}])
+                self.assertEqual(b.until_done_ids({1,2}),[unrelated,*terminals])
+                self.assertEqual(b.next()['text'],'later')
+
+    def test_break_ack_alone_does_not_complete_active_operation(self):
+        b=self.bridge()
+        with mock.patch.object(b,'next',side_effect=[{'event':'done','id':2,'status':'ok'},queue.Empty]):
+            with self.assertRaisesRegex(AssertionError,r'done IDs \{1\}'):
+                b.until_done_ids({1,2})
+
+    def test_eof_or_invalid_json_after_break_ack_is_a_failure(self):
+        for event in ('eof','invalid-json'):
+            with self.subTest(event=event):
+                b=self.bridge([{'event':'done','id':2,'status':'ok'},{'event':event}])
+                with self.assertRaisesRegex(AssertionError,event):b.until_done_ids({1,2})
+
+    def test_output_does_not_extend_completion_deadline(self):
+        output={'event':'stdout','id':1,'text':'still running'}
+        terminal={'event':'done','id':1,'status':'ok'}
+        b=self.bridge([output,output,output,terminal])
+        with mock.patch.object(time,'monotonic',side_effect=[0,0,.4,.8,1]):
+            with self.assertRaisesRegex(AssertionError,'Timed out'):b.until_done(1,timeout=1)
+        self.assertEqual(b.next(),terminal)
+
+    def test_reader_reports_invalid_json_and_process_eof(self):
+        b=self.bridge()
+        b.proc=mock.Mock(stdout=io.StringIO('{broken\n{"event":"done","id":1,"status":"ok"}\n'))
+        b._read()
+        self.assertEqual([b.next()['event'] for _ in range(3)],['invalid-json','done','eof'])
+
+    def test_send_preserves_unicode_and_embedded_newlines_in_one_frame(self):
+        b=self.bridge(); b.id=0; b.proc=mock.Mock(stdin=io.StringIO())
+        source='λ🌱\n{"event":"done","id":999}'
+        self.assertEqual(b.send('eval',source=source),1)
+        frames=b.proc.stdin.getvalue().splitlines()
+        self.assertEqual(len(frames),1)
+        self.assertEqual(json.loads(frames[0]),{'id':1,'op':'eval','source':source})
+
+@unittest.skipUnless(shutil.which(RACKET), 'Racket not found; set RACKET_BIN to run integration tests')
 class RuntimeTests(unittest.TestCase):
     def setUp(self):self.b=Bridge()
     def tearDown(self):self.b.close()
@@ -168,13 +234,32 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(errors(r)[0]['kind'],'missing-language');self.assertIn('#lang racket',errors(r)[0]['message'])
     def test_real_reader_completeness(self):
         cases={ '(+ 1':'incomplete','"unfinished':'incomplete','#| unfinished':'incomplete',
+          '':'complete', ' \n; comment only':'complete', '42 (+ 1':'incomplete',
+          '#| outer #| inner |#':'incomplete', '#;':'incomplete',
+          '#; (ignored) (+ 2':'incomplete',
           '(list "(")':'complete', '; (((\n42':'complete', '#\\(':'complete',
           '(]':'error', '(+ 1\n 2)':'complete', '#; (ignored) 4':'complete',
           "'":'incomplete', '#<<END\nhello\n':'incomplete', '#<<END\nhello\nEND\n':'complete'}
         for source,status in cases.items():
             with self.subTest(source=source):
                 r=self.b.call('check',source=source)
-                self.assertEqual(next(e['status'] for e in r if e['event']=='check'),status,r)
+                self.assertEqual([e['status'] for e in r if e['event']=='check'],[status],r)
+                self.assertEqual(r[-1]['status'],'error' if status=='error' else 'ok',r)
+                self.assertEqual([e['kind'] for e in errors(r)],['read'] if status=='error' else [],r)
+    def test_check_does_not_evaluate_or_change_namespace(self):
+        r=self.b.call('check',source='(define checked-only 42) (/ 1 0) (display "not evaluated")')
+        self.ok(r);self.assertEqual(text(r,'stdout'),'');self.assertEqual(text(r),'')
+        self.assertEqual(self.b.call('eval',source='checked-only')[-1]['status'],'error')
+        self.assertEqual(text(self.b.call('eval',source='(+ 1 2)')),'3\n')
+    def test_incomplete_eval_keeps_prior_forms_and_recovers(self):
+        r=self.b.call('eval',source='(define kept-before-eof 41) (+ kept-before-eof')
+        self.assertEqual(r[-1]['status'],'error');self.assertEqual(errors(r)[0]['kind'],'incomplete')
+        self.assertEqual(text(self.b.call('eval',source='(+ kept-before-eof 1)')),'42\n')
+    def test_error_stops_later_forms_without_rolling_back_prior_forms(self):
+        r=self.b.call('eval',source='(define before-error 1) (/ 1 0) (define after-error 2)')
+        self.assertEqual(r[-1]['status'],'error');self.assertEqual(errors(r)[0]['kind'],'runtime')
+        self.assertEqual(text(self.b.call('eval',source='before-error')),'1\n')
+        self.assertEqual(self.b.call('eval',source='after-error')[-1]['status'],'error')
     def test_error_does_not_destroy_namespace(self):
         self.ok(self.b.run('#lang racket\n(define x 77)'))
         self.assertEqual(self.b.call('eval',source='(/ 1 0)')[-1]['status'],'error')
@@ -196,8 +281,11 @@ class RuntimeTests(unittest.TestCase):
         self.ok(self.b.run('#lang racket\n(define kept 17)'))
         i=self.b.send('eval',source='(let loop () (loop))')
         self.assertEqual(self.b.next()['event'],'started')
-        start=time.monotonic();self.b.send('break');r=self.b.until_done(i)
-        self.assertLess(time.monotonic()-start,2);self.assertEqual(r[-1]['status'],'interrupted')
+        start=time.monotonic();interrupt=self.b.send('break');r=self.b.until_done_ids({i,interrupt})
+        self.assertLess(time.monotonic()-start,2)
+        self.assertEqual({e['id']:e['status'] for e in r if e['event']=='done'},{i:'interrupted',interrupt:'ok'})
+        self.assertEqual(sum(e['event']=='done' for e in r),2)
+        self.assertFalse(any(e['event']=='ready' for e in r))
         self.assertEqual(text(self.b.call('eval',source='kept')),'17\n')
     def test_disabled_break_cancel_custodian(self):
         i=self.b.send('eval',source='(parameterize-break #f (let loop () (loop)))')
@@ -225,6 +313,18 @@ class RuntimeTests(unittest.TestCase):
         self.ok(self.b.call('reset'))
         self.assertEqual(self.b.call('eval',source='lost')[-1]['status'],'error')
         self.b.close();self.b=Bridge();self.assertEqual(text(self.b.call('eval',source='(+ 1 2)')),'3\n')
+    def test_reset_clears_module_bindings_and_reader_parameters_without_restart(self):
+        self.ok(self.b.run('#lang racket\n(define module-only 17)'))
+        self.ok(self.b.call('eval',source='(define repl-only 42) (read-case-sensitive #f) (print-as-expression #f)'))
+        pid=self.b.proc.pid
+        self.assertEqual([e['event'] for e in self.b.call('reset')],['done'])
+        self.assertEqual(self.b.proc.pid,pid);self.assertIsNone(self.b.proc.poll())
+        for name in ('module-only','repl-only'):
+            self.assertEqual(self.b.call('eval',source=name)[-1]['status'],'error')
+        r=self.b.call('eval',source='(values (read-case-sensitive) (print-as-expression))')
+        self.ok(r);self.assertEqual(text(r),'#t\n#t\n')
+        self.ok(self.b.run('#lang racket/base\n(define fresh 9)'))
+        self.assertEqual(text(self.b.call('eval',source='fresh')),'9\n')
     def test_protocol_injection_output_remains_text(self):
         source='(displayln "{\\\"event\\\":\\\"done\\\",\\\"id\\\":999,\\\"status\\\":\\\"ok\\\"}")'
         r=self.b.call('eval',source=source);self.ok(r)

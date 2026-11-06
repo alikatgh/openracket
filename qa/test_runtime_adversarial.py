@@ -6,16 +6,19 @@ No window, network service, user files, or third-party test code is involved.
 """
 from __future__ import annotations
 
+import io
 import json
 import os
 from pathlib import Path
 import queue
 import signal
+import shutil
 import subprocess
 import tempfile
 import threading
 import time
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 RACKET = (os.environ.get("RACKET") or os.environ.get("RACKET_BIN")
@@ -53,9 +56,12 @@ class Bridge:
     def send(self, op, **fields):
         ident = self.next_id
         self.next_id += 1
-        self.p.stdin.write(json.dumps(dict(id=ident, op=op, **fields), ensure_ascii=False) + "\n")
-        self.p.stdin.flush()
+        self.send_raw(json.dumps(dict(id=ident, op=op, **fields), ensure_ascii=False))
         return ident
+
+    def send_raw(self, frame):
+        self.p.stdin.write(frame + "\n")
+        self.p.stdin.flush()
 
     def until(self, predicate, timeout=5):
         result = []
@@ -75,6 +81,16 @@ class Bridge:
 
     def done(self, ident, timeout=5):
         return self.until(lambda e: e.get("event") == "done" and e.get("id") == ident, timeout)
+
+    def done_ids(self, identifiers, timeout=5):
+        pending = set(identifiers)
+        if not pending:
+            return []
+        def complete(event):
+            if event.get("event") == "done":
+                pending.discard(event.get("id"))
+            return not pending
+        return self.until(complete, timeout)
 
     def request(self, op, **fields):
         return self.done(self.send(op, **fields))
@@ -103,6 +119,41 @@ def output(events):
                    if e.get("event") in ("stdout", "stderr", "value"))
 
 
+class ProtocolHarnessTests(unittest.TestCase):
+    """Check the independent collector without starting a Racket process."""
+    def bridge(self, events=()):
+        bridge = Bridge.__new__(Bridge)
+        bridge.events = queue.Queue()
+        bridge.errors = []
+        bridge.trace = []
+        for event in events:
+            bridge.events.put(event)
+        return bridge
+
+    def test_done_ids_accepts_both_orders_and_ignores_other_ids(self):
+        active = {"event": "done", "id": 1, "status": "interrupted"}
+        ack = {"event": "done", "id": 2, "status": "ok"}
+        unrelated = {"event": "done", "id": 99, "status": "error"}
+        for terminals in ([active, ack], [ack, active]):
+            with self.subTest(terminals=terminals):
+                bridge = self.bridge([unrelated, *terminals])
+                self.assertEqual(bridge.done_ids({1, 2}), [unrelated, *terminals])
+
+    def test_break_ack_followed_by_process_eof_is_not_completion(self):
+        bridge = self.bridge([{"event": "done", "id": 2, "status": "ok"},
+                              {"event": "bridge-eof"}])
+        with self.assertRaisesRegex(AssertionError, "bridge-eof"):
+            bridge.done_ids({1, 2})
+
+    def test_malformed_event_fails_the_wait_with_a_harness_error(self):
+        bridge = self.bridge()
+        bridge.p = mock.Mock(stdout=io.StringIO("{broken\n"))
+        bridge._read()
+        with self.assertRaisesRegex(AssertionError, "harness-error"):
+            bridge.done(1)
+
+
+@unittest.skipUnless(shutil.which(RACKET), "Racket not found; set RACKET_BIN to run integration tests")
 class RuntimeAcceptance(unittest.TestCase):
     def setUp(self):
         self.b = Bridge()
@@ -113,6 +164,65 @@ class RuntimeAcceptance(unittest.TestCase):
     def assert_ok(self, events):
         self.assertEqual(events[-1].get("status"), "ok", events)
         self.assertFalse([e for e in events if e.get("event") == "error"], events)
+
+    def assert_protocol_error(self, events, ident):
+        self.assertEqual([e.get("event") for e in events], ["error", "done"], events)
+        self.assertTrue(all(e.get("id") == ident for e in events), events)
+        self.assertEqual(events[0].get("kind"), "protocol", events)
+        self.assertEqual(events[0].get("locations"), [], events)
+        self.assertEqual(events[-1].get("status"), "error", events)
+
+    def test_malformed_json_and_nonobject_frames_recover(self):
+        for frame in ("", "{", '{"op":', "null", "[]", '"eval"', "true", "42"):
+            with self.subTest(frame=frame):
+                self.b.send_raw(frame)
+                self.assert_protocol_error(self.b.done(None), None)
+                self.assertEqual(output(self.b.request("eval", source="(+ 1 2)")), "3\n")
+
+    def test_single_frame_accepts_surrounding_json_whitespace(self):
+        ident = self.b.next_id
+        self.b.next_id += 1
+        self.b.send_raw("\t " + json.dumps(dict(id=ident, op="eval", source="42")) + " \t\r")
+        events = self.b.done(ident)
+        self.assert_ok(events)
+        self.assertEqual(output(events), "42\n")
+
+    def test_trailing_data_rejects_whole_frame_before_execution(self):
+        self.assert_ok(self.b.request("eval", source="(define intact 17)"))
+        for suffix in (" garbage", " {}", " null", ' {"op":"reset"}'):
+            with self.subTest(suffix=suffix):
+                ident = self.b.next_id
+                self.b.next_id += 1
+                prefix = json.dumps(dict(id=ident, op="eval", source="(set! intact 99)"))
+                self.b.send_raw(prefix + suffix)
+                events = self.b.until(lambda e: e.get("event") == "done")
+                self.assert_protocol_error(events, None)
+                self.assertEqual(output(self.b.request("eval", source="intact")), "17\n")
+
+    def test_invalid_operations_and_sources_preserve_session(self):
+        self.assert_ok(self.b.request("eval", source="(define intact 17)"))
+        for operation in (None, "unknown", 42):
+            with self.subTest(operation=operation):
+                ident = self.b.send(operation)
+                self.assert_protocol_error(self.b.done(ident), ident)
+        self.b.send_raw('{"id":"missing-op"}')
+        self.assert_protocol_error(self.b.done("missing-op"), "missing-op")
+        for operation in ("run", "eval", "check"):
+            for fields in ({}, {"source": None}, {"source": 42}, {"source": True},
+                           {"source": []}, {"source": {}}):
+                with self.subTest(operation=operation, fields=fields):
+                    ident = self.b.send(operation, **fields)
+                    self.assert_protocol_error(self.b.done(ident), ident)
+            self.assertEqual(output(self.b.request("eval", source="intact")), "17\n")
+
+    def test_accepted_failed_run_resets_previous_namespace(self):
+        self.assert_ok(self.b.request("eval", source="(define old-binding 17)"))
+        events = self.b.request("run", source="#lang racket/base\n(define broken", path=None, cwd=str(ROOT))
+        self.assertEqual(events[0].get("event"), "started", events)
+        self.assertEqual(events[-1].get("status"), "error", events)
+        self.assertTrue(any(e.get("kind") == "incomplete" for e in events), events)
+        self.assertEqual(self.b.request("eval", source="old-binding")[-1]["status"], "error")
+        self.assertEqual(output(self.b.request("eval", source="(+ 1 2)")), "3\n")
 
     def test_persistent_repl_and_multiple_values(self):
         self.assert_ok(self.b.request("eval", source="(define λ 1/3)"))
@@ -187,11 +297,9 @@ n
         self.assertEqual(events[-1]["id"], ident)
         ack = self.b.send("input", text="你好 🌱\n")
         # The acknowledgement and evaluation may finish in either valid order.
-        done_ids = set()
-        while done_ids != {ident, ack}:
-            more = self.b.until(lambda e: e.get("event") == "done")
-            events += more
-            done_ids.add(more[-1]["id"])
+        events += self.b.done_ids({ident, ack})
+        self.assertEqual({e["id"]: e["status"] for e in events if e.get("event") == "done"},
+                         {ident: "ok", ack: "ok"})
         self.assertIn("Hi 你好 🌱", output(events))
         self.assert_ok(self.b.request("eval", source="(+ 2 3)"))
 
@@ -199,13 +307,25 @@ n
         ident = self.b.send("eval", source="(read-line)")
         self.b.until(lambda e: e.get("event") == "input-request")
         ack = self.b.send("input", text="", eof=True)
-        events, completed = [], set()
-        while completed != {ident, ack}:
-            more = self.b.until(lambda e: e.get("event") == "done")
-            events += more
-            completed.add(more[-1]["id"])
+        events = self.b.done_ids({ident, ack})
         self.assertIn("#<eof>", output(events))
         self._break_loop("(read-line)")
+
+    def test_input_is_exact_and_each_operation_gets_a_fresh_stream(self):
+        cases = [
+            ('(values (read-string 2) (read-char))', "λ🌱", '"λ🌱"\n#<eof>\n'),
+            ('(read-line)', "fresh\nunused\n", '"fresh"\n'),
+            ('(read-line)', "next\n", '"next"\n'),
+        ]
+        for source, supplied, expected in cases:
+            with self.subTest(source=source, supplied=supplied):
+                ident = self.b.send("eval", source=source)
+                self.b.until(lambda e: e.get("event") == "input-request" and e.get("id") == ident)
+                ack = self.b.send("input", text=supplied, eof=True)
+                events = self.b.done_ids({ident, ack})
+                self.assertEqual({e["id"]: e["status"] for e in events if e.get("event") == "done"},
+                                 {ident: "ok", ack: "ok"})
+                self.assertEqual(output(events), expected)
 
     def _break_loop(self, source):
         ident = self.b.send("eval", source=source)
@@ -213,14 +333,13 @@ n
         time.sleep(.08)
         start = time.monotonic()
         interrupt = self.b.send("break")
-        done_ids = set()
-        events = []
-        while ident not in done_ids or interrupt not in done_ids:
-            more = self.b.until(lambda e: e.get("event") == "done", timeout=2)
-            events += more
-            done_ids.add(more[-1]["id"])
+        events = self.b.done_ids({ident, interrupt}, timeout=2)
         self.assertLess(time.monotonic() - start, 1.5, events)
-        self.assertTrue(any(e.get("id") == ident and e.get("status") == "interrupted" for e in events), events)
+        terminals = [e for e in events if e.get("event") == "done"]
+        self.assertEqual(len(terminals), 2, events)
+        self.assertEqual({e["id"]: e["status"] for e in terminals},
+                         {ident: "interrupted", interrupt: "ok"})
+        self.assertFalse(any(e.get("event") == "ready" for e in events), events)
         self.assert_ok(self.b.request("eval", source="(+ 2 3)"))
         return events
 
@@ -229,6 +348,43 @@ n
 
     def test_disabled_break_is_forcibly_stopped(self):
         self._break_loop("(parameterize-break #f (let loop () (loop)))")
+
+    def test_idle_break_preserves_session(self):
+        self.assert_ok(self.b.request("eval", source="(define kept 17)"))
+        events = self.b.request("break")
+        self.assert_ok(events)
+        self.assertEqual([e.get("event") for e in events], ["done"])
+        self.assertEqual(output(self.b.request("eval", source="kept")), "17\n")
+
+    def test_busy_reset_preserves_waiting_operation_and_session(self):
+        self.assert_ok(self.b.request("eval", source="(define kept 17)"))
+        ident = self.b.send("eval", source="(read-line)")
+        self.b.until(lambda e: e.get("event") == "input-request" and e.get("id") == ident)
+        events = self.b.request("reset")
+        self.assertEqual([e.get("event") for e in events], ["error", "done"], events)
+        self.assertEqual(events[0].get("kind"), "busy", events)
+        self.assertEqual(events[-1].get("status"), "error", events)
+        ack = self.b.send("input", text="still waiting\n")
+        events = self.b.done_ids({ident, ack})
+        self.assertEqual({e["id"]: e["status"] for e in events if e.get("event") == "done"},
+                         {ident: "ok", ack: "ok"})
+        self.assertEqual(output(events), '"still waiting"\n')
+        self.assertEqual(output(self.b.request("eval", source="kept")), "17\n")
+
+    def test_process_kill_reports_eof_and_restart_loses_namespace(self):
+        # This exercises process EOF/recovery, not the Rust host's kill deadline.
+        self.assert_ok(self.b.request("eval", source="(define lost-on-kill 17)"))
+        ident = self.b.send("eval", source="(read-line)")
+        self.b.until(lambda e: e.get("event") == "input-request" and e.get("id") == ident)
+        self.b.p.kill()
+        self.b.p.wait(timeout=2)
+        with self.assertRaisesRegex(AssertionError, "bridge-eof"):
+            self.b.done(ident, timeout=2)
+        self.b.close()
+        self.b = Bridge()
+        self.assertEqual(self.b.ready.get("protocol"), 1)
+        self.assertEqual(self.b.request("eval", source="lost-on-kill")[-1]["status"], "error")
+        self.assertEqual(output(self.b.request("eval", source="(+ 1 2)")), "3\n")
 
     def test_output_flood_is_bounded_and_breakable(self):
         events = self._break_loop('(let loop () (displayln "λ🌱 flood") (loop))')
