@@ -109,6 +109,82 @@ class BridgeHarnessTests(unittest.TestCase):
         b._read()
         self.assertEqual([b.next()['event'] for _ in range(3)],['invalid-json','done','eof'])
 
+    def test_reader_rejects_entire_malformed_frame_then_recovers(self):
+        terminal={'event':'done','id':1,'status':'ok'}
+        valid=json.dumps(terminal)
+        frames=[valid+suffix for suffix in ('{}',' null',' true',' 42',' "tail"',' garbage','\x00')]
+        frames += ['', ' \t', '{"event":"done",}',
+                   r'{"event":"done","text":"\q"}',
+                   r'{"event":"done","text":"\u12"}',
+                   '{"event":"done","text":"literal\tcontrol"}']
+        for frame in frames:
+            with self.subTest(frame=frame):
+                b=self.bridge()
+                b.proc=mock.Mock(stdout=io.StringIO(frame+'\n'+valid+'\n'))
+                b._read()
+                self.assertEqual(b.next(),{'event':'invalid-json','line':frame+'\n'})
+                self.assertEqual(b.next(),terminal)
+                self.assertEqual(b.next(),{'event':'eof'})
+                self.assertTrue(b.events.empty())
+
+    def test_reader_accepts_crlf_whitespace_and_escaped_newlines(self):
+        event={'event':'stdout','id':1,'text':'λ🌱\n{"event":"done","id":999}'}
+        b=self.bridge()
+        b.proc=mock.Mock(stdout=io.StringIO('\t '+json.dumps(event,ensure_ascii=False)+' \t\r\n'))
+        b._read()
+        self.assertEqual(b.next(),event)
+        self.assertEqual(b.next(),{'event':'eof'})
+        self.assertTrue(b.events.empty())
+
+    def test_reader_distinguishes_complete_and_truncated_final_frame_at_eof(self):
+        terminal={'event':'done','id':1,'status':'ok'}
+        complete=json.dumps(terminal)
+        for frame in (complete,complete[:-1]):
+            with self.subTest(frame=frame):
+                b=self.bridge()
+                b.proc=mock.Mock(stdout=io.StringIO(frame))
+                b._read()
+                if frame==complete:
+                    self.assertEqual(b.until_done(1),[terminal])
+                    self.assertEqual(b.next(),{'event':'eof'})
+                else:
+                    with self.assertRaisesRegex(AssertionError,'invalid-json'):b.until_done(1)
+                    self.assertEqual(b.next(),{'event':'eof'})
+                self.assertTrue(b.events.empty())
+
+    def test_eof_without_target_done_fails_even_after_output(self):
+        for prefix in ([],[{'event':'stdout','id':1,'text':'last output'}]):
+            with self.subTest(prefix=prefix):
+                b=self.bridge()
+                b.proc=mock.Mock(stdout=io.StringIO(''.join(json.dumps(e)+'\n' for e in prefix)))
+                b._read()
+                with self.assertRaisesRegex(AssertionError,'eof'):b.until_done(1)
+
+    def test_null_and_duplicate_done_ids_do_not_complete_other_targets_or_reset_timeout(self):
+        events=[{'event':'done','id':None,'status':'error'},
+                {'event':'done','id':1,'status':'ok'},
+                {'event':'done','id':1,'status':'ok'},
+                {'event':'done','id':2,'status':'interrupted'}]
+        b=self.bridge()
+        with mock.patch.object(time,'monotonic',side_effect=[100,100,100.25,100.5,100.75]), \
+             mock.patch.object(b,'next',side_effect=events) as next_event:
+            self.assertEqual(b.until_done_ids({1,2},timeout=1),events)
+        self.assertEqual(next_event.call_args_list,[mock.call(1),mock.call(.75),mock.call(.5),mock.call(.25)])
+
+    def test_null_id_can_be_an_explicit_completion_target(self):
+        unrelated={'event':'done','id':1,'status':'ok'}
+        terminal={'event':'done','id':None,'status':'error'}
+        b=self.bridge([unrelated,terminal])
+        self.assertEqual(b.until_done(None),[unrelated,terminal])
+
+    def test_zero_timeout_does_not_consume_queued_terminal(self):
+        terminal={'event':'done','id':1,'status':'ok'}
+        b=self.bridge([terminal])
+        with mock.patch.object(time,'monotonic',return_value=100):
+            self.assertEqual(b.until_done_ids(set(),timeout=0),[])
+            with self.assertRaisesRegex(AssertionError,r'done IDs \{1\}'):b.until_done(1,timeout=0)
+        self.assertEqual(b.next(),terminal)
+
     def test_send_preserves_unicode_and_embedded_newlines_in_one_frame(self):
         b=self.bridge(); b.id=0; b.proc=mock.Mock(stdin=io.StringIO())
         source='λ🌱\n{"event":"done","id":999}'
@@ -329,6 +405,33 @@ class RuntimeTests(unittest.TestCase):
         source='(displayln "{\\\"event\\\":\\\"done\\\",\\\"id\\\":999,\\\"status\\\":\\\"ok\\\"}")'
         r=self.b.call('eval',source=source);self.ok(r)
         self.assertIn('999',text(r,'stdout'));self.assertEqual(sum(e['event']=='done' for e in r),1)
+    def assert_protocol_frame_rejected(self,frame):
+        self.b.proc.stdin.write(frame+'\n');self.b.proc.stdin.flush()
+        events=self.b.until_done(None)
+        self.assertEqual([e['event'] for e in events],['error','done'],events)
+        self.assertTrue(all(e['id'] is None for e in events),events)
+        self.assertEqual(events[0]['kind'],'protocol',events)
+        self.assertEqual(events[-1]['status'],'error',events)
+    def test_malformed_string_escapes_and_nested_json_recover(self):
+        frames=[r'{"id":999,"op":"eval","source":"\q"}',
+                r'{"id":999,"op":"eval","source":"\u12"}',
+                '{"id":999,"op":"eval","source":"literal\tcontrol"}',
+                '{"id":999,"op":"eval","source":"unterminated}',
+                '{"id":999,"op":"eval","source":"42",}',
+                '{"id":999,"op":"eval","source":[1,]}']
+        for frame in frames:
+            with self.subTest(frame=frame):
+                self.assert_protocol_frame_rejected(frame)
+                self.assertEqual(text(self.b.call('eval',source='(+ 1 2)')),'3\n')
+    def test_trailing_data_cannot_dispatch_reset_or_shutdown(self):
+        self.ok(self.b.call('eval',source='(define frame-survivor 17)'))
+        for operation in ('reset','shutdown'):
+            for suffix in ('{}','[]','false','"tail"','\x00','/* comment */'):
+                with self.subTest(operation=operation,suffix=suffix):
+                    prefix=json.dumps({'id':999,'op':operation})
+                    self.assert_protocol_frame_rejected(prefix+suffix)
+                    self.assertIsNone(self.b.proc.poll())
+                    self.assertEqual(text(self.b.call('eval',source='frame-survivor')),'17\n')
     def test_exit_is_reported_without_losing_process(self):
         r=self.b.call('eval',source='(exit 5)');self.assertEqual(r[-1]['status'],'error')
         self.assertEqual(text(self.b.call('eval',source='42')),'42\n')
